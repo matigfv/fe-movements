@@ -8,7 +8,7 @@ import type { ReactNode } from "react";
 import type { BankRecord } from "@/models/Bank";
 import type { Category } from "@/models/Category";
 import type { Currency } from "@/apis/currency/CurrencyApi";
-import type { MovementFilters } from "@/routes/movements";
+import type { MovementFilters as MovementFiltersValue } from "@/routes/movements";
 import MovementFilters from "@/components/movements/MovementFilters";
 
 // ── Mocks ───────────────────────────────────────────────────────────────────
@@ -31,7 +31,7 @@ const mockCurrencies: Currency[] = [
   { id: 1, symbol: "ARS", description: "Peso argentino", workspaceId: null, isDeletable: false },
 ];
 
-const defaultFilters: MovementFilters = {
+const defaultFilters: MovementFiltersValue = {
   description: null,
   type: [],
   bank: [],
@@ -129,7 +129,7 @@ describe("MovementFilters", () => {
     await userEvent.type(input, "café");
 
     await waitFor(() => {
-      const lastCall = onFiltersChange.mock.calls.at(-1)?.[0] as MovementFilters;
+      const lastCall = onFiltersChange.mock.calls.at(-1)?.[0] as MovementFiltersValue;
       expect(lastCall.description).toBe("café");
     });
   });
@@ -148,7 +148,7 @@ describe("MovementFilters", () => {
     await userEvent.click(screen.getByText("Históricos"));
 
     await waitFor(() => {
-      const lastCall = onFiltersChange.mock.calls.at(-1)?.[0] as MovementFilters;
+      const lastCall = onFiltersChange.mock.calls.at(-1)?.[0] as MovementFiltersValue;
       expect(lastCall.isLive).toBe(false);
     });
   });

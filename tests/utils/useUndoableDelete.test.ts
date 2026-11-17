@@ -38,7 +38,7 @@ describe("useUndoableDelete", () => {
       act(() => result.current.requestDelete(1));
 
       await waitFor(() => expect(onDelete).toHaveBeenCalledWith(1));
-      expect(result.current.isPending(1)).toBe(false);
+      await waitFor(() => expect(result.current.isPending(1)).toBe(false));
     });
   });
 
@@ -63,9 +63,11 @@ describe("useUndoableDelete", () => {
       expect(onDelete).toHaveBeenCalledWith(1);
       expect(onDelete).toHaveBeenCalledWith(2);
       expect(onDelete).toHaveBeenCalledWith(3);
-      expect(result.current.isPending(1)).toBe(false);
-      expect(result.current.isPending(2)).toBe(false);
-      expect(result.current.isPending(3)).toBe(false);
+      await waitFor(() => {
+        expect(result.current.isPending(1)).toBe(false);
+        expect(result.current.isPending(2)).toBe(false);
+        expect(result.current.isPending(3)).toBe(false);
+      });
     });
 
     it("no hace nada si se llama con un array vacío", () => {

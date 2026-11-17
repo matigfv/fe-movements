@@ -342,7 +342,7 @@ describe("AddMovementExpenseTab", () => {
           screen.getByPlaceholderText("Cantidad"),
         ).toBeInTheDocument(),
       );
-      expect(screen.getByPlaceholderText("Ej: Papa")).toBeInTheDocument();
+      expect(screen.getByText("Ej: Papa")).toBeInTheDocument();
     });
 
     it("precarga y muestra el desglose existente al editar un movimiento que ya lo tiene", async () => {
