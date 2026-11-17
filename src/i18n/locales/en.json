@@ -411,10 +411,21 @@
     "no": "No",
     "deleteTooltip": "Delete the movement",
     "installmentsTag": "{{installments}} installments",
+    "repeat": {
+      "tooltip": "Repeat with today's date",
+      "success": "Movement repeated",
+      "error": "Could not repeat the movement"
+    },
     "items": {
       "modalTitle": "Breakdown · {{description}}",
       "empty": "This movement has no breakdown yet",
-      "total": "Total"
+      "total": "Total",
+      "priceHistory": {
+        "tooltip": "View price history",
+        "title": "Price of {{description}}",
+        "empty": "No price history",
+        "perUnit": "{{unit}} · {{currency}}"
+      }
     },
     "bulk": {
       "selectRowAriaLabel": "Select movement",

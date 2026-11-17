@@ -18,6 +18,13 @@ export interface MovementItem {
   price: number;
 }
 
+export interface ItemPriceSeries {
+  unit: string;
+  currency: string;
+  points: { date: string; unitPrice: number }[];
+  variationPercent: number | null;
+}
+
 export interface Movement {
   id: number;
   amount: number;

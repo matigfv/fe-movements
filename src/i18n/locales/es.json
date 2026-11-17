@@ -411,10 +411,21 @@
     "no": "No",
     "deleteTooltip": "Eliminar el movimiento",
     "installmentsTag": "{{installments}} cuotas",
+    "repeat": {
+      "tooltip": "Repetir con fecha de hoy",
+      "success": "Movimiento repetido",
+      "error": "No se pudo repetir el movimiento"
+    },
     "items": {
       "modalTitle": "Desglose · {{description}}",
       "empty": "Este movimiento no tiene desglose cargado",
-      "total": "Total"
+      "total": "Total",
+      "priceHistory": {
+        "tooltip": "Ver historial de precios",
+        "title": "Precio de {{description}}",
+        "empty": "Sin historial de precios",
+        "perUnit": "{{unit}} · {{currency}}"
+      }
     },
     "bulk": {
       "selectRowAriaLabel": "Seleccionar movimiento",

@@ -1,6 +1,7 @@
 import { forwardRef, useEffect, useImperativeHandle, useRef, useState } from "react";
 import {
   Alert,
+  AutoComplete,
   Button,
   Col,
   DatePicker,
@@ -42,6 +43,7 @@ import {
 import { useCurrency } from "@/apis/hooks/useCurrency";
 import { useBanks } from "@/apis/hooks/useBank";
 import { useUserDefault } from "@/apis/hooks/useSettings";
+import { useItemDescriptions } from "@/apis/hooks/useMovementItems";
 
 const { Text } = Typography;
 
@@ -92,6 +94,7 @@ const AddMovementExpenseTab = forwardRef<
   }, [movementToEdit, form]);
 
   const showBreakdown = userToggledBreakdown ?? (movementToEdit?.items.length ?? 0) > 0;
+  const { data: knownItemDescriptions = [] } = useItemDescriptions(showBreakdown);
 
   useEffect(() => {
     if (movementToEdit) return;
@@ -484,7 +487,13 @@ const AddMovementExpenseTab = forwardRef<
                         },
                       ]}
                     >
-                      <Input placeholder={t("movements.form.items.descriptionPlaceholder")} />
+                      <AutoComplete
+                        options={knownItemDescriptions.map((value) => ({ value }))}
+                        filterOption={(input, option) =>
+                          (option?.value ?? "").toLowerCase().includes(input.toLowerCase())
+                        }
+                        placeholder={t("movements.form.items.descriptionPlaceholder")}
+                      />
                     </Form.Item>
                   </Col>
                   <Col xs={17} sm={4}>

@@ -241,6 +241,59 @@ describe("MovementTable", () => {
     });
   });
 
+  describe("repetir compra", () => {
+    const movementWithItems: Movement = {
+      ...makeMovement(5),
+      categories: [{ id: 1, description: "Supermercado", isActive: true, isDeletable: false }],
+      items: [{ id: 9, quantity: 2, unit: "KILOGRAMO", description: "Papa", price: 800 }],
+    };
+
+    it("crea un movimiento nuevo con la fecha de hoy y el mismo desglose", async () => {
+      let posted: Record<string, unknown> | null = null;
+      server.use(
+        http.get("http://localhost:8080/expenses", () =>
+          HttpResponse.json(makePageResponse([movementWithItems])),
+        ),
+        http.post("http://localhost:8080/expenses", async ({ request }) => {
+          posted = (await request.json()) as Record<string, unknown>;
+          return HttpResponse.json({ id: 99 }, { status: 201 });
+        }),
+      );
+      const user = userEvent.setup();
+      render(<MovementTable filters={defaultFilters} />, { wrapper: makeWrapper() });
+
+      await waitFor(() =>
+        expect(screen.getAllByLabelText("Repetir con fecha de hoy").length).toBeGreaterThan(0),
+      );
+      await user.click(screen.getAllByLabelText("Repetir con fecha de hoy")[0]);
+
+      await waitFor(() => expect(posted).not.toBeNull());
+      expect(posted).toMatchObject({
+        description: "Movimiento 5",
+        amount: 500,
+        categories: [{ description: "Supermercado" }],
+        items: [{ quantity: 2, unit: "KILOGRAMO", description: "Papa", price: 800 }],
+      });
+      expect(posted!.date).toBe(new Date().toLocaleDateString("sv-SE"));
+    });
+
+    it("no ofrece repetir un movimiento en cuotas (CREDITO)", async () => {
+      server.use(
+        http.get("http://localhost:8080/expenses", () =>
+          HttpResponse.json(
+            makePageResponse([{ ...makeMovement(6), type: TypeEnum.CREDITO, cuotaActual: 1, cuotasTotales: 3 }]),
+          ),
+        ),
+      );
+      render(<MovementTable filters={defaultFilters} />, { wrapper: makeWrapper() });
+
+      await waitFor(() =>
+        expect(screen.getAllByText(/Movimiento 6/).length).toBeGreaterThan(0),
+      );
+      expect(screen.queryByLabelText("Repetir con fecha de hoy")).not.toBeInTheDocument();
+    });
+  });
+
   describe("estado de carga", () => {
     it("muestra un spinner en vez del CTA o la tabla mientras carga", async () => {
       server.use(

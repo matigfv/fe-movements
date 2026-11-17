@@ -1,7 +1,7 @@
 import dayjs from "dayjs";
 import type { MovementFilters } from "@/routes/movements";
 import type { PageResponse } from "@/models/BaseMode";
-import type { CreateMovementForm, Movement } from "@/models/Movement";
+import type { CreateMovementForm, ItemPriceSeries, Movement } from "@/models/Movement";
 import type { UploadPayload } from "@/components/modals/movements/ImportMovementTab";
 import { api, LONG_OPERATION_TIMEOUT_MS } from "@/apis/axios";
 import type { ImportResult } from "@/models/ImportResult";
@@ -88,6 +88,14 @@ export const uploadExpense = (movement: CreateMovementForm) => {
   };
   return api.post("/expenses", payload).then((response) => response.data);
 };
+
+export const getItemPriceHistoryApi = (description: string) =>
+  api
+    .get<ItemPriceSeries[]>("/expenses/items/price-history", { params: { description } })
+    .then((res) => res.data);
+
+export const getItemDescriptionsApi = () =>
+  api.get<string[]>("/expenses/items/descriptions").then((res) => res.data);
 
 export const deleteExpenseApi = (id: number) =>
   api.delete(`/expenses/${id}`).then((response) => response.data);

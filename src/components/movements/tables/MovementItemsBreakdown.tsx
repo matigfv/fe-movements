@@ -1,6 +1,7 @@
 import { Col, Row, Typography } from "antd";
 import { useTranslation } from "react-i18next";
 import type { MovementItem } from "@/models/Movement";
+import ItemPriceHistoryPopover from "@/components/movements/tables/ItemPriceHistoryPopover";
 import {
   MovementItemUnitEnum,
   getMovementItemUnitLabel,
@@ -23,6 +24,7 @@ export default function MovementItemsBreakdown({ items }: MovementItemsBreakdown
         <Row key={item.id} justify="space-between" style={{ padding: "3px 0" }}>
           <Col span={16}>
             <Text style={{ fontSize: 13 }}>{item.description}</Text>
+            <ItemPriceHistoryPopover description={item.description} />
             <Text type="secondary" style={{ fontSize: 12, marginLeft: 8 }}>
               {item.quantity} {unitLabel[item.unit as MovementItemUnitEnum] ?? item.unit}
             </Text>
