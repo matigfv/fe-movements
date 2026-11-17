@@ -3,7 +3,8 @@ import React, { useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import type { Category } from "@/models/Category";
 import { useUpdateCategory } from "@/apis/hooks/useCategory";
-import { ColorPicker, PRESET_COLORS } from "@/components/settings/ColorPicker";
+import { ColorPicker } from "@/components/settings/ColorPicker";
+import { PRESET_COLORS } from "@/components/settings/presetColors";
 import { IconPicker } from "@/components/settings/IconPicker";
 import { getIconComponent } from "@/utils/getIconComponent";
 

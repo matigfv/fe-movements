@@ -1,3 +1,4 @@
+import type { Dayjs } from "dayjs";
 import type { Category } from "@/models/Category";
 import type { Currency } from "@/models/Currency";
 import type { AccountWithoutMembers } from "@/models/UserWorkspace";
@@ -47,7 +48,7 @@ export const MAX_MOVEMENT_CATEGORIES = 2;
 export interface CreateMovementForm {
   bank: string;
   description: string;
-  date: Date;
+  date: Date | Dayjs;
   currency: string;
   amount: number;
   type: string;
