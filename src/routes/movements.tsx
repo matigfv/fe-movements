@@ -1,11 +1,20 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useCallback, useRef, useState } from "react";
+import { useCallback, useState } from "react";
 import MovementTable from "@/components/movements/tables/MovementTable";
 import MovementFilters from "@/components/movements/MovementFilters";
 import { TypeEnum } from "@/enums/TypeEnum";
 import AddMovementModal from "@/components/modals/movements/AddMovementModal";
 import { protectedRouteGuard } from "@/apis/auth/protectedRouteGuard";
 import { RoleEnum } from "@/enums/RoleEnum";
+import { useCurrentWorkspace } from "@/apis/workspace/WorkspaceContext";
+import { useLocalStorage } from "@/utils/useLocalStorage";
+import {
+  clearMovementFilters,
+  movementFiltersStorageKey,
+  restoreFilters,
+  toPersistedFilters,
+  type PersistedMovementFilters,
+} from "@/utils/movementFilters";
 
 export const Route = createFileRoute("/movements")({
   beforeLoad: protectedRouteGuard({
@@ -24,22 +33,32 @@ export type MovementFilters = {
 };
 
 function RouteComponent() {
-  const [filters, setFilters] = useState<MovementFilters>({
-    currency: [],
-    description: null,
-    type: [],
-    bank: [],
-    categories: [],
-    isLive: true,
-  });
+  const { currentWorkspace } = useCurrentWorkspace();
+  const workspaceId = currentWorkspace?.workspaceId ?? "none";
+  // Remount per workspace so each one loads its own stored filters.
+  return <MovementsContent key={workspaceId} workspaceId={workspaceId} />;
+}
 
-  const filtersRef = useRef(filters);
+function MovementsContent({ workspaceId }: { workspaceId: number | string }) {
+  const [stored, setStored] = useLocalStorage<PersistedMovementFilters | null>(
+    movementFiltersStorageKey(workspaceId),
+    null,
+  );
+  const [filters, setFilters] = useState<MovementFilters>(() => restoreFilters(stored));
   const [tableState, setTableState] = useState({ isLoading: true, hasMovements: false });
 
-  const handleFiltersChange = useCallback((newFilters: MovementFilters) => {
-    filtersRef.current = newFilters;
-    setFilters(newFilters);
-  }, []);
+  const handleFiltersChange = useCallback(
+    (newFilters: MovementFilters) => {
+      setFilters(newFilters);
+      setStored(toPersistedFilters(newFilters));
+    },
+    [setStored],
+  );
+
+  const handleClearFilters = useCallback(
+    () => handleFiltersChange(clearMovementFilters(filters)),
+    [filters, handleFiltersChange],
+  );
 
   return (
     <div style={{ paddingTop: 30 }}>
@@ -50,7 +69,11 @@ function RouteComponent() {
           AddEditMovementModal={AddMovementModal}
         />
       )}
-      <MovementTable filters={filters} onStateChange={setTableState} />
+      <MovementTable
+        filters={filters}
+        onStateChange={setTableState}
+        onClearFilters={handleClearFilters}
+      />
     </div>
   );
 }

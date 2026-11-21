@@ -90,3 +90,35 @@ body {
 .fade-in {
   animation: fade-in 0.22s ease both;
 }
+
+/* Opacity-only entrance for list rows: no transform, so no overflow/scrollbar flash. */
+@keyframes list-row-fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.list-row-enter {
+  animation: list-row-fade-in 0.15s ease-out both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .step-enter-right,
+  .step-enter-left,
+  .list-row-enter,
+  .fade-in-up,
+  .fade-in-down,
+  .fade-in {
+    animation: none;
+    opacity: 1;
+    transform: none;
+  }
+
+  /* Beats the inline row transition so the bulk-categorize highlight appears and fades without motion. */
+  .row-highlighted {
+    transition: none !important;
+  }
+}

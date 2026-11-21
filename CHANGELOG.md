@@ -8,6 +8,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- Movimientos (versión 2.17.0): la barra de selección en lote queda fija abajo y no empuja la tabla;
+  los filtros muestran cuántos hay activos ("Filtros · 2") y tienen **Limpiar filtros**, también
+  en el estado sin resultados; los filtros de tipo, banco, categoría y moneda se recuerdan por
+  workspace; las filas recién categorizadas en lote se resaltan unos segundos; "seleccionar todo"
+  en la cabecera de la tabla.
+- Cada fila de movimientos tiene un botón **Editar** y un menú ⋯ con Repetir y Eliminar (con
+  confirmación).
 - Cada gráfico del dashboard muestra la moneda y el período que representa; el de torta y la
   evolución anual tienen un botón para ver los datos en tabla y etiquetas directas con nombres
   accesibles (versión 2.16.0).
@@ -17,6 +24,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - README reescrito: demo en GIF (se reproduce dentro de GitHub), tutorial de uso de la app y guía para correr el proyecto.
 
 ### Changed
+- Movimientos: las filas son neutras con una insignia de tipo y el monto destacado (con signo) en
+  lugar del tinte rosa/verde; se quitó la columna Grupo y "Cargado por" pasa debajo de la
+  descripción; la tabla expone semántica de tabla para lectores de pantalla.
+- Movimientos: el botón principal pasa de "Movimiento" a "Cargar movimiento" y los textos del
+  formulario usan voseo ("Ingresá", "Seleccioná").
 - Dashboard con jerarquía clara: **Diferencia** pasa a ser el KPI principal, la línea de USD es más
   discreta y el saludo es más chico.
 - Los deltas de los KPI se leen en lenguaje simple ("X más que el mes pasado") y la flecha muestra
@@ -38,6 +50,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   backend recategoriza otros movimientos del mismo comercio y la lista los muestra al toque.
 
 ### Fixed
+- Movimientos: la animación de entrada de la lista es solo opacidad y solo en la primera carga, y se
+  desactiva con `prefers-reduced-motion`.
 - Los montos de los KPI usan el mismo formato es-AR que el resto del dashboard ("EUR 5.018,05")
   (versión 2.16.1).
 - Una categoría mantiene un único color en Top Categorías y en la torta (versión 2.16.1).

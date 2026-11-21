@@ -1,10 +1,5 @@
 :root,
 [data-theme="light"] {
-  --rojo-falta-pago: #ffe6e6;
-  --rojo-falta-pago-borde: #ffa39e;
-
-  --verde-pagado: #f0fff0;
-  --verde-pagado-borde: #b7eb8f;
   --verde-ingreso-tabla: #f6ffed;
   --verde-ingreso-tabla-hover: #b7eb8f;
 
@@ -15,11 +10,6 @@
 }
 
 [data-theme="dark"] {
-  --rojo-falta-pago: #3b1a1a;
-  --rojo-falta-pago-borde: #7a2a2a;
-
-  --verde-pagado: #1a2e1a;
-  --verde-pagado-borde: #3a6b2a;
   --verde-ingreso-tabla: #192819;
   --verde-ingreso-tabla-hover: #2d4d2d;
 

@@ -168,4 +168,82 @@ describe("MovementFilters", () => {
     const trigger = screen.getByTestId("add-modal-trigger");
     expect(trigger).toBeInTheDocument();
   });
+
+  describe("active filters", () => {
+    const active: MovementFiltersValue = {
+      ...defaultFilters,
+      description: "cafe",
+      bank: ["GALICIA"],
+      isLive: false, // not a filter: must not be counted
+    };
+
+    it("shows no count and no clear action when nothing is filtered", () => {
+      render(
+        <MovementFilters
+          initialFilters={defaultFilters}
+          onFiltersChange={vi.fn()}
+          AddEditMovementModal={MockAddModal}
+        />,
+        { wrapper: makeWrapper() },
+      );
+      expect(screen.getByText("Filtros")).toBeInTheDocument();
+      expect(screen.queryByRole("button", { name: "Limpiar filtros" })).not.toBeInTheDocument();
+    });
+
+    it("shows the number of active filter groups in the collapsed header", () => {
+      render(
+        <MovementFilters
+          initialFilters={active}
+          onFiltersChange={vi.fn()}
+          AddEditMovementModal={MockAddModal}
+        />,
+        { wrapper: makeWrapper() },
+      );
+      expect(screen.getByText("Filtros · 2")).toBeInTheDocument();
+    });
+
+    it("clears the filters from the collapsed header and keeps the Históricos tab", async () => {
+      const onFiltersChange = vi.fn();
+      render(
+        <MovementFilters
+          initialFilters={active}
+          onFiltersChange={onFiltersChange}
+          AddEditMovementModal={MockAddModal}
+        />,
+        { wrapper: makeWrapper() },
+      );
+      expect(screen.queryByText("Descripción")).not.toBeInTheDocument();
+
+      await userEvent.click(screen.getByRole("button", { name: "Limpiar filtros" }));
+
+      await waitFor(() => {
+        expect(onFiltersChange.mock.calls.at(-1)?.[0]).toEqual({ ...defaultFilters, isLive: false });
+      });
+      expect(screen.getByText("Filtros")).toBeInTheDocument();
+      expect(screen.queryByRole("button", { name: "Limpiar filtros" })).not.toBeInTheDocument();
+      // clicking the link must not toggle the collapse
+      expect(screen.queryByText("Descripción")).not.toBeInTheDocument();
+    });
+
+    it("follows filters reset from outside", async () => {
+      const { rerender } = render(
+        <MovementFilters
+          initialFilters={active}
+          onFiltersChange={vi.fn()}
+          AddEditMovementModal={MockAddModal}
+        />,
+        { wrapper: makeWrapper() },
+      );
+      expect(screen.getByText("Filtros · 2")).toBeInTheDocument();
+
+      rerender(
+        <MovementFilters
+          initialFilters={defaultFilters}
+          onFiltersChange={vi.fn()}
+          AddEditMovementModal={MockAddModal}
+        />,
+      );
+      await waitFor(() => expect(screen.getByText("Filtros")).toBeInTheDocument());
+    });
+  });
 });

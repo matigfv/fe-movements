@@ -1,6 +1,6 @@
 import DeleteOutlined from "@ant-design/icons/DeleteOutlined";
 import TagsOutlined from "@ant-design/icons/TagsOutlined";
-import { App, Button, Card, Flex, Typography } from "antd";
+import { App, Button, Card, Flex, Typography, theme } from "antd";
 import { useTranslation } from "react-i18next";
 
 const { Text } = Typography;
@@ -20,6 +20,7 @@ export default function BulkActionsToolbar({
 }: BulkActionsToolbarProps) {
   const { t } = useTranslation();
   const { modal } = App.useApp();
+  const { token } = theme.useToken();
 
   if (selectedCount === 0) return null;
 
@@ -35,10 +36,23 @@ export default function BulkActionsToolbar({
   };
 
   return (
+    // Zero-height sticky anchor: the bar floats over the content, so selecting a row never shifts the layout.
+    <div
+      data-testid="bulk-actions-toolbar"
+      style={{ position: "sticky", bottom: 16, height: 0, zIndex: 10 }}
+    >
     <Card
       size="small"
       className="fade-in-up"
-      style={{ marginBottom: 8, borderRadius: 6 }}
+      style={{
+        position: "absolute",
+        left: 0,
+        right: 0,
+        bottom: 0,
+        borderRadius: 6,
+        backgroundColor: token.colorBgElevated,
+        boxShadow: token.boxShadowSecondary,
+      }}
       styles={{ body: { padding: "8px 16px" } }}
     >
       <Flex align="center" justify="space-between" wrap="wrap" gap={8}>
@@ -61,5 +75,6 @@ export default function BulkActionsToolbar({
         </Flex>
       </Flex>
     </Card>
+    </div>
   );
 }

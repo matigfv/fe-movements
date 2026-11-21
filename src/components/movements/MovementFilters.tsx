@@ -1,4 +1,4 @@
-import { App, Button, Card, Col, Collapse, Dropdown, Flex, Grid, Input, Row, Segmented, Select, Space, Typography } from "antd";
+import { App, Button, Card, Col, Collapse, Dropdown, Flex, Grid, Input, Row, Segmented, Select, Space, theme, Typography } from "antd";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import type { MovementFilters } from "@/routes/movements";
@@ -16,6 +16,7 @@ import SearchOutlined from "@ant-design/icons/SearchOutlined";
 import { useCurrency } from "@/apis/hooks/useCurrency";
 import { useBanks } from "@/apis/hooks/useBank";
 import { capitalizeFirst } from "@/utils/stringFunctions";
+import { clearMovementFilters, countActiveFilters } from "@/utils/movementFilters";
 
 const { Option } = Select;
 const { Text } = Typography;
@@ -49,6 +50,7 @@ export default function MovementFilters({
   AddEditMovementModal,
 }: Props) {
   const { t } = useTranslation();
+  const { token } = theme.useToken();
   const typeEnumLabel = getTypeEnumLabel(t);
   // Las categorías se obtienen del workspace activo del usuario (DEFAULT_WORKSPACE)
   const { data: categories = [] } = useCategory();
@@ -86,9 +88,19 @@ export default function MovementFilters({
     [],
   );
 
+  // The parent can reset the filters from outside (empty state, workspace switch).
+  const [prevInitialFilters, setPrevInitialFilters] = useState(initialFilters);
+  if (initialFilters !== prevInitialFilters) {
+    setPrevInitialFilters(initialFilters);
+    setFilters(initialFilters);
+  }
+
   useEffect(() => {
     onFiltersChange(filters);
   }, [filters, onFiltersChange]);
+
+  const activeCount = countActiveFilters(filters);
+  const handleClear = useCallback(() => setFilters((prev) => clearMovementFilters(prev)), []);
 
   const segmentedOptions = useMemo(
     () => [
@@ -167,9 +179,26 @@ export default function MovementFilters({
             label: (
               <Flex align="center" gap={8}>
                 <FilterOutlined />
-                <span>{t("movements.filters")}</span>
+                <span>
+                  {activeCount > 0
+                    ? t("movements.filtersActive", { count: activeCount })
+                    : t("movements.filters")}
+                </span>
               </Flex>
             ),
+            extra:
+              activeCount > 0 ? (
+                <Button
+                  type="link"
+                  size="small"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleClear();
+                  }}
+                >
+                  {t("movements.clearFilters")}
+                </Button>
+              ) : undefined,
             children: (
               <Card bordered={false} style={{ padding: 0 }}>
                 <Row gutter={[16, 16]} align="bottom">
@@ -177,7 +206,7 @@ export default function MovementFilters({
                     <FilterField label={t("movements.descriptionLabel")}>
                       <Input
                         placeholder={t("movements.searchPlaceholder")}
-                        prefix={<SearchOutlined style={{ color: "rgba(0,0,0,0.25)" }} />}
+                        prefix={<SearchOutlined style={{ color: token.colorTextQuaternary }} />}
                         value={filters.description ?? ""}
                         onChange={(e) => handleChange("description", e.target.value)}
                         allowClear

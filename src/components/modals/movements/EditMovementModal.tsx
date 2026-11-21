@@ -8,10 +8,13 @@ import type { Movement } from "@/models/Movement";
 
 interface EditMovementModalProps {
   movement: Movement;
+  /** Trigger at least 44x44px for touch layouts. */
+  touch?: boolean;
 }
 
 export default function EditMovementModal({
   movement,
+  touch = false,
 }: EditMovementModalProps) {
   const { t } = useTranslation();
   const [modalOpen, setModalOpen] = useState(false);
@@ -45,6 +48,7 @@ export default function EditMovementModal({
           borderRadius: 8,
           padding: "4px 8px",
           fontSize: 18,
+          ...(touch ? { minWidth: 44, minHeight: 44 } : {}),
         }}
         title={t("movements.modal.editTooltip")}
         aria-label={t("movements.modal.editTooltip")}

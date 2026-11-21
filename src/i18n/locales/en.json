@@ -375,6 +375,8 @@
     "current": "Current",
     "historical": "Historical",
     "filters": "Filters",
+    "filtersActive": "Filters · {{count}}",
+    "clearFilters": "Clear filters",
     "emptyState": {
       "title": "Ready to start?",
       "subtitle": "You haven't logged any movement yet. Add your first one to start tracking your finances.",
@@ -402,8 +404,6 @@
     "columnDate": "Date",
     "columnCategory": "Category",
     "columnBank": "Bank",
-    "columnGroup": "Group",
-    "columnLoadedBy": "Loaded by",
     "columnType": "Type",
     "columnDescription": "Description",
     "columnInstallments": "Installments",
@@ -411,13 +411,15 @@
     "columnActions": "Actions",
     "noMovements": "No movements",
     "noCategoryOption": "No category",
-    "deleteConfirmTitle": "Are you sure you want to delete the movement?",
-    "yes": "Yes",
-    "no": "No",
-    "deleteTooltip": "Delete the movement",
+    "deleteConfirmTitle": "Delete this movement?",
+    "deleteConfirmDescription": "You'll be able to undo it for a few seconds.",
+    "deleteConfirmOk": "Delete",
+    "cancel": "Cancel",
+    "moreActions": "More actions",
     "installmentsTag": "{{installments}} installments",
     "repeat": {
       "tooltip": "Repeat with today's date",
+      "label": "Repeat",
       "success": "Movement repeated",
       "error": "Could not repeat the movement"
     },
@@ -434,6 +436,8 @@
     },
     "bulk": {
       "selectRowAriaLabel": "Select movement",
+      "selectAllAriaLabel": "Select all movements on this page",
+      "selectAll": "Select all",
       "selectedCount": "{{count}} selected",
       "categorizeButton": "Categorize",
       "deleteButton": "Delete",
@@ -514,7 +518,7 @@
       }
     },
     "modal": {
-      "movementButton": "Movement",
+      "movementButton": "Add movement",
       "addTitle": "Add Movement",
       "confirmImport": "Import",
       "confirmAdd": "Add",
@@ -1019,7 +1023,7 @@
         "text1": "Movements are the heart of the app. Every time you spend money, you can record it to keep detailed track of your finances.",
         "list1": [
           "Go to the \"Movements\" section from the menu",
-          "Click the \"Movement\" button to add a new expense",
+          "Click the \"Add movement\" button to add a new expense",
           "Fill in the details: amount, currency, bank, payment type, date, description and category",
           "You can also bulk-import movements from the import tab of the same form",
           "Expenses appear in the list sorted by date",
