@@ -9,20 +9,79 @@ import {
   LineChart,
   ResponsiveContainer,
   Tooltip,
+  usePlotArea,
+  useXAxisScale,
+  useYAxisScale,
   XAxis,
   YAxis,
 } from "recharts";
-
-type LineLabelProps = { x?: number | string; y?: number | string; index?: number };
 import { useBalanceMonthlyEvolution } from "@/apis/hooks/useBalance";
 import AnnualEvolutionFilters from "@/components/home/AnnualEvolutionFilters";
 import ChartDataTable, { ChartViewToggle } from "@/components/home/ChartDataTable";
-import { lastValueIndex } from "@/utils/chartLabels";
+import { lastValueIndex, spreadLabelPositions } from "@/utils/chartLabels";
 import { getChartColors, getChartTheme } from "@/utils/chartTheme";
 import { formatAmount } from "@/utils/formatAmount";
 import { useLocalStorage } from "@/utils/useLocalStorage";
 
 const SELECTED_CURRENCIES_STORAGE_KEY = "annualEvolution.selectedCurrencies";
+
+const LABEL_MIN_GAP = 14;
+
+type EndLabelSeries = { key: string; name: string; color: string };
+
+/**
+ * End-of-line series names, spread vertically so near-equal end values do not overprint.
+ * Labels that no longer fit in the plot are dropped; the legend still names every series.
+ */
+function EndLabels({
+  series,
+  rows,
+}: {
+  series: EndLabelSeries[];
+  rows: Record<string, unknown>[];
+}) {
+  const xScale = useXAxisScale();
+  const yScale = useYAxisScale();
+  const area = usePlotArea();
+  if (!xScale || !yScale || !area) return null;
+
+  const points = series.flatMap((line) => {
+    const idx = lastValueIndex(rows, line.key);
+    if (idx < 0) return [];
+    const x = xScale(rows[idx].month);
+    const y = yScale(rows[idx][line.key]);
+    return x === undefined || y === undefined ? [] : [{ line, x, y }];
+  });
+  const bottom = area.y + area.height;
+  const ys = spreadLabelPositions(
+    points.map((p) => p.y),
+    LABEL_MIN_GAP,
+    area.y,
+    bottom,
+  );
+
+  return (
+    <g>
+      {points.map(({ line, x, y }, i) =>
+        ys[i] > bottom ? null : (
+          <g key={line.key} data-testid="end-label" data-y={ys[i]}>
+            {Math.abs(ys[i] - y) > 1 && (
+              <line x1={x + 3} y1={y} x2={x + 7} y2={ys[i]} stroke={line.color} strokeWidth={1} />
+            )}
+            <text
+              x={x + 8}
+              y={ys[i]}
+              dominantBaseline="central"
+              style={{ fontSize: 12, fill: line.color, fontFamily: "inherit" }}
+            >
+              {line.name}
+            </text>
+          </g>
+        ),
+      )}
+    </g>
+  );
+}
 
 type Props = {
   year: number;
@@ -185,36 +244,20 @@ export default function AnnualEvolution({ year }: Props) {
                 }
               />
               <Legend formatter={chartTheme.legendFormatter} />
-              {series.map((line) => {
-                const lastIdx = lastValueIndex(chartData, line.key);
-                return (
-                  <Line
-                    key={line.key}
-                    type="monotone"
-                    dataKey={line.key}
-                    name={line.name}
-                    stroke={line.color}
-                    strokeWidth={2}
-                    strokeDasharray={line.dashed ? "5 5" : undefined}
-                    dot={{ r: 3 }}
-                    activeDot={{ r: 6 }}
-                    label={({ x, y, index }: LineLabelProps) =>
-                      index === lastIdx ? (
-                        <text
-                          x={Number(x) + 8}
-                          y={y}
-                          dominantBaseline="central"
-                          style={{ fontSize: 12, fill: line.color, fontFamily: "inherit" }}
-                        >
-                          {line.name}
-                        </text>
-                      ) : (
-                        <g />
-                      )
-                    }
-                  />
-                );
-              })}
+              {series.map((line) => (
+                <Line
+                  key={line.key}
+                  type="monotone"
+                  dataKey={line.key}
+                  name={line.name}
+                  stroke={line.color}
+                  strokeWidth={2}
+                  strokeDasharray={line.dashed ? "5 5" : undefined}
+                  dot={{ r: 3 }}
+                  activeDot={{ r: 6 }}
+                />
+              ))}
+              <EndLabels series={series} rows={chartData} />
             </LineChart>
           </ResponsiveContainer>
           </div>

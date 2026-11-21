@@ -14,6 +14,10 @@ export const rechartsStub = {
   Line: ({ dataKey, stroke }: { dataKey: string; stroke?: string }) => (
     <i data-testid={`line-${dataKey}`} data-stroke={stroke} />
   ),
+  // Fixed fake geometry: y = 300 - value / 10, so series with small values end close together.
+  usePlotArea: () => ({ x: 0, y: 0, width: 500, height: 300 }),
+  useXAxisScale: () => () => 400,
+  useYAxisScale: () => (v: number) => 300 - v / 10,
   CartesianGrid: () => null,
   ReferenceLine: () => null,
   XAxis: () => null,

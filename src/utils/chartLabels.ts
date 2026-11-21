@@ -19,3 +19,29 @@ export function lastValueIndex(
   }
   return -1;
 }
+
+/**
+ * Moves label y positions apart so none is closer than `minGap`, keeping their order.
+ * Results line up with the input. When they cannot all fit in [min, max] the lowest ones
+ * overflow past `max` (the caller hides those).
+ */
+export function spreadLabelPositions(
+  ys: number[],
+  minGap: number,
+  min: number,
+  max: number,
+): number[] {
+  const order = ys.map((_, i) => i).sort((a, b) => ys[a] - ys[b] || a - b);
+  const out = [...ys];
+  let limit = max;
+  for (let k = order.length - 1; k >= 0; k--) {
+    out[order[k]] = Math.min(ys[order[k]], limit);
+    limit = out[order[k]] - minGap;
+  }
+  let floor = min;
+  for (const i of order) {
+    out[i] = Math.max(out[i], floor);
+    floor = out[i] + minGap;
+  }
+  return out;
+}

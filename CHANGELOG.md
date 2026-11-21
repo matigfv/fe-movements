@@ -38,6 +38,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   backend recategoriza otros movimientos del mismo comercio y la lista los muestra al toque.
 
 ### Fixed
+- Los montos de los KPI usan el mismo formato es-AR que el resto del dashboard ("EUR 5.018,05")
+  (versión 2.16.1).
+- Una categoría mantiene un único color en Top Categorías y en la torta (versión 2.16.1).
+- Las etiquetas al final de las líneas de la evolución anual ya no se superponen: se separan
+  verticalmente y las que no entran quedan en la leyenda (versión 2.16.1).
 - El `$` fijo en gráficos, KPIs, deltas y la línea de USD se reemplazó por el código real de la
   moneda (los montos se leen como "EUR 50.000").
 - Tocar dos veces **Agregar** (o **Guardar** al editar) creaba el movimiento dos veces: el botón

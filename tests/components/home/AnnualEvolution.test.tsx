@@ -174,6 +174,20 @@ describe("AnnualEvolution - accessibility", () => {
   });
 });
 
+describe("AnnualEvolution - end labels", () => {
+  it("spreads series names whose end values are close so they do not overlap", async () => {
+    window.localStorage.clear();
+    renderWithProviders(<AnnualEvolution year={2026} />);
+
+    const labels = await screen.findAllByTestId("end-label");
+    const ys = labels.map((l) => Number(l.getAttribute("data-y"))).sort((a, b) => a - b);
+    expect(labels).toHaveLength(4);
+    ys.slice(1).forEach((y, i) => expect(y - ys[i]).toBeGreaterThanOrEqual(14));
+    ys.forEach((y) => expect(y).toBeLessThanOrEqual(300));
+    expect(labels.map((l) => l.textContent)).toContain("USD - Ahorro");
+  });
+});
+
 describe("AnnualEvolution - theme colors", () => {
   const strokeUnder = async (algorithm: typeof theme.darkAlgorithm) => {
     const { unmount } = renderWithProviders(
