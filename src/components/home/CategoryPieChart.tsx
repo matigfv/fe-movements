@@ -15,7 +15,7 @@ import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { getChartColors, getChartTheme } from "@/utils/chartTheme";
 import ChartDataTable, { ChartViewToggle } from "@/components/home/ChartDataTable";
-import { getCategoryColor } from "@/utils/categoryColor";
+import { buildCategoryColorMap } from "@/utils/categoryColor";
 import { sliceLabel } from "@/utils/chartLabels";
 import { formatAmount } from "@/utils/formatAmount";
 import type { BalanceFilters } from "@/models/BalanceFilters";
@@ -40,7 +40,10 @@ export default function CategoryPieChart({
   const { t } = useTranslation();
   const [showTable, setShowTable] = useState(false);
 
-  const colors = getChartColors(token);
+  const colorMap = buildCategoryColorMap(
+    data.map((d) => d.name),
+    getChartColors(token),
+  );
   const chartTheme = getChartTheme(token);
 
   const total = useMemo(
@@ -170,7 +173,7 @@ export default function CategoryPieChart({
             }}
           >
             {data.map((item) => (
-              <Cell key={item.name} fill={getCategoryColor(item.name, colors)} />
+              <Cell key={item.name} fill={colorMap[item.name]} />
             ))}
           </Pie>
           {/* Total central */}

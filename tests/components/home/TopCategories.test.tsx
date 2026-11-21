@@ -8,7 +8,7 @@ import "dayjs/locale/es";
 import { theme } from "antd";
 import TopCategories from "@/components/home/TopCategories";
 import { getChartColors } from "@/utils/chartTheme";
-import { getCategoryColor } from "@/utils/categoryColor";
+import { buildCategoryColorMap } from "@/utils/categoryColor";
 import type { BalanceByCategory } from "@/models/BalanceByCategory";
 
 const server = setupServer();
@@ -211,9 +211,12 @@ describe("TopCategories", () => {
       return el.style.backgroundColor;
     };
     const names = ["Vivienda", "Alimentación", "Transporte", "Entretenimiento", "Salud"];
+    // Same map the donut builds from the full list (6 categories, including Educación).
+    const map = buildCategoryColorMap([...names, "Educación"], palette);
+    expect(new Set(names.map((n) => map[n])).size).toBe(5);
     items.forEach((li, i) => {
       const dot = li.querySelector<HTMLElement>("div > div > div");
-      expect(dot?.style.backgroundColor).toBe(normalize(getCategoryColor(names[i], palette)));
+      expect(dot?.style.backgroundColor).toBe(normalize(map[names[i]]));
     });
   });
 

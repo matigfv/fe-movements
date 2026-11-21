@@ -5,7 +5,7 @@ import { describe, it, expect, vi } from "vitest";
 import CategoryPieChart from "@/components/home/CategoryPieChart";
 import { CurrencyEnum } from "@/enums/CurrencyEnum";
 import { getChartColors } from "@/utils/chartTheme";
-import { getCategoryColor } from "@/utils/categoryColor";
+import { buildCategoryColorMap } from "@/utils/categoryColor";
 
 vi.mock("recharts", async () => (await import("./chartTestMocks")).rechartsStub);
 
@@ -143,10 +143,11 @@ describe("CategoryPieChart - stable category colors", () => {
     const colors = getChartColors(theme.getDesignToken());
     const names = ["Viaje", "Transporte", "Hogar"];
 
-    expect(fillsFor(names)).toEqual(names.map((n) => getCategoryColor(n, colors)));
-    expect(fillsFor([...names].reverse())).toEqual(
-      [...names].reverse().map((n) => getCategoryColor(n, colors)),
-    );
+    const map = buildCategoryColorMap(names, colors);
+
+    expect(fillsFor(names)).toEqual(names.map((n) => map[n]));
+    expect(fillsFor([...names].reverse())).toEqual([...names].reverse().map((n) => map[n]));
+    expect(new Set(fillsFor(names)).size).toBe(names.length);
   });
 });
 
@@ -179,10 +180,10 @@ describe("CategoryPieChart - theme colors", () => {
     const darkFills = fillsUnder(theme.darkAlgorithm);
 
     expect(lightFills).toEqual(
-      ["Hogar", "Ocio"].map((n) => getCategoryColor(n, getChartColors(light))),
+      ["Hogar", "Ocio"].map((n) => buildCategoryColorMap(["Hogar", "Ocio"], getChartColors(light))[n]),
     );
     expect(darkFills).toEqual(
-      ["Hogar", "Ocio"].map((n) => getCategoryColor(n, getChartColors(dark))),
+      ["Hogar", "Ocio"].map((n) => buildCategoryColorMap(["Hogar", "Ocio"], getChartColors(dark))[n]),
     );
     expect(darkFills).not.toEqual(lightFills);
   });

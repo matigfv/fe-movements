@@ -1,7 +1,12 @@
-// Maps a category name to a palette color so the same category looks the same in every chart.
-// shortcut: plain string hash modulo palette size, two names can collide; upgrade if the backend ever sends a category color.
-export const getCategoryColor = (name: string, palette: string[]): string => {
-  let hash = 0;
-  for (let i = 0; i < name.length; i++) hash = (hash * 31 + name.charCodeAt(i)) >>> 0;
-  return palette[hash % palette.length];
-};
+// Assigns palette colors by position in the name-sorted list: stable for a given set of names,
+// independent of input order, and collision-free until there are more names than colors.
+// shortcut: a name can change color when the set of names changes (e.g. other filters), upgrade if the backend ever sends a category color.
+export const buildCategoryColorMap = (
+  names: string[],
+  palette: string[],
+): Record<string, string> =>
+  Object.fromEntries(
+    [...new Set(names)]
+      .sort((a, b) => a.localeCompare(b))
+      .map((name, i) => [name, palette[i % palette.length]]),
+  );

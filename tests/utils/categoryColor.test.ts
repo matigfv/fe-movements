@@ -1,36 +1,38 @@
 import { describe, it, expect } from "vitest";
-import { getCategoryColor } from "@/utils/categoryColor";
+import { buildCategoryColorMap } from "@/utils/categoryColor";
 
-const palette = ["#a", "#b", "#c", "#d", "#e", "#f"];
+const palette = ["#a", "#b", "#c", "#d", "#e", "#f", "#g", "#h"];
 
-describe("getCategoryColor", () => {
-  it("is deterministic for the same name", () => {
-    expect(getCategoryColor("Viaje", palette)).toBe(getCategoryColor("Viaje", palette));
+describe("buildCategoryColorMap", () => {
+  it("assigns distinct colors to up to 8 names", () => {
+    const names = ["Viaje", "Transporte", "Hogar", "Ocio", "Salud", "Comida", "Ropa", "Gym"];
+    const map = buildCategoryColorMap(names, palette);
+    expect(new Set(Object.values(map)).size).toBe(8);
   });
 
-  it("always returns a color from the palette", () => {
-    for (const name of ["Viaje", "Transporte", "Hogar", "Ocio", "", "Ñandú ☕", "x".repeat(500)]) {
-      expect(palette).toContain(getCategoryColor(name, palette));
-    }
-  });
-
-  it("does not depend on order or on which other names exist", () => {
-    const alone = getCategoryColor("Transporte", palette);
+  it("does not depend on input order", () => {
     const names = ["Viaje", "Hogar", "Transporte"];
-    expect(names.map((n) => getCategoryColor(n, palette))[2]).toBe(alone);
-    expect([...names].reverse().map((n) => getCategoryColor(n, palette))[0]).toBe(alone);
-  });
-
-  it("spreads different names over more than one color", () => {
-    const used = new Set(
-      ["Viaje", "Transporte", "Hogar", "Ocio", "Salud", "Comida"].map((n) =>
-        getCategoryColor(n, palette),
-      ),
+    expect(buildCategoryColorMap([...names].reverse(), palette)).toEqual(
+      buildCategoryColorMap(names, palette),
     );
-    expect(used.size).toBeGreaterThan(1);
   });
 
-  it("handles an empty name", () => {
-    expect(palette).toContain(getCategoryColor("", palette));
+  it("cycles past the palette size without throwing", () => {
+    const names = Array.from({ length: 12 }, (_, i) => `Cat ${String(i).padStart(2, "0")}`);
+    const map = buildCategoryColorMap(names, palette);
+    expect(Object.keys(map)).toHaveLength(12);
+    names.forEach((n) => expect(palette).toContain(map[n]));
+  });
+
+  it("returns an empty map for no names", () => {
+    expect(buildCategoryColorMap([], palette)).toEqual({});
+  });
+
+  it("regression: the names that collided in the live app get 5 distinct colors", () => {
+    const map = buildCategoryColorMap(
+      ["Viaje", "Transporte", "Ocio", "Hogar", "Supermercado"],
+      palette,
+    );
+    expect(new Set(Object.values(map)).size).toBe(5);
   });
 });

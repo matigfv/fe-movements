@@ -10,7 +10,7 @@ import { useCurrency } from "@/apis/hooks/useCurrency";
 import { formatAmount } from "@/utils/formatAmount";
 import { CurrencyEnum } from "@/enums/CurrencyEnum";
 import { getChartColors } from "@/utils/chartTheme";
-import { getCategoryColor } from "@/utils/categoryColor";
+import { buildCategoryColorMap } from "@/utils/categoryColor";
 
 const { Text } = Typography;
 
@@ -49,11 +49,15 @@ export default function TopCategories() {
   const topCategories = useMemo(() => {
     const sorted = [...data].sort((a, b) => b.total - a.total).slice(0, 5);
     const total = sorted.reduce((sum, item) => sum + item.total, 0);
-    const colors = getChartColors(token);
+    // Map built from the full list (not the top 5) so colors match the donut.
+    const colorMap = buildCategoryColorMap(
+      data.map((d) => d.category),
+      getChartColors(token),
+    );
     return sorted.map((item) => ({
       ...item,
       percentage: total > 0 ? ((item.total / total) * 100).toFixed(1) : "0.0",
-      color: getCategoryColor(item.category, colors),
+      color: colorMap[item.category],
     }));
   }, [data, token]);
 
