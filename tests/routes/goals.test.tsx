@@ -29,6 +29,14 @@ vi.mock("@/components/goals/GoalFormModal", () => ({
   EditGoalModal: () => <div data-testid="edit-goal-modal">EditGoalModal</div>,
 }));
 
+vi.mock("@/components/home/StreakBanner", () => ({
+  default: () => <div data-testid="streak-banner">StreakBanner</div>,
+}));
+
+vi.mock("@/components/home/BadgesPanel", () => ({
+  default: () => <div data-testid="badges-panel">BadgesPanel</div>,
+}));
+
 const goal: GoalRecord = {
   id: 1,
   workspaceId: 10,
@@ -109,5 +117,15 @@ describe("Goals route — borrado deshacible", () => {
     await user.click(await screen.findByRole("button", { name: "Eliminar" }));
 
     expect(container.querySelector('[style*="opacity: 0.45"]')).toBeInTheDocument();
+  });
+});
+
+describe("Goals route — gamificación", () => {
+  it("muestra la racha y los badges junto a las metas", () => {
+    renderGoals();
+
+    expect(screen.getByTestId("streak-banner")).toBeInTheDocument();
+    expect(screen.getByTestId("badges-panel")).toBeInTheDocument();
+    expect(screen.getByText("Viaje a Bariloche")).toBeInTheDocument();
   });
 });

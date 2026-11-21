@@ -351,6 +351,7 @@
       "title": "Budgets on alert",
       "viewAllButton": "View all"
     },
+    "goalsLink": "See goals, streak and badges",
     "streak": {
       "active_one": "{{count}} day in a row logging movements",
       "active_other": "{{count}} days in a row logging movements",

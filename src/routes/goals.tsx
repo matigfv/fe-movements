@@ -13,6 +13,8 @@ import {
   ContributeGoalModal,
   EditGoalModal,
 } from "@/components/goals/GoalFormModal";
+import StreakBanner from "@/components/home/StreakBanner";
+import BadgesPanel from "@/components/home/BadgesPanel";
 import type { GoalRecord } from "@/models/Goal";
 import { useUndoableDelete } from "@/utils/useUndoableDelete";
 
@@ -63,6 +65,9 @@ function RouteComponent() {
         </Flex>
       </div>
 
+      {/* Streak: hides itself when there is nothing to show */}
+      <StreakBanner />
+
       {/* Goal list */}
       {!workspaceId ? (
         <Flex justify="center" style={{ padding: 60 }}>
@@ -99,6 +104,9 @@ function RouteComponent() {
           ))}
         </Row>
       )}
+
+      {/* Badges: hides itself when there are none */}
+      <BadgesPanel />
 
       {editingGoal && (
         <EditGoalModal open={!!editingGoal} onClose={() => setEditingGoal(null)} goal={editingGoal} />

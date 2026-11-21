@@ -185,24 +185,31 @@ describe("Index Route (Home Unificado)", () => {
     ).not.toBeInTheDocument();
   });
 
-  it("ocupa todo el ancho con Metas de ahorro cuando no hay insights de gasto", async () => {
+  it("muestra un link discreto a /goals y no renderiza metas, racha ni badges", async () => {
     server.use(
-      http.get("*/settings/defaults/DEFAULT_WORKSPACE", () =>
-        HttpResponse.json({ value: "ws-1" }),
-      ),
       http.get("*/insights", () => HttpResponse.json([])),
-      http.get("*/goals*", () => HttpResponse.json([])),
+      http.get("*/goals*", () =>
+        HttpResponse.json([
+          {
+            id: 1,
+            workspaceId: 1,
+            name: "Viaje",
+            targetAmount: 100,
+            currentAmount: 10,
+            currency: { symbol: "ARS" },
+            targetDate: null,
+            progressPercent: 10,
+            createdAt: "2026-01-01T00:00:00",
+          },
+        ]),
+      ),
     );
 
     const RouteComponent = IndexRoute.options.component!;
     renderWithRouter(<RouteComponent />);
 
-    await waitFor(() => {
-      expect(screen.getByText("Metas de ahorro")).toBeInTheDocument();
-    });
-
-    const goalsCard = screen.getByText("Metas de ahorro").closest(".ant-col");
-    expect(goalsCard).toHaveClass("ant-col-md-24");
-    expect(goalsCard?.className).not.toMatch(/ant-col-md-12\b/);
+    expect(await screen.findByText("Ver metas, racha y logros")).toBeInTheDocument();
+    expect(screen.queryByText("Metas de ahorro")).not.toBeInTheDocument();
+    expect(screen.queryByText("Badges")).not.toBeInTheDocument();
   });
 });

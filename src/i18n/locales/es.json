@@ -351,6 +351,7 @@
       "title": "Presupuestos en alerta",
       "viewAllButton": "Ver todos"
     },
+    "goalsLink": "Ver metas, racha y logros",
     "streak": {
       "active_one": "{{count}} día seguido registrando movimientos",
       "active_other": "{{count}} días seguidos registrando movimientos",

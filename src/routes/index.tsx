@@ -1,13 +1,11 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { Col, Divider, Grid, Row, Skeleton, Typography } from "antd";
+import { useTranslation } from "react-i18next";
 import { protectedRouteGuard } from "@/apis/auth/protectedRouteGuard";
 import { useCurrentUser } from "@/apis/hooks/useCurrentUser";
 import { RoleEnum } from "@/enums/RoleEnum";
 import MonthlySummary from "@/components/home/MonthlySummary";
 import InsightsPanel from "@/components/home/InsightsPanel";
-import GoalsPanel from "@/components/home/GoalsPanel";
-import BadgesPanel from "@/components/home/BadgesPanel";
-import StreakBanner from "@/components/home/StreakBanner";
 import TopCategories from "@/components/home/TopCategories";
 import FirstMovementCta from "@/components/home/FirstMovementCta";
 import BalanceFiltersCollapsible from "@/components/home/BalanceFiltersCollapsible";
@@ -34,7 +32,7 @@ function ChartSkeleton() {
   );
 }
 
-const { Title } = Typography;
+const { Title, Link } = Typography;
 const { useBreakpoint } = Grid;
 
 export const Route = createFileRoute("/")({
@@ -53,10 +51,9 @@ function RouteComponent() {
   const screens = useBreakpoint();
   const isMobile = !screens.md;
   const { data: currentUser } = useCurrentUser();
+  const { t } = useTranslation();
+  const navigate = useNavigate();
   const displayName = currentUser ? getUserDisplayName(currentUser) : null;
-
-  // Controla si InsightsPanel ocupa la mitad del ancho o si GoalsPanel toma todo el largo
-  const [insightsVisible, setInsightsVisible] = useState(true);
 
   // Filtros para gráficos
   const [filters, setFilters] = useState<BalanceFilters>({
@@ -125,9 +122,6 @@ function RouteComponent() {
         Bienvenido{displayName ? `, ${displayName}` : ""}
       </Title>
 
-      {/* 1.1. Racha de registro — refuerza el hábito diario */}
-      <StreakBanner />
-
       {/* 1.5. CTA para cargar el primer movimiento — solo cuando no hay ningún gasto este año */}
       {!fetchingCategory && categoryData.length === 0 && <FirstMovementCta />}
 
@@ -136,18 +130,10 @@ function RouteComponent() {
         <MonthlySummary />
       </div>
 
-      {/* 3. Insights de gasto y metas de ahorro, lado a lado */}
-      <Row gutter={[20, 20]} align="stretch" style={{ marginBottom: 24 }}>
-        <Col xs={24} md={insightsVisible ? 12 : 0}>
-          <InsightsPanel onVisibilityChange={setInsightsVisible} />
-        </Col>
-        <Col xs={24} md={insightsVisible ? 12 : 24}>
-          <GoalsPanel />
-        </Col>
-      </Row>
-
-      {/* 3.5. Badges de presupuesto cumplido — el propio componente se oculta si todavía no hay ninguno */}
-      <BadgesPanel />
+      {/* 3. Insights de gasto — el propio componente se oculta si no hay desvíos */}
+      <div style={{ marginBottom: 24 }}>
+        <InsightsPanel />
+      </div>
 
       {/* 4-8. Top categorías, filtros y gráficos — ocultos por completo si no hay gastos por categoría */}
       {(fetchingCategory || categoryData.length > 0) && (
@@ -185,6 +171,13 @@ function RouteComponent() {
           </Suspense>
         </>
       )}
+
+      {/* Link discreto a metas, racha y logros (viven en /goals) */}
+      <div style={{ marginTop: 24 }}>
+        <Link type="secondary" onClick={() => navigate({ to: "/goals" })}>
+          {t("home.goalsLink")}
+        </Link>
+      </div>
     </div>
   );
 }
