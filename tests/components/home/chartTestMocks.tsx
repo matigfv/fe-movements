@@ -9,10 +9,13 @@ export const rechartsStub = {
   PieChart: passthrough,
   LineChart: passthrough,
   Pie: passthrough,
-  Cell: () => null,
+  Cell: ({ fill }: { fill?: string }) => <i data-testid="cell" data-fill={fill} />,
   Legend: () => null,
-  Line: () => null,
+  Line: ({ dataKey, stroke }: { dataKey: string; stroke?: string }) => (
+    <i data-testid={`line-${dataKey}`} data-stroke={stroke} />
+  ),
   CartesianGrid: () => null,
+  ReferenceLine: () => null,
   XAxis: () => null,
   YAxis: () => null,
   Tooltip: ({

@@ -14,21 +14,11 @@ import {
 } from "recharts";
 import { useBalanceMonthlyEvolution } from "@/apis/hooks/useBalance";
 import AnnualEvolutionFilters from "@/components/home/AnnualEvolutionFilters";
+import { getChartColors, getChartTheme } from "@/utils/chartTheme";
 import { formatAmount } from "@/utils/formatAmount";
 import { useLocalStorage } from "@/utils/useLocalStorage";
 
 const SELECTED_CURRENCIES_STORAGE_KEY = "annualEvolution.selectedCurrencies";
-
-const CHART_COLORS = [
-  "#6366f1",
-  "#22c55e",
-  "#f59e0b",
-  "#ef4444",
-  "#3b82f6",
-  "#ec4899",
-  "#14b8a6",
-  "#f97316",
-];
 
 type Props = {
   year: number;
@@ -36,6 +26,8 @@ type Props = {
 
 export default function AnnualEvolution({ year }: Props) {
   const { token } = theme.useToken();
+  const colors = getChartColors(token);
+  const chartTheme = getChartTheme(token);
   const { t } = useTranslation();
   const MONTH_LABELS = t("home.monthsShort", { returnObjects: true }) as string[];
   // Los datos de evolución se obtienen del workspace activo del usuario (DEFAULT_WORKSPACE)
@@ -112,11 +104,12 @@ export default function AnnualEvolution({ year }: Props) {
             >
               <CartesianGrid
                 strokeDasharray="3 3"
-                stroke={token.colorBorderSecondary}
+                stroke={chartTheme.grid}
               />
-              <XAxis dataKey="month" tick={{ fontSize: 12 }} />
-              <YAxis tick={{ fontSize: 12 }} width={70} />
+              <XAxis dataKey="month" tick={chartTheme.tick} stroke={chartTheme.grid} />
+              <YAxis tick={chartTheme.tick} stroke={chartTheme.grid} width={70} />
               <Tooltip
+                {...chartTheme.tooltip}
                 formatter={(val, _name, item) =>
                   formatAmount(
                     Number(val ?? 0),
@@ -125,7 +118,7 @@ export default function AnnualEvolution({ year }: Props) {
                   )
                 }
               />
-              <Legend />
+              <Legend formatter={chartTheme.legendFormatter} />
               {currencies.flatMap((currency, idx) =>
                 selectedCurrencies.includes(currency)
                   ? [
@@ -134,7 +127,7 @@ export default function AnnualEvolution({ year }: Props) {
                         type="monotone"
                         dataKey={`${currency}_spent`}
                         name={t("home.annualEvolutionExpenseLegend", { currency })}
-                        stroke={CHART_COLORS[idx % CHART_COLORS.length]}
+                        stroke={colors[idx % colors.length]}
                         strokeWidth={2}
                         dot={{ r: 3 }}
                         activeDot={{ r: 6 }}
@@ -144,7 +137,7 @@ export default function AnnualEvolution({ year }: Props) {
                         type="monotone"
                         dataKey={`${currency}_savings`}
                         name={t("home.annualEvolutionSavingsLegend", { currency })}
-                        stroke={CHART_COLORS[idx % CHART_COLORS.length]}
+                        stroke={colors[idx % colors.length]}
                         strokeWidth={2}
                         strokeDasharray="5 5"
                         dot={{ r: 3 }}

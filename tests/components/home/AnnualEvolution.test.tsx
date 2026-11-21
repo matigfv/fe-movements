@@ -1,5 +1,6 @@
 import type { ReactElement } from "react";
 import { render, screen, waitFor } from "@testing-library/react";
+import { ConfigProvider, theme } from "antd";
 import userEvent from "@testing-library/user-event";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import {
@@ -15,6 +16,7 @@ import {
 import { http, HttpResponse } from "msw";
 import { setupServer } from "msw/node";
 import AnnualEvolution from "@/components/home/AnnualEvolution";
+import { getChartColors } from "@/utils/chartTheme";
 import type { MonthlyEvolutionRecord } from "@/models/Balance";
 
 vi.mock("recharts", async () => (await import("./chartTestMocks")).rechartsStub);
@@ -121,5 +123,34 @@ describe("AnnualEvolution - currency symbol", () => {
 
     const tip = await screen.findByTestId("tooltip");
     expect(tip.textContent).toBe("EUR 1.234");
+  });
+});
+
+describe("AnnualEvolution - theme colors", () => {
+  const strokeUnder = async (algorithm: typeof theme.darkAlgorithm) => {
+    const { unmount } = renderWithProviders(
+      <ConfigProvider theme={{ algorithm }}>
+        <AnnualEvolution year={2026} />
+      </ConfigProvider>,
+    );
+    const spent = (await screen.findByTestId("line-ARS_spent")).getAttribute("data-stroke");
+    const savings = screen.getByTestId("line-ARS_savings").getAttribute("data-stroke");
+    unmount();
+    return { spent, savings };
+  };
+
+  it("series strokes come from the active theme tokens, in light and dark", async () => {
+    window.localStorage.clear();
+    const light = theme.getDesignToken({ algorithm: theme.defaultAlgorithm });
+    const dark = theme.getDesignToken({ algorithm: theme.darkAlgorithm });
+
+    const lightStroke = await strokeUnder(theme.defaultAlgorithm);
+    const darkStroke = await strokeUnder(theme.darkAlgorithm);
+
+    expect(lightStroke.spent).toBe(getChartColors(light)[0]);
+    expect(darkStroke.spent).toBe(getChartColors(dark)[0]);
+    expect(darkStroke.spent).not.toBe(lightStroke.spent);
+    // expense and savings of one currency keep the same hue (dash pattern tells them apart)
+    expect(darkStroke.savings).toBe(darkStroke.spent);
   });
 });

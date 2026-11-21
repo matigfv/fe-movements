@@ -1,7 +1,9 @@
 import { render, screen } from "@testing-library/react";
+import { ConfigProvider, theme } from "antd";
 import { describe, it, expect, vi } from "vitest";
 import CategoryPieChart from "@/components/home/CategoryPieChart";
 import { CurrencyEnum } from "@/enums/CurrencyEnum";
+import { getChartColors } from "@/utils/chartTheme";
 
 vi.mock("recharts", async () => (await import("./chartTestMocks")).rechartsStub);
 
@@ -55,5 +57,39 @@ describe("CategoryPieChart - currency symbol", () => {
     expect([...container.querySelectorAll("text")].map((n) => n.textContent)).toContain("EUR 1.234");
     expect(screen.getByTestId("tooltip").textContent).toContain("EUR 1.234");
     expect(container.textContent).not.toContain("$");
+  });
+});
+
+describe("CategoryPieChart - theme colors", () => {
+  const filters = {
+    currency: CurrencyEnum.ARS,
+    dates: [new Date(2026, 9, 1), new Date(2026, 9, 31)] as [Date, Date],
+  };
+
+  const fillsUnder = (algorithm: typeof theme.darkAlgorithm) => {
+    const { unmount } = render(
+      <ConfigProvider theme={{ algorithm }}>
+        <CategoryPieChart
+          data={[{ name: "Hogar", value: 10 }, { name: "Ocio", value: 5 }]}
+          isFetching={false}
+          filters={filters}
+        />
+      </ConfigProvider>,
+    );
+    const fills = screen.getAllByTestId("cell").map((c) => c.getAttribute("data-fill"));
+    unmount();
+    return fills;
+  };
+
+  it("slice fills come from the active theme tokens, in light and dark", () => {
+    const light = theme.getDesignToken({ algorithm: theme.defaultAlgorithm });
+    const dark = theme.getDesignToken({ algorithm: theme.darkAlgorithm });
+
+    const lightFills = fillsUnder(theme.defaultAlgorithm);
+    const darkFills = fillsUnder(theme.darkAlgorithm);
+
+    expect(lightFills).toEqual(getChartColors(light).slice(0, 2));
+    expect(darkFills).toEqual(getChartColors(dark).slice(0, 2));
+    expect(darkFills).not.toEqual(lightFills);
   });
 });

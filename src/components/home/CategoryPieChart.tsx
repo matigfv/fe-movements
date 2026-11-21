@@ -12,7 +12,7 @@ import dayjs from "dayjs";
 import "dayjs/locale/es";
 import { useMemo } from "react";
 import { useTranslation } from "react-i18next";
-import { CHART_COLORS } from "@/components/home/constants";
+import { getChartColors, getChartTheme } from "@/utils/chartTheme";
 import { formatAmount } from "@/utils/formatAmount";
 import type { BalanceFilters } from "@/models/BalanceFilters";
 
@@ -34,6 +34,9 @@ export default function CategoryPieChart({
 }: CategoryPieChartProps) {
   const { token } = theme.useToken();
   const { t } = useTranslation();
+
+  const colors = getChartColors(token);
+  const chartTheme = getChartTheme(token);
 
   const total = useMemo(
     () => data.reduce((sum, item) => sum + item.value, 0),
@@ -117,7 +120,7 @@ export default function CategoryPieChart({
             label={false}
           >
             {data.map((_, idx) => (
-              <Cell key={idx} fill={CHART_COLORS[idx % CHART_COLORS.length]} />
+              <Cell key={idx} fill={colors[idx % colors.length]} />
             ))}
           </Pie>
           {/* Total central */}
@@ -149,6 +152,7 @@ export default function CategoryPieChart({
             {formatAmount(total, filters.currency)}
           </text>
           <Tooltip
+            {...chartTheme.tooltip}
             formatter={(val, name) => {
               const pct =
                 total > 0 ? ((Number(val) / total) * 100).toFixed(1) : "0.0";
@@ -158,7 +162,7 @@ export default function CategoryPieChart({
               ];
             }}
           />
-          <Legend />
+          <Legend formatter={chartTheme.legendFormatter} />
         </PieChart>
       </ResponsiveContainer>
     </Card>

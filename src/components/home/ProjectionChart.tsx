@@ -14,12 +14,14 @@ import {
 } from "recharts";
 import { useProjection } from "@/apis/hooks/useProjection";
 import { useUserDefault } from "@/apis/hooks/useSettings";
+import { getChartTheme } from "@/utils/chartTheme";
 import { formatAmount } from "@/utils/formatAmount";
 
 const { Text } = Typography;
 
 export default function ProjectionChart() {
   const { token } = theme.useToken();
+  const chartTheme = getChartTheme(token);
   const { t } = useTranslation();
 
   const { data: defaultWorkspace } = useUserDefault("DEFAULT_WORKSPACE");
@@ -69,15 +71,19 @@ export default function ProjectionChart() {
           </Text>
           <ResponsiveContainer width="100%" height={280}>
             <LineChart data={chartData} margin={{ top: 4, right: 16, left: 0, bottom: 4 }}>
-              <CartesianGrid strokeDasharray="3 3" stroke={token.colorBorderSecondary} />
-              <XAxis dataKey="label" tick={{ fontSize: 12 }} />
+              <CartesianGrid strokeDasharray="3 3" stroke={chartTheme.grid} />
+              <XAxis dataKey="label" tick={chartTheme.tick} stroke={chartTheme.grid} />
               <YAxis
-                tick={{ fontSize: 12 }}
+                tick={chartTheme.tick}
+                stroke={chartTheme.grid}
                 width={80}
                 tickFormatter={(val) => formatAmount(Number(val), data.currency)}
               />
               <ReferenceLine y={0} stroke={token.colorBorder} />
-              <Tooltip formatter={(val) => formatAmount(Number(val ?? 0), data.currency)} />
+              <Tooltip
+                {...chartTheme.tooltip}
+                formatter={(val) => formatAmount(Number(val ?? 0), data.currency)}
+              />
               <Line
                 type="monotone"
                 dataKey="balance"

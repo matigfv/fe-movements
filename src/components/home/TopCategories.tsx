@@ -9,7 +9,7 @@ import { useUserDefault } from "@/apis/hooks/useSettings";
 import { useCurrency } from "@/apis/hooks/useCurrency";
 import { formatAmount } from "@/utils/formatAmount";
 import { CurrencyEnum } from "@/enums/CurrencyEnum";
-import { CHART_COLORS } from "@/components/home/constants";
+import { getChartColors } from "@/utils/chartTheme";
 
 const { Text } = Typography;
 
@@ -48,12 +48,13 @@ export default function TopCategories() {
   const topCategories = useMemo(() => {
     const sorted = [...data].sort((a, b) => b.total - a.total).slice(0, 5);
     const total = sorted.reduce((sum, item) => sum + item.total, 0);
+    const colors = getChartColors(token);
     return sorted.map((item, idx) => ({
       ...item,
       percentage: total > 0 ? ((item.total / total) * 100).toFixed(1) : "0.0",
-      color: CHART_COLORS[idx % CHART_COLORS.length],
+      color: colors[idx % colors.length],
     }));
-  }, [data]);
+  }, [data, token]);
 
   const contextLabel = (
     <Text type="secondary" style={{ fontSize: 12, fontWeight: 400, textTransform: "capitalize" }}>
