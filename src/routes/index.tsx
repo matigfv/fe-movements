@@ -113,12 +113,12 @@ function RouteComponent() {
     >
       {/* 1. Bienvenido, {nombre} */}
       <Title
-        level={isMobile ? 3 : 2}
+        level={3}
         className="fade-in-up"
         style={{
           margin: 0,
           fontWeight: 700,
-          marginBottom: isMobile ? 20 : 28,
+          marginBottom: isMobile ? 16 : 20,
           animationDelay: "0ms",
         }}
       >

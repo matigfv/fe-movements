@@ -7,7 +7,6 @@ import { useTranslation } from "react-i18next";
 import {
   Card,
   Col,
-  Divider,
   Flex,
   Row,
   Skeleton,
@@ -46,8 +45,8 @@ function DeltaBadge({ delta, label }: DeltaBadgeProps) {
 
   return (
     <Flex align="center" gap={4}>
-      <Icon style={{ color, fontSize: 11 }} />
-      <Text style={{ color, fontSize: 11 }}>
+      <Icon style={{ color, fontSize: 12 }} />
+      <Text style={{ color, fontSize: 12 }}>
         {sign}${formatted} {label}
       </Text>
     </Flex>
@@ -65,6 +64,7 @@ interface KpiCardProps {
   iconBg: string;
   loading: boolean;
   animationDelay: string;
+  hero?: boolean;
 }
 
 function KpiCard({
@@ -76,14 +76,16 @@ function KpiCard({
   iconBg,
   loading,
   animationDelay,
+  hero = false,
 }: KpiCardProps) {
   const { token } = theme.useToken();
   const isNegative = amount < 0;
   const valueColor = isNegative ? token.colorError : token.colorSuccess;
 
   return (
-    <Col xs={24} sm={12} lg={8}>
+    <Col xs={24} sm={hero ? 24 : 12} lg={hero ? 12 : 6}>
       <Card
+        data-testid={hero ? "kpi-hero" : undefined}
         loading={loading}
         className="fade-in-up"
         style={{
@@ -92,7 +94,7 @@ function KpiCard({
           height: "100%",
           animationDelay,
         }}
-        styles={{ body: { padding: "18px 20px" } }}
+        styles={{ body: { padding: hero ? "22px 24px" : "18px 20px" } }}
       >
         <Flex align="flex-start" gap={14}>
           <div
@@ -124,10 +126,11 @@ function KpiCard({
               precision={2}
               styles={{
                 content: {
-                  fontSize: 20,
-                  fontWeight: 700,
+                  fontSize: hero ? 34 : 18,
+                  fontWeight: hero ? 700 : 600,
                   color: valueColor,
                   lineHeight: 1.2,
+                  fontVariantNumeric: "tabular-nums",
                 },
               }}
               style={{ marginBottom: 4 }}
@@ -156,26 +159,6 @@ function CurrencyPanel({ data, loading }: CurrencyPanelProps) {
     <>
       <Row gutter={[16, 16]} style={{ marginBottom: 16 }}>
         <KpiCard
-          title={t("home.monthlySummary.incomeTitle")}
-          amount={totalIncome}
-          delta={vsPreviousMonth.incomeDelta}
-          deltaLabel={t("home.monthlySummary.deltaVsLastMonth")}
-          icon={<ArrowUpOutlined style={{ color: token.colorSuccess }} />}
-          iconBg={token.colorSuccessBg}
-          loading={loading}
-          animationDelay="60ms"
-        />
-        <KpiCard
-          title={t("home.monthlySummary.expenseTitle")}
-          amount={-totalSpent}
-          delta={-vsPreviousMonth.spentDelta}
-          deltaLabel={t("home.monthlySummary.deltaVsLastMonth")}
-          icon={<ArrowDownOutlined style={{ color: token.colorError }} />}
-          iconBg={token.colorErrorBg}
-          loading={loading}
-          animationDelay="120ms"
-        />
-        <KpiCard
           title={t("home.monthlySummary.differenceTitle")}
           amount={net}
           delta={vsPreviousMonth.incomeDelta - vsPreviousMonth.spentDelta}
@@ -188,6 +171,27 @@ function CurrencyPanel({ data, loading }: CurrencyPanelProps) {
             )
           }
           iconBg={net >= 0 ? token.colorSuccessBg : token.colorErrorBg}
+          loading={loading}
+          animationDelay="60ms"
+          hero
+        />
+        <KpiCard
+          title={t("home.monthlySummary.incomeTitle")}
+          amount={totalIncome}
+          delta={vsPreviousMonth.incomeDelta}
+          deltaLabel={t("home.monthlySummary.deltaVsLastMonth")}
+          icon={<ArrowUpOutlined style={{ color: token.colorSuccess }} />}
+          iconBg={token.colorSuccessBg}
+          loading={loading}
+          animationDelay="120ms"
+        />
+        <KpiCard
+          title={t("home.monthlySummary.expenseTitle")}
+          amount={-totalSpent}
+          delta={-vsPreviousMonth.spentDelta}
+          deltaLabel={t("home.monthlySummary.deltaVsLastMonth")}
+          icon={<ArrowDownOutlined style={{ color: token.colorError }} />}
+          iconBg={token.colorErrorBg}
           loading={loading}
           animationDelay="180ms"
         />
@@ -273,7 +277,7 @@ export default function MonthlySummary() {
         className="fade-in-up"
       >
         <Title
-          level={5}
+          level={4}
           style={{ margin: 0, fontWeight: 600, animationDelay: "0ms" }}
         >
           {t("home.monthlySummary.titlePrefix")}{" "}
@@ -292,7 +296,12 @@ export default function MonthlySummary() {
       {loading ? (
         <Row gutter={[16, 16]} style={{ marginBottom: 16 }}>
           {[60, 120, 180].map((delay) => (
-            <Col key={delay} xs={24} sm={12} lg={8}>
+            <Col
+              key={delay}
+              xs={24}
+              sm={delay === 60 ? 24 : 12}
+              lg={delay === 60 ? 12 : 6}
+            >
               <Card
                 loading
                 className="fade-in-up"
@@ -319,58 +328,51 @@ export default function MonthlySummary() {
         />
       )}
 
-      {/* Total unificado en USD */}
+      {/* Total unificado en USD — quiet subline, the KPIs above are the protagonists */}
       {totalUSD && !loading && (
-        <>
-          <Divider style={{ margin: "20px 0 14px" }} />
-          <Flex
-            align="center"
-            gap={6}
-            style={{ marginBottom: 6 }}
-            className="fade-in-up"
-          >
-            <Text
-              type="secondary"
-              style={{ fontSize: 11, letterSpacing: "0.06em", textTransform: "uppercase" }}
-            >
-              {t("home.monthlySummary.totalUsdLabel")}
+        <Flex
+          align="center"
+          gap="4px 20px"
+          wrap="wrap"
+          className="fade-in-up"
+          style={{ marginTop: 4, animationDelay: "60ms" }}
+        >
+          <Text type="secondary" style={{ fontSize: 12 }}>
+            {t("home.monthlySummary.totalUsdLabel")}
+          </Text>
+          <Flex align="center" gap={6}>
+            <ArrowUpOutlined style={{ color: token.colorSuccess, fontSize: 12 }} />
+            <Text type="secondary" style={{ fontSize: 12 }}>{t("home.monthlySummary.incomeLabel")}</Text>
+            <Text style={{ fontSize: 12, fontVariantNumeric: "tabular-nums" }}>
+              ${(totalUSD.totalIncome).toLocaleString("es-AR", { maximumFractionDigits: 2 })}
             </Text>
           </Flex>
-          <Flex gap={24} wrap="wrap" className="fade-in-up" style={{ animationDelay: "60ms" }}>
-            <Flex align="center" gap={6}>
-              <ArrowUpOutlined style={{ color: token.colorSuccess, fontSize: 12 }} />
-              <Text type="secondary" style={{ fontSize: 12 }}>{t("home.monthlySummary.incomeLabel")}</Text>
-              <Text strong style={{ fontSize: 13 }}>
-                ${(totalUSD.totalIncome).toLocaleString("es-AR", { maximumFractionDigits: 2 })}
-              </Text>
-            </Flex>
-            <Flex align="center" gap={6}>
-              <ArrowDownOutlined style={{ color: token.colorError, fontSize: 12 }} />
-              <Text type="secondary" style={{ fontSize: 12 }}>{t("home.monthlySummary.expenseLabel")}</Text>
-              <Text strong style={{ fontSize: 13 }}>
-                ${(totalUSD.totalSpent).toLocaleString("es-AR", { maximumFractionDigits: 2 })}
-              </Text>
-            </Flex>
-            <Flex align="center" gap={6}>
-              {totalUSD.net >= 0 ? (
-                <ArrowUpOutlined style={{ color: token.colorSuccess, fontSize: 12 }} />
-              ) : (
-                <ArrowDownOutlined style={{ color: token.colorError, fontSize: 12 }} />
-              )}
-              <Text type="secondary" style={{ fontSize: 12 }}>{t("home.monthlySummary.netDifferenceLabel")}</Text>
-              <Text
-                strong
-                style={{
-                  fontSize: 13,
-                  color: totalUSD.net >= 0 ? token.colorSuccess : token.colorError,
-                }}
-              >
-                {totalUSD.net >= 0 ? "" : "-"}$
-                {Math.abs(totalUSD.net).toLocaleString("es-AR", { maximumFractionDigits: 2 })}
-              </Text>
-            </Flex>
+          <Flex align="center" gap={6}>
+            <ArrowDownOutlined style={{ color: token.colorError, fontSize: 12 }} />
+            <Text type="secondary" style={{ fontSize: 12 }}>{t("home.monthlySummary.expenseLabel")}</Text>
+            <Text style={{ fontSize: 12, fontVariantNumeric: "tabular-nums" }}>
+              ${(totalUSD.totalSpent).toLocaleString("es-AR", { maximumFractionDigits: 2 })}
+            </Text>
           </Flex>
-        </>
+          <Flex align="center" gap={6}>
+            {totalUSD.net >= 0 ? (
+              <ArrowUpOutlined style={{ color: token.colorSuccess, fontSize: 12 }} />
+            ) : (
+              <ArrowDownOutlined style={{ color: token.colorError, fontSize: 12 }} />
+            )}
+            <Text type="secondary" style={{ fontSize: 12 }}>{t("home.monthlySummary.netDifferenceLabel")}</Text>
+            <Text
+              style={{
+                fontSize: 12,
+                fontVariantNumeric: "tabular-nums",
+                color: totalUSD.net >= 0 ? token.colorSuccess : token.colorError,
+              }}
+            >
+              {totalUSD.net >= 0 ? "" : "-"}$
+              {Math.abs(totalUSD.net).toLocaleString("es-AR", { maximumFractionDigits: 2 })}
+            </Text>
+          </Flex>
+        </Flex>
       )}
 
       <BudgetAlert />

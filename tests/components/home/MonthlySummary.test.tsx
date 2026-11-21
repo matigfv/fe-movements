@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeAll, afterEach, afterAll } from "vitest";
-import { render, screen, waitFor } from "@testing-library/react";
+import { render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { http, HttpResponse } from "msw";
@@ -121,6 +121,26 @@ describe("MonthlySummary", () => {
 
       const expectedMonth = dayjs().locale("es").format("MMMM YYYY");
       expect(await screen.findByText(expectedMonth, { exact: false })).toBeInTheDocument();
+    });
+  });
+
+  describe("hierarchy", () => {
+    it("renders Diferencia as the hero KPI and Ingresado/Gastado as secondary", async () => {
+      render(<MonthlySummary />, { wrapper: makeWrapper() });
+
+      const hero = await screen.findByTestId("kpi-hero");
+      expect(within(hero).getByText("Diferencia")).toBeInTheDocument();
+      expect(within(hero).queryByText("Ingresado")).not.toBeInTheDocument();
+      expect(within(hero).queryByText("Gastado")).not.toBeInTheDocument();
+
+      const heroValue = hero.querySelector(".ant-statistic-content") as HTMLElement;
+      const incomeValue = screen
+        .getByText("Ingresado")
+        .closest(".ant-card")!
+        .querySelector(".ant-statistic-content") as HTMLElement;
+      expect(heroValue.style.fontSize).toBe("34px");
+      expect(incomeValue.style.fontSize).toBe("18px");
+      expect(screen.getByText("Gastado")).toBeInTheDocument();
     });
   });
 
