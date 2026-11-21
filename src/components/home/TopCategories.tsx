@@ -3,6 +3,7 @@ import TagOutlined from "@ant-design/icons/TagOutlined";
 import { useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import dayjs from "dayjs";
+import "dayjs/locale/es";
 import { useBalanceSeparateByCategory } from "@/apis/hooks/useBalance";
 import { useUserDefault } from "@/apis/hooks/useSettings";
 import { useCurrency } from "@/apis/hooks/useCurrency";
@@ -53,6 +54,12 @@ export default function TopCategories() {
     }));
   }, [data]);
 
+  const contextLabel = (
+    <Text type="secondary" style={{ fontSize: 12, fontWeight: 400, textTransform: "capitalize" }}>
+      {`${currencySymbol} · ${dayjs().locale("es").format("MMMM YYYY")}`}
+    </Text>
+  );
+
   if (isFetching) {
     return (
       <Card
@@ -62,7 +69,8 @@ export default function TopCategories() {
             <span>{t("home.topCategoriesTitle")}</span>
           </Flex>
         }
-        className="fade-in-up"
+        extra={contextLabel}
+      className="fade-in-up"
         style={{
           borderRadius: token.borderRadiusLG,
           borderColor: token.colorBorder,
@@ -84,7 +92,8 @@ export default function TopCategories() {
             <span>{t("home.topCategoriesTitle")}</span>
           </Flex>
         }
-        className="fade-in-up"
+        extra={contextLabel}
+      className="fade-in-up"
         style={{
           borderRadius: token.borderRadiusLG,
           borderColor: token.colorBorder,
@@ -105,6 +114,7 @@ export default function TopCategories() {
           <span>{t("home.topCategoriesTitle")}</span>
         </Flex>
       }
+      extra={contextLabel}
       className="fade-in-up"
       style={{
         borderRadius: token.borderRadiusLG,

@@ -144,6 +144,100 @@ describe("MonthlySummary", () => {
     });
   });
 
+  describe("deltas", () => {
+    const cardOf = (title: string) =>
+      screen.getAllByText(title)[0].closest(".ant-card") as HTMLElement;
+
+    it("describes increases in words with an up arrow for every KPI", async () => {
+      server.use(
+        http.get("http://localhost:8080/workspaces/:workspaceId/summary/monthly", () =>
+          HttpResponse.json(mockSummaryOneMoneda),
+        ),
+      );
+      render(<MonthlySummary />, { wrapper: makeWrapper() });
+      await screen.findByText("HOGAR");
+
+      // income +50.000, spent +20.000, net +30.000 (180.000 - 150.000)
+      const income = within(cardOf("Ingresado"));
+      expect(income.getByText("$50.000 más que el mes pasado")).toBeInTheDocument();
+      expect(income.getAllByRole("img", { name: "arrow-up" })).toHaveLength(2);
+
+      // spending more is still an UP arrow; the words and error color say it is bad
+      const spent = within(cardOf("Gastado"));
+      const spentText = spent.getByText("$20.000 más que el mes pasado");
+      expect(spent.getAllByRole("img", { name: "arrow-up" }).length).toBeGreaterThanOrEqual(1);
+      expect(spentText.style.color).not.toBe(income.getByText("$50.000 más que el mes pasado").style.color);
+
+      const net = within(cardOf("Diferencia"));
+      expect(net.getByText("$30.000 más que el mes pasado")).toBeInTheDocument();
+    });
+
+    it("describes decreases in words with a down arrow for every KPI", async () => {
+      const down: WorkspaceSummary = {
+        ...mockSummaryOneMoneda,
+        perCurrency: [
+          {
+            ...mockSummaryOneMoneda.perCurrency[0],
+            vsPreviousMonth: {
+              previousMonthIncome: 501000,
+              previousMonthSpent: 320300,
+              incomeDelta: -1000,
+              spentDelta: -300,
+            },
+          },
+        ],
+      };
+      server.use(
+        http.get("http://localhost:8080/workspaces/:workspaceId/summary/monthly", () =>
+          HttpResponse.json(down),
+        ),
+      );
+      render(<MonthlySummary />, { wrapper: makeWrapper() });
+      await screen.findByText("HOGAR");
+
+      const income = within(cardOf("Ingresado"));
+      expect(income.getByText("$1.000 menos que el mes pasado")).toBeInTheDocument();
+      expect(income.getAllByRole("img", { name: "arrow-down" }).length).toBeGreaterThanOrEqual(1);
+
+      const spent = within(cardOf("Gastado"));
+      expect(spent.getByText("$300 menos que el mes pasado")).toBeInTheDocument();
+
+      // net = -1000 - (-300) = -700
+      const net = within(cardOf("Diferencia"));
+      expect(net.getByText("$700 menos que el mes pasado")).toBeInTheDocument();
+    });
+
+    it("says unchanged when the delta is zero and keeps text at least 12px", async () => {
+      const flat: WorkspaceSummary = {
+        ...mockSummaryOneMoneda,
+        perCurrency: [
+          {
+            ...mockSummaryOneMoneda.perCurrency[0],
+            vsPreviousMonth: {
+              previousMonthIncome: 500000,
+              previousMonthSpent: 320000,
+              incomeDelta: 0,
+              spentDelta: 0,
+            },
+          },
+        ],
+      };
+      server.use(
+        http.get("http://localhost:8080/workspaces/:workspaceId/summary/monthly", () =>
+          HttpResponse.json(flat),
+        ),
+      );
+      render(<MonthlySummary />, { wrapper: makeWrapper() });
+      await screen.findByText("HOGAR");
+
+      const same = screen.getAllByText("Igual que el mes pasado");
+      expect(same).toHaveLength(3);
+      same.forEach((el) =>
+        expect(parseInt(el.style.fontSize, 10)).toBeGreaterThanOrEqual(12),
+      );
+    });
+  });
+
   describe("tabs — multiple currencies", () => {
     it("renders a tab for each currency", async () => {
       render(<MonthlySummary />, { wrapper: makeWrapper() });

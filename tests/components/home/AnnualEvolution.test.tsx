@@ -98,3 +98,11 @@ describe("AnnualEvolution — persistencia del filtro de monedas en localStorage
     expect(screen.getByRole("checkbox", { name: "USD" })).toBeChecked();
   });
 });
+
+describe("AnnualEvolution — context label", () => {
+  it("shows the year the chart covers", async () => {
+    renderWithProviders(<AnnualEvolution year={2026} />);
+
+    expect(await screen.findByText("2026")).toBeInTheDocument();
+  });
+});

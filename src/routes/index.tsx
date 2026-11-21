@@ -155,7 +155,11 @@ function RouteComponent() {
           <Suspense fallback={<ChartSkeleton />}>
             <Row gutter={[20, 20]}>
               <Col xs={24}>
-                <CategoryPieChart data={categoryChart} isFetching={fetchingCategory} />
+                <CategoryPieChart
+                  data={categoryChart}
+                  isFetching={fetchingCategory}
+                  filters={filters}
+                />
               </Col>
             </Row>
 

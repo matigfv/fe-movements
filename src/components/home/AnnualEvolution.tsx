@@ -1,4 +1,4 @@
-import { Card, Empty, Flex, Spin, theme } from "antd";
+import { Card, Empty, Flex, Spin, theme, Typography } from "antd";
 import LoadingOutlined from "@ant-design/icons/LoadingOutlined";
 import { useEffect, useMemo } from "react";
 import { useTranslation } from "react-i18next";
@@ -76,6 +76,12 @@ export default function AnnualEvolution({ year }: Props) {
   return (
     <Card
       title={t("home.annualEvolutionTitle")}
+      // Currencies are picked inside the card, so only the period is shown here.
+      extra={
+        <Typography.Text type="secondary" style={{ fontSize: 12, fontWeight: 400 }}>
+          {year}
+        </Typography.Text>
+      }
       className="fade-in-up"
       style={{
         borderRadius: token.borderRadiusLG,

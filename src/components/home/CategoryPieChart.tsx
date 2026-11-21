@@ -1,4 +1,4 @@
-import { Card, Empty, Flex, Spin, theme } from "antd";
+import { Card, Empty, Flex, Spin, theme, Typography } from "antd";
 import LoadingOutlined from "@ant-design/icons/LoadingOutlined";
 import {
   Cell,
@@ -8,9 +8,12 @@ import {
   ResponsiveContainer,
   Tooltip,
 } from "recharts";
+import dayjs from "dayjs";
+import "dayjs/locale/es";
 import { useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { CHART_COLORS } from "@/components/home/constants";
+import type { BalanceFilters } from "@/models/BalanceFilters";
 
 type CategoryChartItem = {
   name: string;
@@ -20,11 +23,13 @@ type CategoryChartItem = {
 type CategoryPieChartProps = {
   data: CategoryChartItem[];
   isFetching: boolean;
+  filters: BalanceFilters;
 };
 
 export default function CategoryPieChart({
   data,
   isFetching,
+  filters,
 }: CategoryPieChartProps) {
   const { token } = theme.useToken();
   const { t } = useTranslation();
@@ -34,10 +39,22 @@ export default function CategoryPieChart({
     [data],
   );
 
+  // Currency and period live in a collapsed filter panel: surface them here.
+  const [from, to] = filters.dates.map((d) => dayjs(d).locale("es"));
+  const period = from.isSame(to, "month")
+    ? from.format("MMMM YYYY")
+    : `${from.format("DD/MM/YYYY")} – ${to.format("DD/MM/YYYY")}`;
+  const contextLabel = (
+    <Typography.Text type="secondary" style={{ fontSize: 12, fontWeight: 400, textTransform: "capitalize" }}>
+      {`${filters.currency} · ${period}`}
+    </Typography.Text>
+  );
+
   if (isFetching) {
     return (
       <Card
         title={t("home.categoryPieTitle")}
+        extra={contextLabel}
         className="fade-in-up"
         style={{
           borderRadius: token.borderRadiusLG,
@@ -57,6 +74,7 @@ export default function CategoryPieChart({
     return (
       <Card
         title={t("home.categoryPieTitle")}
+        extra={contextLabel}
         className="fade-in-up"
         style={{
           borderRadius: token.borderRadiusLG,
@@ -75,6 +93,7 @@ export default function CategoryPieChart({
   return (
     <Card
       title={t("home.categoryPieTitle")}
+      extra={contextLabel}
       className="fade-in-up"
       style={{
         borderRadius: token.borderRadiusLG,

@@ -3,6 +3,8 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { describe, it, expect, vi, beforeEach, beforeAll, afterEach, afterAll } from "vitest";
 import { http, HttpResponse } from "msw";
 import { setupServer } from "msw/node";
+import dayjs from "dayjs";
+import "dayjs/locale/es";
 import TopCategories from "@/components/home/TopCategories";
 import type { BalanceByCategory } from "@/models/BalanceByCategory";
 
@@ -89,6 +91,21 @@ describe("TopCategories", () => {
     renderWithProviders(<TopCategories />);
 
     expect(screen.getByText("Top Categorías del Mes")).toBeInTheDocument();
+  });
+
+  it("muestra la moneda y el mes en el encabezado", async () => {
+    server.use(
+      http.get("*/balance/category", () => HttpResponse.json(mockBalanceData)),
+      http.get("*/currencies", () => HttpResponse.json(mockCurrencies)),
+      http.get("*/settings/default/DEFAULT_CURRENCY", () =>
+        HttpResponse.json(mockUserDefault),
+      ),
+    );
+
+    renderWithProviders(<TopCategories />);
+
+    const month = dayjs().locale("es").format("MMMM YYYY");
+    expect(await screen.findByText(`ARS · ${month}`)).toBeInTheDocument();
   });
 
   it("muestra mensaje cuando no hay datos", async () => {

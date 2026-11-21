@@ -28,26 +28,43 @@ const { Text, Title } = Typography;
 // ── DeltaBadge ────────────────────────────────────────────────────────────────
 
 interface DeltaBadgeProps {
+  /** Real change vs the previous month: positive when the amount went up. */
   delta: number;
-  label: string;
+  /** Whether an increase is good news (income, net) or bad news (expenses). */
+  upIsGood: boolean;
 }
 
-function DeltaBadge({ delta, label }: DeltaBadgeProps) {
+function DeltaBadge({ delta, upIsGood }: DeltaBadgeProps) {
   const { token } = theme.useToken();
-  const isPositive = delta >= 0;
-  const color = isPositive ? token.colorSuccess : token.colorError;
-  const Icon = isPositive ? ArrowUpOutlined : ArrowDownOutlined;
-  const sign = isPositive ? "+" : "-";
-  const formatted = new Intl.NumberFormat("es-AR", {
+  const { t } = useTranslation();
+
+  if (delta === 0) {
+    return (
+      <Text type="secondary" style={{ fontSize: 13 }}>
+        {t("home.monthlySummary.deltaSame")}
+      </Text>
+    );
+  }
+
+  const isUp = delta > 0;
+  // Arrow follows the real direction; color (and the words) carry good/bad.
+  const color = isUp === upIsGood ? token.colorSuccess : token.colorError;
+  const Icon = isUp ? ArrowUpOutlined : ArrowDownOutlined;
+  const amount = `$${new Intl.NumberFormat("es-AR", {
     style: "decimal",
     maximumFractionDigits: 0,
-  }).format(Math.abs(delta));
+  }).format(Math.abs(delta))}`;
 
   return (
     <Flex align="center" gap={4}>
       <Icon style={{ color, fontSize: 12 }} />
-      <Text style={{ color, fontSize: 12 }}>
-        {sign}${formatted} {label}
+      <Text style={{ color, fontSize: 13 }}>
+        {t(
+          isUp
+            ? "home.monthlySummary.deltaMore"
+            : "home.monthlySummary.deltaLess",
+          { amount },
+        )}
       </Text>
     </Flex>
   );
@@ -59,7 +76,7 @@ interface KpiCardProps {
   title: string;
   amount: number;
   delta: number;
-  deltaLabel: string;
+  upIsGood: boolean;
   icon: React.ReactNode;
   iconBg: string;
   loading: boolean;
@@ -71,7 +88,7 @@ function KpiCard({
   title,
   amount,
   delta,
-  deltaLabel,
+  upIsGood,
   icon,
   iconBg,
   loading,
@@ -135,7 +152,7 @@ function KpiCard({
               }}
               style={{ marginBottom: 4 }}
             />
-            <DeltaBadge delta={delta} label={deltaLabel} />
+            <DeltaBadge delta={delta} upIsGood={upIsGood} />
           </div>
         </Flex>
       </Card>
@@ -162,7 +179,7 @@ function CurrencyPanel({ data, loading }: CurrencyPanelProps) {
           title={t("home.monthlySummary.differenceTitle")}
           amount={net}
           delta={vsPreviousMonth.incomeDelta - vsPreviousMonth.spentDelta}
-          deltaLabel={t("home.monthlySummary.deltaVsLastMonth")}
+          upIsGood
           icon={
             net >= 0 ? (
               <ArrowUpOutlined style={{ color: token.colorSuccess }} />
@@ -179,7 +196,7 @@ function CurrencyPanel({ data, loading }: CurrencyPanelProps) {
           title={t("home.monthlySummary.incomeTitle")}
           amount={totalIncome}
           delta={vsPreviousMonth.incomeDelta}
-          deltaLabel={t("home.monthlySummary.deltaVsLastMonth")}
+          upIsGood
           icon={<ArrowUpOutlined style={{ color: token.colorSuccess }} />}
           iconBg={token.colorSuccessBg}
           loading={loading}
@@ -188,8 +205,8 @@ function CurrencyPanel({ data, loading }: CurrencyPanelProps) {
         <KpiCard
           title={t("home.monthlySummary.expenseTitle")}
           amount={-totalSpent}
-          delta={-vsPreviousMonth.spentDelta}
-          deltaLabel={t("home.monthlySummary.deltaVsLastMonth")}
+          delta={vsPreviousMonth.spentDelta}
+          upIsGood={false}
           icon={<ArrowDownOutlined style={{ color: token.colorError }} />}
           iconBg={token.colorErrorBg}
           loading={loading}
