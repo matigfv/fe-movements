@@ -536,7 +536,7 @@ describe("MovementTable", () => {
       await waitFor(() => expect(requestDeleteManySpy).toHaveBeenCalledWith([1]));
 
       await user.click(screen.getByRole("checkbox", { name: "Seleccionar todos" }));
-      expect(screen.getByText("1 seleccionados")).toBeInTheDocument();
+      expect(screen.getByText("1 seleccionado")).toBeInTheDocument();
     });
   });
 

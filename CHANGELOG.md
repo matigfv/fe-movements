@@ -50,6 +50,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   backend recategoriza otros movimientos del mismo comercio y la lista los muestra al toque.
 
 ### Fixed
+- Movimientos (versión 2.17.1): plural correcto en "Categorizar N movimientos", en el contador de
+  seleccionados y en los mensajes de borrado/categorizado en lote; formato numérico consistente
+  (es-AR) en el aviso de desglose del modal de edición; los diálogos de confirmación de borrado
+  quedan centrados como el resto de los modales.
 - Movimientos: la animación de entrada de la lista es solo opacidad y solo en la primera carga, y se
   desactiva con `prefers-reduced-motion`.
 - Los montos de los KPI usan el mismo formato es-AR que el resto del dashboard ("EUR 5.018,05")

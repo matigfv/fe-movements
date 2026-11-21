@@ -35,6 +35,7 @@ import {
   type Movement,
 } from "@/models/Movement";
 import { useCategory } from "@/apis/hooks/useCategory";
+import { formatAmount } from "@/utils/formatAmount";
 import dayjs from "dayjs";
 import {
   updateExpense,
@@ -537,9 +538,9 @@ const AddMovementExpenseTab = forwardRef<
                   }
                   style={{ fontSize: 12 }}
                 >
-                  {t("movements.form.items.sum", { sum: itemsSum.toFixed(2) })}
+                  {t("movements.form.items.sum", { sum: formatAmount(itemsSum, null, 2, 2) })}
                   {watchedAmount != null && Math.abs(itemsSum - watchedAmount) > 0.01 &&
-                    ` — ${t("movements.form.items.sumMismatch", { amount: watchedAmount.toFixed(2) })}`}
+                    ` — ${t("movements.form.items.sumMismatch", { amount: formatAmount(watchedAmount, null, 2, 2) })}`}
                 </Text>
               )}
             </>

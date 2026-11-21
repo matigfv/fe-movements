@@ -1,5 +1,6 @@
 import { describe, it, expect, vi, beforeAll, afterEach, afterAll } from "vitest";
-import { render, screen, waitFor } from "@testing-library/react";
+import { act, render, screen, waitFor } from "@testing-library/react";
+import { notification } from "antd";
 import userEvent from "@testing-library/user-event";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { http, HttpResponse } from "msw";
@@ -52,7 +53,16 @@ const server = setupServer(
 );
 
 beforeAll(() => server.listen());
-afterEach(() => server.resetHandlers());
+afterEach(async () => {
+  server.resetHandlers();
+  // The undoable delete uses antd's static `notification`, which renders in its own React root
+  // outside Testing Library's tree. Destroy it and let its pending work flush while jsdom is still
+  // alive; otherwise React's scheduler can run after teardown ("window is not defined").
+  await act(async () => {
+    notification.destroy();
+    await new Promise((resolve) => setTimeout(resolve, 100));
+  });
+});
 afterAll(() => server.close());
 
 // ── Helpers ────────────────────────────────────────────────────────────────

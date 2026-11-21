@@ -58,6 +58,7 @@ export default function MovementActionButtons({
   // The delete is undoable (useUndoableDelete shows an "Undo" notification before the real DELETE).
   const confirmDelete = () =>
     modal.confirm({
+      centered: true,
       title: t("movements.deleteConfirmTitle"),
       content: t("movements.deleteConfirmDescription"),
       okText: t("movements.deleteConfirmOk"),

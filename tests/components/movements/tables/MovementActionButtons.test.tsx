@@ -98,6 +98,7 @@ describe("MovementActionButtons", () => {
 
     const dialog = await screen.findByRole("dialog");
     expect(within(dialog).getAllByText("¿Eliminar este movimiento?").length).toBeGreaterThan(0);
+    expect(document.querySelector(".ant-modal-centered")).not.toBeNull();
     expect(onDelete).not.toHaveBeenCalled();
 
     await user.click(within(dialog).getByRole("button", { name: "Eliminar" }));

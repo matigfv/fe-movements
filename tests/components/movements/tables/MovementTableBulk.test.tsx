@@ -174,7 +174,7 @@ describe("highlight after bulk categorize", () => {
     const dialog = await screen.findByRole("dialog");
     await user.click(within(dialog).getByRole("button", { name: "Eliminar" }));
 
-    await waitFor(() => expect(screen.queryByText(/seleccionados/)).not.toBeInTheDocument());
+    await waitFor(() => expect(screen.queryByText(/seleccionado/)).not.toBeInTheDocument());
     expect(container.querySelectorAll(".row-highlighted")).toHaveLength(0);
   });
 });

@@ -26,6 +26,7 @@ export default function BulkActionsToolbar({
 
   const handleDeleteClick = () => {
     modal.confirm({
+      centered: true,
       title: t("movements.bulk.deleteConfirmTitle", { count: selectedCount }),
       content: t("movements.bulk.deleteConfirmDescription"),
       okText: t("movements.bulk.deleteConfirmOk"),

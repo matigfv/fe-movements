@@ -76,7 +76,7 @@ export default function MovementTable({ filters, onStateChange, onClearFilters }
       const failed = results.filter((r) => r.status === "rejected").length;
       if (failed > 0) {
         void message.warning(
-          t("movements.bulk.deleteSummary", { succeeded: ids.length - failed, failed }),
+          t("movements.bulk.deleteSummary", { count: ids.length - failed, failed }),
         );
       }
     },
@@ -163,7 +163,7 @@ export default function MovementTable({ filters, onStateChange, onClearFilters }
       highlightRows(selectedMovements.filter((_, i) => results[i].status === "fulfilled").map((m) => m.id));
       if (failed > 0) {
         void message.warning(
-          t("movements.bulk.categorizeSummary", { succeeded, failed }),
+          t("movements.bulk.categorizeSummary", { count: succeeded, failed }),
         );
       } else {
         void message.success(t("movements.bulk.categorizeAllSuccess", { count: succeeded }));

@@ -345,6 +345,20 @@ describe("AddMovementExpenseTab", () => {
       expect(screen.getByText("Ej: Papa")).toBeInTheDocument();
     });
 
+    it("muestra la suma y el monto total con el mismo formato es-AR en el aviso de desglose", async () => {
+      renderTab({
+        movementToEdit: {
+          ...mockMovementToEdit,
+          amount: 1450.75,
+          items: [{ id: 1, quantity: 1, unit: "KILOGRAMO", description: "Papa", price: 123 }],
+        },
+      });
+
+      expect(
+        await screen.findByText("Suma del desglose: 123,00 — No coincide con el monto total (1.450,75)"),
+      ).toBeInTheDocument();
+    });
+
     it("precarga y muestra el desglose existente al editar un movimiento que ya lo tiene", async () => {
       renderTab({
         movementToEdit: {
