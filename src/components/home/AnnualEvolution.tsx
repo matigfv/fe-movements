@@ -100,7 +100,7 @@ export default function AnnualEvolution({ year }: Props) {
       title={t("home.annualEvolutionTitle")}
       // Currencies are picked inside the card, so only the period is shown here.
       extra={
-        <Space size="small">
+        <Space size="small" wrap>
           {data.length > 0 && !isFetching && (
             <ChartViewToggle
               showingTable={showTable}
@@ -204,7 +204,7 @@ export default function AnnualEvolution({ year }: Props) {
                           x={Number(x) + 8}
                           y={y}
                           dominantBaseline="central"
-                          style={{ fontSize: 11, fill: line.color, fontFamily: "inherit" }}
+                          style={{ fontSize: 12, fill: line.color, fontFamily: "inherit" }}
                         >
                           {line.name}
                         </text>

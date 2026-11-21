@@ -8,10 +8,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- Cada gráfico del dashboard muestra la moneda y el período que representa; el de torta y la
+  evolución anual tienen un botón para ver los datos en tabla y etiquetas directas con nombres
+  accesibles (versión 2.16.0).
+- Botón **Reintentar** cuando falla la carga del resumen mensual.
+- Util compartida `formatAmount` para mostrar montos con el código de moneda.
 - README con video demo (`docs/template.mp4`) y miniatura.
 - README reescrito: demo en GIF (se reproduce dentro de GitHub), tutorial de uso de la app y guía para correr el proyecto.
 
 ### Changed
+- Dashboard con jerarquía clara: **Diferencia** pasa a ser el KPI principal, la línea de USD es más
+  discreta y el saludo es más chico.
+- Los deltas de los KPI se leen en lenguaje simple ("X más que el mes pasado") y la flecha muestra
+  la dirección real del cambio.
+- Racha, logros y metas salen del dashboard y pasan a `/goals`; en el dashboard queda un link.
+- Los colores de los gráficos siguen el tema activo (modo oscuro incluido).
 - Vuelve la pestaña **Importar PDF** en "Agregar movimiento" (`PDF_IMPORT_ENABLED = true`), ahora
   solo para **Santander España**: sin selector de banco, siempre envía `bank=SANTANDER` y el
   backend detecta si el PDF es el export de movimientos de cuenta o el extracto de la tarjeta
@@ -27,6 +38,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   backend recategoriza otros movimientos del mismo comercio y la lista los muestra al toque.
 
 ### Fixed
+- El `$` fijo en gráficos, KPIs, deltas y la línea de USD se reemplazó por el código real de la
+  moneda (los montos se leen como "EUR 50.000").
 - Tocar dos veces **Agregar** (o **Guardar** al editar) creaba el movimiento dos veces: el botón
   solo mostraba "cargando" en la pestaña de importar PDF, y `handleConfirm` espera la validación
   del formulario antes de llamar a la mutación, así que dos clics seguidos entraban los dos.

@@ -178,7 +178,7 @@ export default function TopCategories() {
               </Flex>
               {/* Monto y porcentaje */}
               <Flex align="baseline" gap={6} style={{ flexShrink: 0 }}>
-                <Text strong style={{ fontSize: 15 }}>
+                <Text strong style={{ fontSize: 15, fontVariantNumeric: "tabular-nums" }}>
                   {formatAmount(item.total, currencySymbol)}
                 </Text>
                 <Text type="secondary" style={{ fontSize: 12 }}>

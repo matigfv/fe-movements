@@ -297,13 +297,6 @@
       "belowMessage": "{{category}}: {{percent}}% below your 6-month average",
       "detail": "This month: {{current}} · Average: {{average}}"
     },
-    "goals": {
-      "title": "Savings goals",
-      "subtitle": "Your progress toward the goals you set",
-      "empty": "You haven't created any savings goal yet",
-      "viewAll": "View all",
-      "rowDetail": "{{saved}} of {{target}}"
-    },
     "projection": {
       "title": "Balance projection",
       "subtitle": "{{trend}} trend: you save {{amount}} on average per month (last {{months}} months)",

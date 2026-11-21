@@ -1,6 +1,6 @@
 import { render, waitFor, screen } from "@testing-library/react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { describe, it, expect, vi, beforeAll, afterEach, afterAll } from "vitest";
+import { describe, it, expect, beforeAll, afterEach, afterAll } from "vitest";
 import { http, HttpResponse } from "msw";
 import { setupServer } from "msw/node";
 import InsightsPanel from "@/components/home/InsightsPanel";
@@ -36,7 +36,7 @@ function renderWithProviders(ui: React.ReactElement) {
 }
 
 describe("InsightsPanel", () => {
-  it("notifica visible=true y renderiza la card cuando hay insights", async () => {
+  it("renderiza la card cuando hay insights", async () => {
     server.use(
       http.get("*/settings/defaults/DEFAULT_WORKSPACE", () =>
         HttpResponse.json(mockUserDefault),
@@ -44,18 +44,14 @@ describe("InsightsPanel", () => {
       http.get("*/insights", () => HttpResponse.json(mockInsights)),
     );
 
-    const onVisibilityChange = vi.fn();
-    renderWithProviders(
-      <InsightsPanel onVisibilityChange={onVisibilityChange} />,
-    );
+    renderWithProviders(<InsightsPanel />);
 
     await waitFor(() => {
       expect(screen.getByText(/Alimentación/)).toBeInTheDocument();
     });
-    expect(onVisibilityChange).toHaveBeenLastCalledWith(true);
   });
 
-  it("notifica visible=false y no renderiza nada cuando no hay insights", async () => {
+  it("no renderiza nada cuando no hay insights", async () => {
     server.use(
       http.get("*/settings/defaults/DEFAULT_WORKSPACE", () =>
         HttpResponse.json(mockUserDefault),
@@ -63,14 +59,10 @@ describe("InsightsPanel", () => {
       http.get("*/insights", () => HttpResponse.json([])),
     );
 
-    const onVisibilityChange = vi.fn();
-    const { container } = renderWithProviders(
-      <InsightsPanel onVisibilityChange={onVisibilityChange} />,
-    );
+    const { container } = renderWithProviders(<InsightsPanel />);
 
     await waitFor(() => {
-      expect(onVisibilityChange).toHaveBeenLastCalledWith(false);
+      expect(container).toBeEmptyDOMElement();
     });
-    expect(container).toBeEmptyDOMElement();
   });
 });

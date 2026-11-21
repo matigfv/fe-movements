@@ -58,7 +58,7 @@ function DeltaBadge({ delta, upIsGood, currency }: DeltaBadgeProps) {
   return (
     <Flex align="center" gap={4}>
       <Icon style={{ color, fontSize: 12 }} />
-      <Text style={{ color, fontSize: 13 }}>
+      <Text style={{ color, fontSize: 13, fontVariantNumeric: "tabular-nums" }}>
         {t(
           isUp
             ? "home.monthlySummary.deltaMore"

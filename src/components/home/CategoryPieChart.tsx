@@ -107,7 +107,7 @@ export default function CategoryPieChart({
     <Card
       title={t("home.categoryPieTitle")}
       extra={
-        <Space size="small">
+        <Space size="small" wrap>
           <ChartViewToggle
             showingTable={showTable}
             onToggle={() => setShowTable((v) => !v)}

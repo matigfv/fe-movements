@@ -297,13 +297,6 @@
       "belowMessage": "{{category}}: {{percent}}% abajo de tu promedio de 6 meses",
       "detail": "Este mes: {{current}} · Promedio: {{average}}"
     },
-    "goals": {
-      "title": "Metas de ahorro",
-      "subtitle": "Tu progreso hacia los objetivos que definiste",
-      "empty": "Todavía no creaste ninguna meta de ahorro",
-      "viewAll": "Ver todas",
-      "rowDetail": "{{saved}} de {{target}}"
-    },
     "projection": {
       "title": "Proyección de balance",
       "subtitle": "Tendencia {{trend}}: ahorrás en promedio {{amount}} por mes (últimos {{months}} meses)",

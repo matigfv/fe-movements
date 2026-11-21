@@ -2,7 +2,6 @@ import ArrowDownOutlined from "@ant-design/icons/ArrowDownOutlined";
 import ArrowUpOutlined from "@ant-design/icons/ArrowUpOutlined";
 import BulbOutlined from "@ant-design/icons/BulbOutlined";
 import { Card, Flex, Tag, theme, Typography } from "antd";
-import { useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { useInsights } from "@/apis/hooks/useInsights";
 import { useUserDefault } from "@/apis/hooks/useSettings";
@@ -62,11 +61,7 @@ function InsightRow({ insight }: { insight: CategoryInsight }) {
   );
 }
 
-interface InsightsPanelProps {
-  onVisibilityChange?: (visible: boolean) => void;
-}
-
-export default function InsightsPanel({ onVisibilityChange }: InsightsPanelProps = {}) {
+export default function InsightsPanel() {
   const { token } = theme.useToken();
   const { t } = useTranslation();
 
@@ -75,10 +70,6 @@ export default function InsightsPanel({ onVisibilityChange }: InsightsPanelProps
 
   const { data: insights = [], isFetching } = useInsights(workspaceId);
   const isVisible = isFetching || insights.length > 0;
-
-  useEffect(() => {
-    onVisibilityChange?.(isVisible);
-  }, [isVisible, onVisibilityChange]);
 
   if (!isVisible) {
     return null;
