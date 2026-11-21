@@ -1,4 +1,6 @@
-import { useMutation, useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { notification } from "antd";
+import { useTranslation } from "react-i18next";
 import {
   addSubscriptionApi,
   deleteSubscriptionApi,
@@ -28,36 +30,52 @@ export const useUnpaidSubscriptions = (year: number, month: number) =>
     staleTime: 0,
   });
 
-export const usePayService = () =>
-  useMutation({
+const notifyError = (message: string) =>
+  notification.error({ message, placement: "bottomRight" });
+
+export const usePayService = () => {
+  const queryClient = useQueryClient();
+  const { t } = useTranslation();
+  return useMutation({
     mutationFn: (service: Service) => paySubscriptionApi(service),
+    // Returned so the mutation settles after the refetch: the card keeps its optimistic paid state until then.
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: SERVICE_KEY }),
     onError: (err) => {
       console.error("Error pagando el servicio:", err);
+      notifyError(t("services.errors.payFailed"));
     },
   });
+};
 
 export const useUpdateService = (options?: {
   onSuccess?: () => void;
-}) =>
-  useMutation({
+}) => {
+  const { t } = useTranslation();
+  return useMutation({
     mutationFn: (service: ServiceToUpdate) => updateSubscriptionApi(service),
     onSuccess: options?.onSuccess,
     onError: (err) => {
       console.error("Error actualizando el servicio:", err);
+      notifyError(t("services.errors.updateFailed"));
     },
   });
+};
 
 export const useAddService = (options?: {
   onSuccess?: () => void;
-}) =>
-  useMutation({
+}) => {
+  const { t } = useTranslation();
+  return useMutation({
     mutationFn: (service: ServiceToAdd) => addSubscriptionApi(service),
     onSuccess: options?.onSuccess,
     onError: (err) => {
       console.error("Error agregando el servicio:", err);
+      notifyError(t("services.errors.addFailed"));
     },
   });
+};
 
+// Delete failures are surfaced by `useUndoableDelete` (common.undo.deleteFailed); notifying here too would duplicate it.
 export const useDeleteService = () =>
   useMutation({
     mutationFn: (service: Service) => deleteSubscriptionApi(service),

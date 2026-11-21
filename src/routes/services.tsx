@@ -1,9 +1,12 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { App, Col, Row } from "antd";
+import { App, Button, Col, Row, Typography } from "antd";
+import PlusOutlined from "@ant-design/icons/PlusOutlined";
+import { useMemo } from "react";
+import type { CSSProperties } from "react";
 import { useTranslation } from "react-i18next";
 import type { ServiceToAdd } from "@/apis/SubscriptionApi";
 import { ServiceCard } from "@/components/services/ServiceCard";
-import { ServiceCardForm } from "@/components/services/ServiceCardForm";
+import { AddServiceModal } from "@/components/services/AddServiceModal";
 import ServicesEmptyState from "@/components/services/ServicesEmptyState";
 import {
   useAddService,
@@ -17,6 +20,18 @@ import { protectedRouteGuard } from "@/apis/auth/protectedRouteGuard";
 import { RoleEnum } from "@/enums/RoleEnum";
 import { useCurrentUser } from "@/apis/hooks/useCurrentUser";
 import { getServiceLabels } from "@/utils/serviceLabels";
+
+const visuallyHidden: CSSProperties = {
+  position: "absolute",
+  width: 1,
+  height: 1,
+  margin: -1,
+  padding: 0,
+  overflow: "hidden",
+  clip: "rect(0 0 0 0)",
+  whiteSpace: "nowrap",
+  border: 0,
+};
 
 export const Route = createFileRoute("/services")({
   beforeLoad: protectedRouteGuard({
@@ -49,13 +64,41 @@ function RouteComponent() {
     },
   });
 
+  // Owner tags only help when several people share the workspace.
+  const showOwner = useMemo(
+    () => new Set(services.map((s) => s.user)).size > 1,
+    [services],
+  );
+
   const handleAddService = (service: ServiceToAdd) => {
     addServiceMutation.mutate(service);
   };
   return (
     <div style={{ paddingTop: 30 }}>
+      {/* Page heading for the card titles (h5) to hang from; visually hidden to keep the layout. */}
+      <Typography.Title level={1} style={visuallyHidden}>
+        {labels.plural}
+      </Typography.Title>
       {(isFetching || services.length > 0) && (
         <div className="fade-in-up" style={{ animationDelay: "0ms" }}>
+          <Row justify="end" style={{ marginBottom: 12 }}>
+            <Col xs={24} sm={10} md={7} lg={5}>
+            <AddServiceModal
+              onAddService={handleAddService}
+              trigger={(onClick) => (
+                <Button
+                  type="primary"
+                  icon={<PlusOutlined />}
+                  onClick={onClick}
+                  block
+                  style={{ minHeight: 44 }}
+                >
+                  {labels.agregar}
+                </Button>
+              )}
+            />
+            </Col>
+          </Row>
           <ServiceSummary services={services} isFetching={isFetching} />
         </div>
       )}
@@ -68,27 +111,19 @@ function RouteComponent() {
 
       {(isFetching || services.length > 0) && (
         <Row gutter={16} style={{ marginBottom: 16, padding: 0 }}>
-          <Col
-            xs={24}
-            sm={12}
-            lg={8}
-            style={{ marginBottom: 16, animationDelay: "80ms" }}
-            className="fade-in-up"
-          >
-            <ServiceCardForm handleAddService={handleAddService} />
-          </Col>
           {services?.map((service, index) => (
             <Col
               xs={24}
               sm={12}
               lg={8}
               key={service.id}
-              style={{ marginBottom: 16, animationDelay: `${(index + 2) * 80}ms` }}
+              style={{ marginBottom: 16, animationDelay: `${(index + 1) * 80}ms` }}
               className="fade-in-up"
             >
               <ServiceCard
                 service={service}
-                handlePayServiceMutation={(s) => payMutation.mutate(s)}
+                showOwner={showOwner}
+                handlePayServiceMutation={(s) => payMutation.mutateAsync(s)}
                 handleUpdateServiceMutation={(s) => updateServiceMutation.mutate(s)}
               />
             </Col>

@@ -3,17 +3,15 @@ import CheckCircleFilled from "@ant-design/icons/CheckCircleFilled";
 import { useTranslation } from "react-i18next";
 import type { Service } from "@/models/Service";
 import { useCurrentUser } from "@/apis/hooks/useCurrentUser";
+import { formatAmount } from "@/utils/formatAmount";
 import { getServiceLabels } from "@/utils/serviceLabels";
+import { groupServiceTotals } from "@/utils/serviceTotals";
 
 const { Title, Text } = Typography;
 
 interface ServiceSummaryProps {
   services: Service[];
   isFetching: boolean;
-}
-
-function formatAmount(amount: number): string {
-  return amount.toLocaleString("es-AR", { maximumFractionDigits: 0 });
 }
 
 export function ServiceSummary({ services, isFetching }: ServiceSummaryProps) {
@@ -24,10 +22,14 @@ export function ServiceSummary({ services, isFetching }: ServiceSummaryProps) {
 
   const unpaidServices = services.filter((s) => !s.isPaid);
   const paidServices = services.filter((s) => s.isPaid);
-  const totalPaid = paidServices.reduce((acc, s) => acc + (s.amount || 0), 0);
-  const totalUnpaid = unpaidServices.reduce((acc, s) => acc + (s.amount || 0), 0);
-  const total = totalPaid + totalUnpaid;
-  const paidPercent = total > 0 ? Math.round((totalPaid / total) * 100) : 100;
+  const groups = groupServiceTotals(services);
+  const isMultiCurrency = groups.length > 1;
+  // Amounts of different currencies are never summed, so progress falls back to counts.
+  const paidPercent = isMultiCurrency
+    ? Math.round((paidServices.length / services.length) * 100)
+    : groups[0] && groups[0].total > 0
+      ? Math.round(((groups[0].total - groups[0].pending) / groups[0].total) * 100)
+      : 100;
   const allPaid = services.length > 0 && unpaidServices.length === 0;
 
   const accent = allPaid ? token.colorSuccess : token.colorWarning;
@@ -70,14 +72,25 @@ export function ServiceSummary({ services, isFetching }: ServiceSummaryProps) {
           >
             {t("services.summary.periodLabel")}
           </Text>
-          <Title level={2} style={{ margin: "2px 0 14px", color: token.colorTextHeading }}>
-            <span style={{ color: accent }}>
-              ${formatAmount(totalUnpaid)} {t("services.summary.pendingSuffix")}
-            </span>{" "}
-            <Text type="secondary" style={{ fontSize: 16, fontWeight: 400 }}>
-              {t("services.summary.ofTotal", { total: `$${formatAmount(total)}` })}
-            </Text>
-          </Title>
+          <div style={{ margin: "2px 0 14px" }}>
+            {groups.map((g) => (
+              <Title
+                key={g.currency ?? "none"}
+                level={isMultiCurrency ? 4 : 2}
+                data-testid="currency-line"
+                style={{ margin: 0, color: token.colorTextHeading }}
+              >
+                <span style={{ color: accent }}>
+                  {/* Only the amount stays together; the suffix may wrap so it never overflows on phones. */}
+                  <span style={{ whiteSpace: "nowrap" }}>{formatAmount(g.pending, g.currency, 2)}</span>{" "}
+                  {t("services.summary.pendingSuffix")}
+                </span>{" "}
+                <Text type="secondary" style={{ fontSize: 16, fontWeight: 400, whiteSpace: "nowrap" }}>
+                  {t("services.summary.ofTotal", { total: formatAmount(g.total, g.currency, 2) })}
+                </Text>
+              </Title>
+            ))}
+          </div>
           <Progress
             percent={paidPercent}
             showInfo={false}

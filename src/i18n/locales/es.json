@@ -4,6 +4,7 @@
     "undo": {
       "itemDeleted": "Elemento eliminado",
       "itemsDeleted": "{{count}} elementos eliminados",
+      "itemPaid": "Pago registrado",
       "undoButton": "Deshacer",
       "deleteFailed": "No se pudo eliminar el elemento"
     },
@@ -877,6 +878,11 @@
       "allPaidTitle": "¡Estás al día!",
       "allPaidDescription": "Ya pagaste tus {{count}} {{plural}} de este mes."
     },
+    "errors": {
+      "payFailed": "No se pudo marcar como pagado. Probá de nuevo.",
+      "updateFailed": "No se pudo actualizar el servicio. Probá de nuevo.",
+      "addFailed": "No se pudo agregar el servicio. Probá de nuevo."
+    },
     "card": {
       "amountMustBePositive": "El monto debe ser mayor que 0",
       "descriptionRequired": "La descripción es obligatoria",
@@ -884,15 +890,15 @@
       "statusPending": "Pendiente",
       "amountLabel": "Monto",
       "amountRequired": "El monto es obligatorio",
-      "editTooltip": "Editar",
-      "editAriaLabel": "Editar servicio {{description}}",
-      "deleteConfirmDescription": "Esta acción no se puede deshacer.",
-      "yes": "Sí",
-      "no": "No",
-      "deleteAriaLabel": "Eliminar servicio {{description}}",
+      "moreActions": "Más acciones",
+      "editAction": "Editar",
+      "deleteAction": "Eliminar",
+      "deleteConfirmDescription": "Vas a poder deshacerlo durante unos segundos.",
+      "undoPaidMessage": "{{description}} marcado como pagado",
       "undoDeletedMessage": "{{description}} eliminado",
       "lastPaymentLabel": "Último pago",
       "lastPaymentPrefix": "Último pago:",
+      "paidOnPrefix": "Pagado el",
       "saveButton": "Guardar",
       "cancelButton": "Cancelar",
       "markAsPaidButton": "Marcar como pagado"
@@ -1090,7 +1096,7 @@
         "text1": "Los servicios son gastos recurrentes que se repiten cada mes. Pueden ser tanto personales (Netflix, Spotify, luz, gas) como de negocio (hosting, dominio, software, coworking, seguros).",
         "list1": [
           "Andá a la sección \"Servicios\" desde el menú principal",
-          "Completá el formulario de la primera tarjeta para agregar un nuevo servicio",
+          "Tocá el botón \"Agregar Servicio\" y completá el formulario para sumar uno nuevo",
           "Indicá el nombre, monto mensual y si ya está pago este mes",
           "Cada servicio aparece como una tarjeta que podés marcar como pagado",
           "El resumen superior te muestra cuántos servicios tenés al día y cuántos pendientes"

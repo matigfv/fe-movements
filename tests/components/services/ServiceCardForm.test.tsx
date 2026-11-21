@@ -1,5 +1,6 @@
 import { describe, it, expect, vi, beforeAll, afterEach, afterAll } from "vitest";
 import { render, screen } from "@testing-library/react";
+import { theme } from "antd";
 import userEvent from "@testing-library/user-event";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { http, HttpResponse } from "msw";
@@ -69,6 +70,18 @@ describe("ServiceCardForm", () => {
     expect(await screen.findByLabelText("Descripción")).toBeInTheDocument();
     expect(screen.getByRole("button", { name: /agregar servicio/i })).toBeInTheDocument();
   });
+
+  it("submit button uses the theme primary (not red) and the status label is amber", async () => {
+    render(<ServiceCardForm handleAddService={vi.fn()} />, { wrapper: makeWrapper() });
+
+    const btn = await screen.findByRole("button", { name: /agregar servicio/i });
+    expect(btn).toHaveClass("ant-btn-primary");
+    expect(btn).not.toHaveClass("ant-btn-dangerous");
+    expect(btn.getAttribute("style")).toBeNull();
+    expect(screen.getByTestId("form-status")).toHaveStyle({
+      color: theme.getDesignToken().orange8,
+    });
+  });
 });
 
 describe("ServiceCardForm sin monedas cargadas", () => {
@@ -94,5 +107,17 @@ describe("ServiceCardForm sin monedas cargadas", () => {
       to: "/settings",
       search: { tab: "finanzas" },
     });
+  });
+});
+
+describe("ServiceCardForm variant plain", () => {
+  it("renders the fields and submit button without the card header", async () => {
+    render(<ServiceCardForm variant="plain" handleAddService={vi.fn()} />, {
+      wrapper: makeWrapper(),
+    });
+
+    expect(await screen.findByLabelText("Descripción")).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /agregar servicio/i })).toBeInTheDocument();
+    expect(screen.queryByTestId("form-status")).not.toBeInTheDocument();
   });
 });

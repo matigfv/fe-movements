@@ -1,5 +1,6 @@
 import { describe, it, expect, vi, afterEach } from "vitest";
-import { renderHook, act, waitFor } from "@testing-library/react";
+import { renderHook, act, waitFor, screen } from "@testing-library/react";
+import { notification } from "antd";
 import { useUndoableDelete } from "@/utils/useUndoableDelete";
 
 // ── Helpers ────────────────────────────────────────────────────────────────
@@ -18,8 +19,12 @@ function setup<T>(overrides: Partial<Parameters<typeof useUndoableDelete<T>>[0]>
 }
 
 describe("useUndoableDelete", () => {
-  afterEach(() => {
-    document.body.innerHTML = "";
+  afterEach(async () => {
+    // Wiping document.body would detach antd's cached notification holder; destroy the notices instead.
+    await act(async () => {
+      notification.destroy();
+      await new Promise((resolve) => setTimeout(resolve, 50));
+    });
   });
 
   describe("requestDelete (individual)", () => {
@@ -39,6 +44,16 @@ describe("useUndoableDelete", () => {
 
       await waitFor(() => expect(onDelete).toHaveBeenCalledWith(1));
       await waitFor(() => expect(result.current.isPending(1)).toBe(false));
+    });
+  });
+
+  describe("fallo del borrado", () => {
+    it("muestra un error visible cuando onDelete rechaza", async () => {
+      const { result } = setup<number>({ onDelete: vi.fn().mockRejectedValue(new Error("boom")) });
+
+      act(() => result.current.requestDelete(1));
+
+      expect(await screen.findByText(/no se pudo eliminar/i)).toBeInTheDocument();
     });
   });
 

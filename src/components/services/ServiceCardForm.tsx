@@ -18,7 +18,7 @@ import {
 } from "antd";
 import ApartmentOutlined from "@ant-design/icons/ApartmentOutlined";
 import CheckCircleOutlined from "@ant-design/icons/CheckCircleOutlined";
-import CloseCircleOutlined from "@ant-design/icons/CloseCircleOutlined";
+import ClockCircleOutlined from "@ant-design/icons/ClockCircleOutlined";
 import PlusOutlined from "@ant-design/icons/PlusOutlined";
 import SettingOutlined from "@ant-design/icons/SettingOutlined";
 import dayjs from "dayjs";
@@ -30,6 +30,7 @@ import { useUserDefault } from "@/apis/hooks/useSettings";
 import { useCurrentUser } from "@/apis/hooks/useCurrentUser";
 import { useIsReadOnly } from "@/apis/workspace/useIsReadOnly";
 import { getServiceLabels } from "@/utils/serviceLabels";
+import { getServiceStatusStyles } from "@/utils/serviceStatusColors";
 
 const { Text } = Typography;
 
@@ -43,14 +44,20 @@ interface CreateServiceForm {
 
 interface ServiceCardFormProps extends React.HTMLAttributes<HTMLElement> {
   handleAddService: (service: ServiceToAdd) => Promise<void> | void;
+  /** "plain" renders only the fields and submit button (used inside a modal). */
+  variant?: "card" | "plain";
 }
 
-export const ServiceCardForm = ({ handleAddService }: ServiceCardFormProps) => {
+export const ServiceCardForm = ({
+  handleAddService,
+  variant = "card",
+}: ServiceCardFormProps) => {
   const [form] = Form.useForm<CreateServiceForm>();
   const [isPaid, setIsPaid] = useState(false);
   const { data: currencies = [], isLoading: isLoadingCurrencies } = useCurrency();
   const { data: defaultCurrency } = useUserDefault("DEFAULT_CURRENCY");
   const { token } = theme.useToken();
+  const status = getServiceStatusStyles(token, isPaid);
   const navigate = useNavigate();
   const isReadOnly = useIsReadOnly();
 
@@ -112,12 +119,114 @@ export const ServiceCardForm = ({ handleAddService }: ServiceCardFormProps) => {
     );
   }
 
+  const formEl = (
+    <Form
+      form={form}
+      layout="vertical"
+      onFinish={onFinish}
+      initialValues={{
+        isPaid: false,
+        currency: currencies.find((c) => c.id === defaultCurrency?.value)
+          ?.symbol,
+      }}
+    >
+      <Row gutter={[12, 0]}>
+        <Col xs={24} sm={12}>
+          <Form.Item
+            name="description"
+            label={t("services.form.descriptionLabel")}
+            rules={[
+              { required: true, message: t("services.form.descriptionRequired") },
+            ]}
+          >
+            <Input placeholder={t("services.form.descriptionPlaceholder")} />
+          </Form.Item>
+        </Col>
+        <Col xs={24} sm={12}>
+          <Form.Item
+            name="amount"
+            label={t("services.form.amountLabel")}
+            rules={[{ required: true, message: t("services.form.amountRequired") }]}
+          >
+            <InputNumber
+              precision={2}
+              style={{ width: "100%" }}
+              controls={false}
+              placeholder={t("services.form.amountPlaceholder")}
+            />
+          </Form.Item>
+        </Col>
+        <Col xs={24} sm={12}>
+          <Form.Item
+            name="currency"
+            label={t("services.form.currencyLabel")}
+            rules={[{ required: true, message: t("services.form.currencyRequired") }]}
+          >
+            <Select placeholder={t("services.form.currencyPlaceholder")}>
+              {currencies.map((currency) => (
+                <Select.Option key={currency.id} value={currency.symbol}>
+                  {currency.symbol}
+                </Select.Option>
+              ))}
+            </Select>
+          </Form.Item>
+        </Col>
+        <Col xs={24} sm={12}>
+          <Form.Item
+            name="isPaid"
+            label={t("services.form.statusLabel")}
+            valuePropName="checked"
+          >
+            <Switch
+              checkedChildren={t("services.form.statusPaidSwitch")}
+              unCheckedChildren={t("services.form.statusPendingSwitch")}
+              onChange={(checked) => setIsPaid(checked)}
+              style={{ width: "100%" }}
+            />
+          </Form.Item>
+        </Col>
+        {isPaid && (
+          <Col xs={24} sm={12}>
+            <Form.Item
+              name="lastPayment"
+              label={t("services.form.paymentDateLabel")}
+              rules={[
+                {
+                  required: true,
+                  message: t("services.form.paymentDateRequired"),
+                },
+              ]}
+            >
+              <DatePicker
+                style={{ width: "100%" }}
+                format="DD/MM/YYYY"
+                disabledDate={(d) => d.isAfter(dayjs())}
+              />
+            </Form.Item>
+          </Col>
+        )}
+      </Row>
+
+      <Button
+        htmlType="submit"
+        block
+        type="primary"
+        icon={<PlusOutlined />}
+      >
+        {labels.agregar}
+      </Button>
+    </Form>
+  );
+
+  if (variant === "plain") {
+    return formEl;
+  }
+
   return (
     <Card
       style={{
         borderRadius: token.borderRadiusLG,
-        borderColor: isPaid ? token.colorSuccessBorder : token.colorErrorBorder,
-        borderWidth: 2,
+        borderColor: status.cardBorder,
       }}
       styles={{ body: { padding: 20 } }}
     >
@@ -129,7 +238,7 @@ export const ServiceCardForm = ({ handleAddService }: ServiceCardFormProps) => {
               width: 38,
               height: 38,
               borderRadius: token.borderRadius,
-              background: isPaid ? token.colorSuccessBg : token.colorErrorBg,
+              background: token.colorFillTertiary,
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
@@ -139,7 +248,7 @@ export const ServiceCardForm = ({ handleAddService }: ServiceCardFormProps) => {
             <ApartmentOutlined
               style={{
                 fontSize: 18,
-                color: isPaid ? token.colorSuccess : token.colorError,
+                color: token.colorTextSecondary,
               }}
             />
           </div>
@@ -147,7 +256,10 @@ export const ServiceCardForm = ({ handleAddService }: ServiceCardFormProps) => {
             <Text strong style={{ fontSize: 15 }}>
               {labels.nuevo}
             </Text>
-            <Text type="secondary" style={{ fontSize: 12, display: "block" }}>
+            <Text
+              data-testid="form-status"
+              style={{ fontSize: 12, display: "block", color: status.labelColor }}
+            >
               {isPaid
                 ? t("services.form.markedAsPaid")
                 : t("services.form.pendingPayment")}
@@ -155,120 +267,15 @@ export const ServiceCardForm = ({ handleAddService }: ServiceCardFormProps) => {
           </div>
         </Flex>
         {isPaid ? (
-          <CheckCircleOutlined
-            style={{ color: token.colorSuccess, fontSize: 22 }}
-          />
+          <CheckCircleOutlined style={{ color: status.labelColor, fontSize: 22 }} />
         ) : (
-          <CloseCircleOutlined
-            style={{ color: token.colorError, fontSize: 22 }}
-          />
+          <ClockCircleOutlined style={{ color: status.labelColor, fontSize: 22 }} />
         )}
       </Flex>
 
       <Divider style={{ margin: "14px 0" }} />
 
-      <Form
-        form={form}
-        layout="vertical"
-        onFinish={onFinish}
-        initialValues={{
-          isPaid: false,
-          currency: currencies.find((c) => c.id === defaultCurrency?.value)
-            ?.symbol,
-        }}
-      >
-        <Row gutter={[12, 0]}>
-          <Col xs={24} sm={12}>
-            <Form.Item
-              name="description"
-              label={t("services.form.descriptionLabel")}
-              rules={[
-                { required: true, message: t("services.form.descriptionRequired") },
-              ]}
-            >
-              <Input placeholder={t("services.form.descriptionPlaceholder")} />
-            </Form.Item>
-          </Col>
-          <Col xs={24} sm={12}>
-            <Form.Item
-              name="amount"
-              label={t("services.form.amountLabel")}
-              rules={[{ required: true, message: t("services.form.amountRequired") }]}
-            >
-              <InputNumber
-                precision={2}
-                style={{ width: "100%" }}
-                controls={false}
-                placeholder={t("services.form.amountPlaceholder")}
-              />
-            </Form.Item>
-          </Col>
-          <Col xs={24} sm={12}>
-            <Form.Item
-              name="currency"
-              label={t("services.form.currencyLabel")}
-              rules={[{ required: true, message: t("services.form.currencyRequired") }]}
-            >
-              <Select placeholder={t("services.form.currencyPlaceholder")}>
-                {currencies.map((currency) => (
-                  <Select.Option key={currency.id} value={currency.symbol}>
-                    {currency.symbol}
-                  </Select.Option>
-                ))}
-              </Select>
-            </Form.Item>
-          </Col>
-          <Col xs={24} sm={12}>
-            <Form.Item
-              name="isPaid"
-              label={t("services.form.statusLabel")}
-              valuePropName="checked"
-            >
-              <Switch
-                checkedChildren={t("services.form.statusPaidSwitch")}
-                unCheckedChildren={t("services.form.statusPendingSwitch")}
-                onChange={(checked) => setIsPaid(checked)}
-                style={{ width: "100%" }}
-              />
-            </Form.Item>
-          </Col>
-          {isPaid && (
-            <Col xs={24} sm={12}>
-              <Form.Item
-                name="lastPayment"
-                label={t("services.form.paymentDateLabel")}
-                rules={[
-                  {
-                    required: true,
-                    message: t("services.form.paymentDateRequired"),
-                  },
-                ]}
-              >
-                <DatePicker
-                  style={{ width: "100%" }}
-                  format="DD/MM/YYYY"
-                  disabledDate={(d) => d.isAfter(dayjs())}
-                />
-              </Form.Item>
-            </Col>
-          )}
-        </Row>
-
-        <Button
-          htmlType="submit"
-          block
-          variant="solid"
-          icon={<PlusOutlined />}
-          style={{
-            background: isPaid ? token.colorSuccess : token.colorError,
-            borderColor: isPaid ? token.colorSuccess : token.colorError,
-            color: "#fff",
-            transition: "background 0.4s ease, border-color 0.4s ease",
-          }}
-        >
-          {labels.agregar}
-        </Button>
-      </Form>
+      {formEl}
     </Card>
   );
 };

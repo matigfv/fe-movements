@@ -8,6 +8,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- Servicios (versión 2.18.0): el formulario "Nuevo Servicio" pasa a un modal con el botón **Agregar
+  servicio** (queda en línea solo en el estado vacío). Marcar como pagado avisa y permite
+  **Deshacer**: el pago se envía a los 5 segundos o al salir de la pantalla.
 - Movimientos (versión 2.17.0): la barra de selección en lote queda fija abajo y no empuja la tabla;
   los filtros muestran cuántos hay activos ("Filtros · 2") y tienen **Limpiar filtros**, también
   en el estado sin resultados; los filtros de tipo, banco, categoría y moneda se recuerdan por
@@ -24,6 +27,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - README reescrito: demo en GIF (se reproduce dentro de GitHub), tutorial de uso de la app y guía para correr el proyecto.
 
 ### Changed
+- Servicios (versión 2.18.0): "pendiente" va en ámbar sobre tarjetas neutras y el rojo queda solo
+  para errores; los totales del banner se muestran por moneda con su código y las fechas van en
+  DD/MM/YYYY.
+- Servicios: las etiquetas de grupo y dueño salen de cada tarjeta (el dueño aparece solo si hay más
+  de uno en el workspace), las pagadas muestran "Pagado el …" y editar/eliminar pasan a un menú
+  **⋯** con confirmación de borrado centrada que avisa que se puede deshacer.
 - Movimientos: las filas son neutras con una insignia de tipo y el monto destacado (con signo) en
   lugar del tinte rosa/verde; se quitó la columna Grupo y "Cargado por" pasa debajo de la
   descripción; la tabla expone semántica de tabla para lectores de pantalla.
@@ -50,6 +59,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   backend recategoriza otros movimientos del mismo comercio y la lista los muestra al toque.
 
 ### Fixed
+- Servicios (versión 2.18.0): ahora se ve un error cuando falla pagar, agregar, editar o borrar un
+  servicio. Limitación conocida: no hay "Deshacer pago" en tarjetas ya pagadas porque la API no
+  permite revertir un pago.
 - Movimientos (versión 2.17.1): plural correcto en "Categorizar N movimientos", en el contador de
   seleccionados y en los mensajes de borrado/categorizado en lote; formato numérico consistente
   (es-AR) en el aviso de desglose del modal de edición; los diálogos de confirmación de borrado

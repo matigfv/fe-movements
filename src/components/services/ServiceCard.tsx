@@ -5,33 +5,36 @@ import {
   Col,
   DatePicker,
   Divider,
+  Dropdown,
   Flex,
   Form,
   Input,
   InputNumber,
-  Popconfirm,
   Row,
   Tag,
   theme,
-  Tooltip,
   Typography,
 } from "antd";
 import CheckCircleOutlined from "@ant-design/icons/CheckCircleOutlined";
-import CloseCircleOutlined from "@ant-design/icons/CloseCircleOutlined";
+import ClockCircleOutlined from "@ant-design/icons/ClockCircleOutlined";
 import ApartmentOutlined from "@ant-design/icons/ApartmentOutlined";
 import EditOutlined from "@ant-design/icons/EditOutlined";
 import CloseOutlined from "@ant-design/icons/CloseOutlined";
 import CheckOutlined from "@ant-design/icons/CheckOutlined";
 import DeleteOutlined from "@ant-design/icons/DeleteOutlined";
+import MoreOutlined from "@ant-design/icons/MoreOutlined";
+import type { MenuProps } from "antd";
 import type { Service, ServiceToUpdate } from "@/models/Service";
 import React, { useState } from "react";
 import dayjs from "dayjs";
 import { useTranslation } from "react-i18next";
 import { useDeleteService } from "@/apis/hooks/useService";
 import { useCurrentUser } from "@/apis/hooks/useCurrentUser";
+import { formatAmount } from "@/utils/formatAmount";
 import { getServiceLabels } from "@/utils/serviceLabels";
+import { getServiceStatusStyles } from "@/utils/serviceStatusColors";
 import { useUndoableDelete } from "@/utils/useUndoableDelete";
-import { getWorkspaceDisplayName } from "@/utils/workspaceDisplay";
+import { useUndoablePay } from "@/utils/useUndoablePay";
 import PendingDeleteIndicator from "@/components/PendingDeleteIndicator";
 
 const { Text, Title } = Typography;
@@ -42,6 +45,10 @@ interface ServiceCardProps extends React.HTMLAttributes<HTMLElement> {
   handleUpdateServiceMutation: (
     serviceToUpdate: ServiceToUpdate,
   ) => Promise<void> | void;
+  /** Show the owner tag (only useful when the workspace has several owners). */
+  showOwner?: boolean;
+  /** Overrides the undo window for "mark as paid" (tests). */
+  undoPayDelayMs?: number;
 }
 
 interface ServiceFormUpdate {
@@ -54,22 +61,26 @@ export const ServiceCard = React.memo(function ServiceCard({
   service,
   handlePayServiceMutation,
   handleUpdateServiceMutation,
+  showOwner = false,
+  undoPayDelayMs,
 }: ServiceCardProps) {
   const [isEditing, setIsEditing] = useState(false);
   const [form] = Form.useForm<ServiceFormUpdate>();
   const { token } = theme.useToken();
-  const { message } = App.useApp();
+  const { message, modal } = App.useApp();
 
   const { data: currentUser } = useCurrentUser();
   const { t } = useTranslation();
   const labels = getServiceLabels(currentUser?.userType ?? null, t);
 
-  const isPaid = service.isPaid;
-  const statusColor = isPaid ? token.colorSuccess : token.colorError;
-  const statusBg = isPaid ? token.colorSuccessBg : token.colorErrorBg;
-  const statusBorder = isPaid
-    ? token.colorSuccessBorder
-    : token.colorErrorBorder;
+  const { requestPay, isOptimisticallyPaid } = useUndoablePay<Service>({
+    getId: (s) => s.id,
+    onPay: (s) => handlePayServiceMutation(s),
+    getMessage: () => t("services.card.undoPaidMessage", { description: service.description }),
+    delayMs: undoPayDelayMs,
+  });
+  const isPaid = service.isPaid || isOptimisticallyPaid(service);
+  const status = getServiceStatusStyles(token, isPaid);
 
   const handleSaveAmount = () => {
     form
@@ -96,7 +107,7 @@ export const ServiceCard = React.memo(function ServiceCard({
 
   const handlePay = () => {
     setIsEditing(false);
-    handlePayServiceMutation(service);
+    requestPay(service);
   };
 
   const handleCancelEdit = () => {
@@ -112,15 +123,43 @@ export const ServiceCard = React.memo(function ServiceCard({
       getMessage: () => t("services.card.undoDeletedMessage", { description: service.description }),
     });
   const isPendingRemoval = isPendingServiceRemoval(service);
+  const lastPayment = service.lastPayment ? dayjs(service.lastPayment) : null;
+
+  // The delete is undoable (useUndoableDelete shows an "Undo" notification before the real DELETE).
+  const confirmDelete = () =>
+    modal.confirm({
+      centered: true,
+      title: labels.eliminar,
+      content: t("services.card.deleteConfirmDescription"),
+      okText: t("services.card.deleteAction"),
+      okButtonProps: { danger: true },
+      cancelText: t("services.card.cancelButton"),
+      onOk: () => requestDeleteService(service),
+    });
+
+  const menuItems: MenuProps["items"] = [
+    {
+      key: "edit",
+      icon: <EditOutlined />,
+      label: t("services.card.editAction"),
+      onClick: () => setIsEditing(true),
+    },
+    {
+      key: "delete",
+      icon: <DeleteOutlined />,
+      label: t("services.card.deleteAction"),
+      danger: true,
+      onClick: confirmDelete,
+    },
+  ];
 
   return (
     <Card
       style={{
         position: "relative",
         borderRadius: token.borderRadiusLG,
-        borderColor: statusBorder,
-        borderWidth: 2,
-        background: statusBg,
+        borderColor: status.cardBorder,
+        background: status.cardBg,
         ...(isPendingRemoval
           ? { opacity: 0.45, filter: "grayscale(70%)", pointerEvents: "none" }
           : {}),
@@ -148,16 +187,16 @@ export const ServiceCard = React.memo(function ServiceCard({
                 width: 38,
                 height: 38,
                 borderRadius: token.borderRadius,
-                background: isPaid
-                  ? token.colorSuccessBgHover
-                  : token.colorErrorBgHover,
+                background: token.colorFillTertiary,
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
                 flexShrink: 0,
               }}
             >
-              <ApartmentOutlined style={{ color: statusColor, fontSize: 18 }} />
+              <ApartmentOutlined
+                style={{ color: token.colorTextSecondary, fontSize: 18 }}
+              />
             </div>
             {isEditing ? (
               <Form.Item
@@ -186,13 +225,14 @@ export const ServiceCard = React.memo(function ServiceCard({
               </Title>
             )}
           </Flex>
-          <Tag
-            icon={isPaid ? <CheckCircleOutlined /> : <CloseCircleOutlined />}
-            color={isPaid ? "success" : "error"}
-            style={{ borderRadius: 16, fontWeight: 600, flexShrink: 0 }}
+          <Text
+            data-testid="service-status"
+            strong
+            style={{ color: status.labelColor, flexShrink: 0 }}
           >
+            {isPaid ? <CheckCircleOutlined /> : <ClockCircleOutlined />}{" "}
             {isPaid ? t("services.card.statusPaid") : t("services.card.statusPending")}
-          </Tag>
+          </Text>
         </Flex>
 
         <Divider style={{ margin: "12px 0" }} />
@@ -219,10 +259,12 @@ export const ServiceCard = React.memo(function ServiceCard({
                 />
               </Form.Item>
             ) : (
-              <Title level={3} style={{ margin: 0, color: statusColor }}>
-                {service.amount.toLocaleString("es-AR", {
-                  minimumFractionDigits: 2,
-                })}{" "}
+              <Title
+                level={3}
+                data-testid="service-amount"
+                style={{ margin: 0, color: status.amountColor }}
+              >
+                {formatAmount(service.amount, null, 2, 2)}{" "}
                 <Text style={{ fontSize: 14, color: token.colorTextSecondary }}>
                   {service.currency?.symbol}
                 </Text>
@@ -230,51 +272,23 @@ export const ServiceCard = React.memo(function ServiceCard({
             )}
           </div>
 
-          {/* Action buttons */}
           {!isEditing && (
-            <Flex gap={4}>
-              <Tooltip title={t("services.card.editTooltip")}>
-                <Button
-                  type="text"
-                  icon={<EditOutlined style={{ fontSize: 18 }} />}
-                  onClick={() => setIsEditing(true)}
-                  aria-label={t("services.card.editAriaLabel", {
-                    description: service.description,
-                  })}
-                />
-              </Tooltip>
-              <Popconfirm
-                title={labels.eliminar}
-                description={t("services.card.deleteConfirmDescription")}
-                onConfirm={() => requestDeleteService(service)}
-                okText={t("services.card.yes")}
-                cancelText={t("services.card.no")}
-                placement="topRight"
-              >
-                <Button
-                  type="text"
-                  danger
-                  icon={<DeleteOutlined style={{ fontSize: 18 }} />}
-                  aria-label={t("services.card.deleteAriaLabel", {
-                    description: service.description,
-                  })}
-                />
-              </Popconfirm>
-            </Flex>
+            <Dropdown menu={{ items: menuItems }} trigger={["click"]} placement="bottomRight">
+              <Button
+                type="text"
+                aria-label={t("services.card.moreActions")}
+                icon={<MoreOutlined style={{ fontSize: 20 }} />}
+                style={{ width: 44, height: 44, color: token.colorTextSecondary }}
+              />
+            </Dropdown>
           )}
         </Flex>
 
-        {/* Grupo + usuario */}
-        <div style={{ marginTop: 8 }}>
-          <Flex gap={6} wrap="wrap" style={{ marginTop: 4 }}>
-            <Tag color={isPaid ? "green" : "red"} variant="solid">
-              {getWorkspaceDisplayName(service.workspaceName, t)}
-            </Tag>
-            <Tag color={isPaid ? "green" : "red"} variant="solid">
-              {service.user}
-            </Tag>
+        {showOwner && (
+          <Flex gap={6} wrap="wrap" style={{ marginTop: 8 }}>
+            <Tag>{service.user}</Tag>
           </Flex>
-        </div>
+        )}
 
         {/* Último pago */}
         <div style={{ marginTop: 8 }}>
@@ -288,9 +302,11 @@ export const ServiceCard = React.memo(function ServiceCard({
             </Form.Item>
           ) : (
             <Text style={{ fontSize: 13 }}>
-              <Text strong>{t("services.card.lastPaymentPrefix")} </Text>
+              <Text strong>
+                {t(isPaid ? "services.card.paidOnPrefix" : "services.card.lastPaymentPrefix")}{" "}
+              </Text>
               <Text type="secondary">
-                {service.lastPayment?.toString() ?? "—"}
+                {lastPayment?.isValid() ? lastPayment.format("DD/MM/YYYY") : "—"}
               </Text>
             </Text>
           )}
@@ -327,11 +343,10 @@ export const ServiceCard = React.memo(function ServiceCard({
         {!isPaid && !isEditing && (
           <>
             <Divider style={{ margin: "12px 0" }} />
+            {/* Default outline: neutral text keeps >=4.5:1 (white on the default primary is ~4:1) and avoids a second hue next to the amber status. */}
             <Button
               block
-              variant="outlined"
               icon={<CheckCircleOutlined />}
-              style={{ borderColor: statusColor, color: statusColor }}
               onClick={handlePay}
             >
               {t("services.card.markAsPaidButton")}

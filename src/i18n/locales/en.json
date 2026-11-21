@@ -4,6 +4,7 @@
     "undo": {
       "itemDeleted": "Item deleted",
       "itemsDeleted": "{{count}} items deleted",
+      "itemPaid": "Payment recorded",
       "undoButton": "Undo",
       "deleteFailed": "Could not delete the item"
     },
@@ -877,6 +878,11 @@
       "allPaidTitle": "You're all caught up!",
       "allPaidDescription": "You've paid all {{count}} {{plural}} this month."
     },
+    "errors": {
+      "payFailed": "Could not mark it as paid. Try again.",
+      "updateFailed": "Could not update the service. Try again.",
+      "addFailed": "Could not add the service. Try again."
+    },
     "card": {
       "amountMustBePositive": "The amount must be greater than 0",
       "descriptionRequired": "Description is required",
@@ -884,15 +890,15 @@
       "statusPending": "Pending",
       "amountLabel": "Amount",
       "amountRequired": "Amount is required",
-      "editTooltip": "Edit",
-      "editAriaLabel": "Edit service {{description}}",
-      "deleteConfirmDescription": "This action cannot be undone.",
-      "yes": "Yes",
-      "no": "No",
-      "deleteAriaLabel": "Delete service {{description}}",
+      "moreActions": "More actions",
+      "editAction": "Edit",
+      "deleteAction": "Delete",
+      "deleteConfirmDescription": "You'll be able to undo it for a few seconds.",
+      "undoPaidMessage": "{{description}} marked as paid",
       "undoDeletedMessage": "{{description}} deleted",
       "lastPaymentLabel": "Last payment",
       "lastPaymentPrefix": "Last payment:",
+      "paidOnPrefix": "Paid on",
       "saveButton": "Save",
       "cancelButton": "Cancel",
       "markAsPaidButton": "Mark as paid"
@@ -1090,7 +1096,7 @@
         "text1": "Services are recurring expenses that repeat every month. They can be personal (Netflix, Spotify, electricity, gas) or business-related (hosting, domain, software, coworking, insurance).",
         "list1": [
           "Go to the \"Services\" section from the main menu",
-          "Fill in the form on the first card to add a new service",
+          "Click the \"Add Service\" button and fill in the form to add a new one",
           "Enter the name, monthly amount and whether it's already paid this month",
           "Each service appears as a card you can mark as paid",
           "The summary at the top shows how many services are up to date and how many are pending"
