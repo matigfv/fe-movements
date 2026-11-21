@@ -392,6 +392,42 @@ describe("MonthlySummary", () => {
     });
   });
 
+  describe("number format", () => {
+    it.each(["ARS", "EUR", "USD"])(
+      "renders %s KPI values in es-AR, with the sign before the code",
+      async (code) => {
+        const summary: WorkspaceSummary = {
+          ...mockSummaryOneMoneda,
+          perCurrency: [
+            {
+              ...mockSummaryOneMoneda.perCurrency[0],
+              currency: code,
+              totalIncome: 5018.05,
+              totalSpent: 5634.51,
+              net: -616.46,
+            },
+          ],
+        };
+        server.use(
+          http.get("http://localhost:8080/workspaces/:workspaceId/summary/monthly", () =>
+            HttpResponse.json(summary),
+          ),
+        );
+        render(<MonthlySummary />, { wrapper: makeWrapper() });
+        await screen.findByText("HOGAR");
+
+        const text = (title: string) =>
+          screen
+            .getByText(title)
+            .closest(".ant-card")!
+            .querySelector(".ant-statistic-content")!.textContent;
+        expect(text("Ingresado")).toBe(`${code} 5.018,05`);
+        expect(text("Gastado")).toBe(`-${code} 5.634,51`);
+        expect(text("Diferencia")).toBe(`-${code} 616,46`);
+      },
+    );
+  });
+
   describe("error state", () => {
     it("shows an error message when the request fails", async () => {
       server.use(

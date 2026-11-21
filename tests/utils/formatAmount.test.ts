@@ -20,4 +20,10 @@ describe("formatAmount", () => {
   it("puts the minus sign before the code and honors fraction digits", () => {
     expect(formatAmount(-1383.08, "USD", 2)).toBe("-USD 1.383,08");
   });
+
+  it("pads to the minimum fraction digits when asked", () => {
+    expect(formatAmount(5018.5, "EUR", 2, 2)).toBe("EUR 5.018,50");
+    expect(formatAmount(-616.46, "EUR", 2, 2)).toBe("-EUR 616,46");
+    expect(formatAmount(5018, "EUR", 2)).toBe("EUR 5.018");
+  });
 });

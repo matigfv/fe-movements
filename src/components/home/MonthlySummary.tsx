@@ -142,7 +142,7 @@ function KpiCard({
             <Statistic
               value={Math.abs(amount)}
               prefix={`${isNegative ? "-" : ""}${currency} `}
-              precision={2}
+              formatter={(value) => formatAmount(Number(value), null, 2, 2)}
               styles={{
                 content: {
                   fontSize: hero ? 34 : 18,
