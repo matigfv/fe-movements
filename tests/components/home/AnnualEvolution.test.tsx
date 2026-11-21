@@ -126,6 +126,54 @@ describe("AnnualEvolution - currency symbol", () => {
   });
 });
 
+describe("AnnualEvolution - accessibility", () => {
+  beforeEach(() => {
+    window.localStorage.clear();
+  });
+
+  it("names the chart for assistive tech while the chart is shown", async () => {
+    renderWithProviders(<AnnualEvolution year={2026} />);
+
+    expect(
+      await screen.findByRole("img", { name: /Evolución Anual.*2026/ }),
+    ).toBeInTheDocument();
+  });
+
+  it("toggles to a month x series table and back", async () => {
+    const user = userEvent.setup();
+    renderWithProviders(<AnnualEvolution year={2026} />);
+
+    await user.click(await screen.findByRole("button", { name: "Ver datos en tabla" }));
+
+    expect(screen.queryByRole("img", { name: /Evolución Anual/ })).not.toBeInTheDocument();
+    expect(screen.getAllByRole("columnheader").map((h) => h.textContent)).toEqual([
+      "Mes",
+      "ARS - Gasto",
+      "ARS - Ahorro",
+      "USD - Gasto",
+      "USD - Ahorro",
+    ]);
+    const rows = screen.getAllByRole("row").slice(1);
+    expect(rows).toHaveLength(12);
+    expect(rows[0].textContent).toBe("EneARS 1.000ARS 200USD 100USD 20");
+    expect(rows[1].textContent).toBe("FebARS 2.000ARS 300——");
+
+    await user.click(screen.getByRole("button", { name: "Ver gráfico" }));
+    expect(screen.queryByRole("table")).not.toBeInTheDocument();
+    expect(screen.getByRole("img", { name: /Evolución Anual/ })).toBeInTheDocument();
+  });
+
+  it("toggle is operable with the keyboard", async () => {
+    const user = userEvent.setup();
+    renderWithProviders(<AnnualEvolution year={2026} />);
+
+    const toggle = await screen.findByRole("button", { name: "Ver datos en tabla" });
+    toggle.focus();
+    await user.keyboard("{Enter}");
+    expect(screen.getByRole("table")).toBeInTheDocument();
+  });
+});
+
 describe("AnnualEvolution - theme colors", () => {
   const strokeUnder = async (algorithm: typeof theme.darkAlgorithm) => {
     const { unmount } = renderWithProviders(

@@ -1,5 +1,6 @@
 import { render, screen } from "@testing-library/react";
 import { ConfigProvider, theme } from "antd";
+import userEvent from "@testing-library/user-event";
 import { describe, it, expect, vi } from "vitest";
 import CategoryPieChart from "@/components/home/CategoryPieChart";
 import { CurrencyEnum } from "@/enums/CurrencyEnum";
@@ -57,6 +58,65 @@ describe("CategoryPieChart - currency symbol", () => {
     expect([...container.querySelectorAll("text")].map((n) => n.textContent)).toContain("EUR 1.234");
     expect(screen.getByTestId("tooltip").textContent).toContain("EUR 1.234");
     expect(container.textContent).not.toContain("$");
+  });
+});
+
+describe("CategoryPieChart - accessibility", () => {
+  const renderPie = () =>
+    render(
+      <CategoryPieChart
+        data={[
+          { name: "Hogar", value: 750 },
+          { name: "Ocio", value: 250 },
+        ]}
+        isFetching={false}
+        filters={{
+          currency: CurrencyEnum.ARS,
+          dates: [new Date(2026, 9, 1), new Date(2026, 9, 31)],
+        }}
+      />,
+    );
+
+  it("names the chart for assistive tech while the chart is shown", () => {
+    renderPie();
+
+    expect(
+      screen.getByRole("img", { name: /Gastos por Categoría.*ARS.*octubre 2026/ }),
+    ).toBeInTheDocument();
+  });
+
+  it("toggles to a table with name, amount and percentage, and back", async () => {
+    const user = userEvent.setup();
+    renderPie();
+
+    await user.click(screen.getByRole("button", { name: "Ver datos en tabla" }));
+
+    expect(screen.queryByRole("img")).not.toBeInTheDocument();
+    expect(screen.getAllByRole("columnheader").map((h) => h.textContent)).toEqual([
+      "Categoría",
+      "Monto",
+      "%",
+    ]);
+    const rows = screen.getAllByRole("row").slice(1);
+    expect(rows.map((r) => r.textContent)).toEqual([
+      "HogarARS 75075.0%",
+      "OcioARS 25025.0%",
+    ]);
+
+    await user.click(screen.getByRole("button", { name: "Ver gráfico" }));
+    expect(screen.queryByRole("table")).not.toBeInTheDocument();
+    expect(screen.getByRole("img")).toBeInTheDocument();
+  });
+
+  it("toggle is reachable by keyboard", async () => {
+    const user = userEvent.setup();
+    renderPie();
+
+    await user.tab();
+    const toggle = screen.getByRole("button", { name: "Ver datos en tabla" });
+    expect(toggle).toHaveFocus();
+    await user.keyboard("{Enter}");
+    expect(screen.getByRole("table")).toBeInTheDocument();
   });
 });
 

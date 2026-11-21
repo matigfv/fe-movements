@@ -90,7 +90,7 @@ export default function ProjectionChart() {
                 name={t("home.projection.balanceLegend")}
                 stroke={isPositiveTrend ? token.colorSuccess : token.colorError}
                 strokeWidth={2}
-                dot={{ r: 4 }}
+                dot={{ r: 2 }}
                 activeDot={{ r: 6 }}
               />
             </LineChart>

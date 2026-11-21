@@ -1,4 +1,4 @@
-import { Card, Empty, Flex, Spin, theme, Typography } from "antd";
+import { Card, Empty, Flex, Space, Spin, theme, Typography } from "antd";
 import LoadingOutlined from "@ant-design/icons/LoadingOutlined";
 import {
   Cell,
@@ -8,11 +8,14 @@ import {
   ResponsiveContainer,
   Tooltip,
 } from "recharts";
+import type { PieLabelRenderProps } from "recharts";
 import dayjs from "dayjs";
 import "dayjs/locale/es";
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { getChartColors, getChartTheme } from "@/utils/chartTheme";
+import ChartDataTable, { ChartViewToggle } from "@/components/home/ChartDataTable";
+import { sliceLabel } from "@/utils/chartLabels";
 import { formatAmount } from "@/utils/formatAmount";
 import type { BalanceFilters } from "@/models/BalanceFilters";
 
@@ -34,6 +37,7 @@ export default function CategoryPieChart({
 }: CategoryPieChartProps) {
   const { token } = theme.useToken();
   const { t } = useTranslation();
+  const [showTable, setShowTable] = useState(false);
 
   const colors = getChartColors(token);
   const chartTheme = getChartTheme(token);
@@ -48,6 +52,11 @@ export default function CategoryPieChart({
   const period = from.isSame(to, "month")
     ? from.format("MMMM YYYY")
     : `${from.format("DD/MM/YYYY")} – ${to.format("DD/MM/YYYY")}`;
+  const ariaLabel = t("home.categoryPieAria", {
+    title: t("home.categoryPieTitle"),
+    currency: filters.currency,
+    period,
+  });
   const contextLabel = (
     <Typography.Text type="secondary" style={{ fontSize: 12, fontWeight: 400, textTransform: "capitalize" }}>
       {`${filters.currency} · ${period}`}
@@ -97,7 +106,15 @@ export default function CategoryPieChart({
   return (
     <Card
       title={t("home.categoryPieTitle")}
-      extra={contextLabel}
+      extra={
+        <Space size="small">
+          <ChartViewToggle
+            showingTable={showTable}
+            onToggle={() => setShowTable((v) => !v)}
+          />
+          {contextLabel}
+        </Space>
+      }
       className="fade-in-up"
       style={{
         borderRadius: token.borderRadiusLG,
@@ -106,6 +123,23 @@ export default function CategoryPieChart({
         animationDelay: "300ms",
       }}
     >
+      {showTable ? (
+        <ChartDataTable
+          label={ariaLabel}
+          rowKey="name"
+          rows={data.map((item) => ({
+            name: item.name,
+            amount: formatAmount(item.value, filters.currency, 2),
+            percent: `${total > 0 ? ((item.value / total) * 100).toFixed(1) : "0.0"}%`,
+          }))}
+          columns={[
+            { title: t("home.tableCategory"), dataIndex: "name" },
+            { title: t("home.tableAmount"), dataIndex: "amount", align: "right" },
+            { title: t("home.tablePercent"), dataIndex: "percent", align: "right" },
+          ]}
+        />
+      ) : (
+      <div role="img" aria-label={ariaLabel}>
       <ResponsiveContainer width="100%" height={300}>
         <PieChart>
           <Pie
@@ -117,7 +151,22 @@ export default function CategoryPieChart({
             innerRadius={70}
             outerRadius={110}
             paddingAngle={3}
-            label={false}
+            label={({ x, y, textAnchor, name, percent }: PieLabelRenderProps) => {
+              const text = sliceLabel(String(name), Number(percent));
+              return text ? (
+                <text
+                  x={x}
+                  y={y}
+                  textAnchor={textAnchor}
+                  dominantBaseline="central"
+                  style={{ fontSize: 12, fill: token.colorText, fontFamily: "inherit" }}
+                >
+                  {text}
+                </text>
+              ) : (
+                <g />
+              );
+            }}
           >
             {data.map((_, idx) => (
               <Cell key={idx} fill={colors[idx % colors.length]} />
@@ -165,6 +214,8 @@ export default function CategoryPieChart({
           <Legend formatter={chartTheme.legendFormatter} />
         </PieChart>
       </ResponsiveContainer>
+      </div>
+      )}
     </Card>
   );
 }
