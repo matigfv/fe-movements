@@ -59,6 +59,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   backend recategoriza otros movimientos del mismo comercio y la lista los muestra al toque.
 
 ### Fixed
+- Servicios (versión 2.18.1): los contadores del resumen usan el plural correcto ("1 servicio al día",
+  "1 servicio pendiente"; "1 gasto al día" en cuentas de empresa).
+- Tests (versión 2.18.1): limpieza global de las notificaciones de antd para evitar el error intermitente
+  "window is not defined" al final de la corrida.
 - Servicios (versión 2.18.0): ahora se ve un error cuando falla pagar, agregar, editar o borrar un
   servicio. Limitación conocida: no hay "Deshacer pago" en tarjetas ya pagadas porque la API no
   permite revertir un pago.

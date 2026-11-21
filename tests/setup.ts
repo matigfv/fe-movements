@@ -6,6 +6,9 @@ dayjs.extend(relativeTime);
 dayjs.locale("es");
 
 import "@testing-library/jest-dom";
+import { act } from "@testing-library/react";
+import { notification } from "antd";
+import { afterEach, vi } from "vitest";
 import i18n from "../src/i18n/config";
 
 // Deterministic language for tests regardless of jsdom's navigator locale — matches the app's
@@ -48,4 +51,16 @@ Object.defineProperty(window, "matchMedia", {
     removeEventListener: () => {},
     dispatchEvent: () => false,
   }),
+});
+
+// antd's static `notification` renders in its own React root outside Testing Library's tree. Destroy
+// it and let its pending scheduler work flush while jsdom is alive; otherwise it runs after teardown
+// ("ReferenceError: window is not defined"). Only pays the cost when a notification is present.
+afterEach(async () => {
+  if (typeof document === "undefined" || !document.querySelector(".ant-notification")) return;
+  await act(async () => {
+    notification.destroy();
+    // Fake timers would hang a real timeout; destroying is all we can do in that case.
+    if (!vi.isFakeTimers()) await new Promise((resolve) => setTimeout(resolve, 100));
+  });
 });

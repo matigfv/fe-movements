@@ -101,10 +101,10 @@ export function ServiceSummary({ services, isFetching }: ServiceSummaryProps) {
           />
           <div style={{ display: "flex", justifyContent: "space-between", marginTop: 8 }}>
             <Text style={{ fontSize: 12, color: token.colorSuccess, fontWeight: 600 }}>
-              {paidServices.length} {labels.alDia}
+              {t("services.labels.alDia", { context: labels.context, count: paidServices.length })}
             </Text>
             <Text style={{ fontSize: 12, color: accent, fontWeight: 600 }}>
-              {unpaidServices.length} {labels.pendientes}
+              {t("services.labels.pendientes", { context: labels.context, count: unpaidServices.length })}
             </Text>
           </div>
         </>

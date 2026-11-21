@@ -17,8 +17,6 @@ describe("getServiceLabels", () => {
     expect(labels.agregar).toBe("Agregar Servicio");
     expect(labels.total).toBe("Total Servicios");
     expect(labels.registrados).toBe("servicios registrados");
-    expect(labels.alDia).toBe("servicios al día");
-    expect(labels.pendientes).toBe("servicios pendientes");
     expect(labels.eliminar).toBe("¿Eliminar el servicio?");
     expect(labels.tourTitle).toBe("Servicios");
     expect(labels.tourDescription).toContain("suscripciones y servicios");
@@ -35,8 +33,6 @@ describe("getServiceLabels", () => {
     expect(labels.agregar).toBe("Agregar Gasto");
     expect(labels.total).toBe("Total Gastos");
     expect(labels.registrados).toBe("gastos registrados");
-    expect(labels.alDia).toBe("gastos al día");
-    expect(labels.pendientes).toBe("gastos pendientes");
     expect(labels.eliminar).toBe("¿Eliminar el gasto recurrente?");
     expect(labels.tourTitle).toBe("Gastos Recurrentes");
     expect(labels.tourDescription).toContain("gastos operativos");
@@ -64,8 +60,6 @@ describe("getServiceLabels", () => {
     expect(labels).toHaveProperty("agregar");
     expect(labels).toHaveProperty("total");
     expect(labels).toHaveProperty("registrados");
-    expect(labels).toHaveProperty("alDia");
-    expect(labels).toHaveProperty("pendientes");
     expect(labels).toHaveProperty("eliminar");
     expect(labels).toHaveProperty("tourTitle");
     expect(labels).toHaveProperty("tourDescription");

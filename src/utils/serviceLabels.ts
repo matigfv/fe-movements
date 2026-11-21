@@ -13,6 +13,9 @@ export const getServiceLabels = (userType: UserTypeEnum | null, t: TFunction) =>
   const s = (key: string) => t(`services.labels.${key}`, { context });
 
   return {
+    // Exposed so callers can resolve count-based (plural) keys such as alDia/pendientes themselves.
+    context,
+
     // Singular
     singular: s("singular"),
     singularLower: s("singularLower"),
@@ -26,8 +29,6 @@ export const getServiceLabels = (userType: UserTypeEnum | null, t: TFunction) =>
     agregar: s("agregar"),
     total: s("total"),
     registrados: s("registrados"),
-    alDia: s("alDia"),
-    pendientes: s("pendientes"),
     eliminar: s("eliminar"),
     updateSuccess: s("updateSuccess"),
     addSuccess: s("addSuccess"),
