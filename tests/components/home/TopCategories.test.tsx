@@ -5,7 +5,10 @@ import { http, HttpResponse } from "msw";
 import { setupServer } from "msw/node";
 import dayjs from "dayjs";
 import "dayjs/locale/es";
+import { theme } from "antd";
 import TopCategories from "@/components/home/TopCategories";
+import { getChartColors } from "@/utils/chartTheme";
+import { getCategoryColor } from "@/utils/categoryColor";
 import type { BalanceByCategory } from "@/models/BalanceByCategory";
 
 const server = setupServer();
@@ -186,6 +189,32 @@ describe("TopCategories", () => {
 
     expect(await screen.findByText("EUR 50.000")).toBeInTheDocument();
     expect(screen.queryByText(/\$/)).not.toBeInTheDocument();
+  });
+
+  it("colors each dot by category name, matching the donut", async () => {
+    server.use(
+      http.get("*/balance/category", () => HttpResponse.json(mockBalanceData)),
+      http.get("*/currencies", () => HttpResponse.json(mockCurrencies)),
+      http.get("*/settings/default/DEFAULT_CURRENCY", () =>
+        HttpResponse.json(mockUserDefault),
+      ),
+    );
+
+    renderWithProviders(<TopCategories />);
+
+    const palette = getChartColors(theme.getDesignToken());
+    await screen.findByText("Vivienda");
+    const items = screen.getAllByRole("listitem");
+    const normalize = (c: string) => {
+      const el = document.createElement("i");
+      el.style.backgroundColor = c;
+      return el.style.backgroundColor;
+    };
+    const names = ["Vivienda", "Alimentación", "Transporte", "Entretenimiento", "Salud"];
+    items.forEach((li, i) => {
+      const dot = li.querySelector<HTMLElement>("div > div > div");
+      expect(dot?.style.backgroundColor).toBe(normalize(getCategoryColor(names[i], palette)));
+    });
   });
 
   it("ordena categorías por total descendente", async () => {

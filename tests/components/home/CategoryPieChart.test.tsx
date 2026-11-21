@@ -5,6 +5,7 @@ import { describe, it, expect, vi } from "vitest";
 import CategoryPieChart from "@/components/home/CategoryPieChart";
 import { CurrencyEnum } from "@/enums/CurrencyEnum";
 import { getChartColors } from "@/utils/chartTheme";
+import { getCategoryColor } from "@/utils/categoryColor";
 
 vi.mock("recharts", async () => (await import("./chartTestMocks")).rechartsStub);
 
@@ -120,6 +121,35 @@ describe("CategoryPieChart - accessibility", () => {
   });
 });
 
+describe("CategoryPieChart - stable category colors", () => {
+  const filters = {
+    currency: CurrencyEnum.ARS,
+    dates: [new Date(2026, 9, 1), new Date(2026, 9, 31)] as [Date, Date],
+  };
+  const fillsFor = (names: string[]) => {
+    const { unmount } = render(
+      <CategoryPieChart
+        data={names.map((name, i) => ({ name, value: 10 - i }))}
+        isFetching={false}
+        filters={filters}
+      />,
+    );
+    const fills = screen.getAllByTestId("cell").map((c) => c.getAttribute("data-fill"));
+    unmount();
+    return fills;
+  };
+
+  it("colors a category by its name, not by its position", () => {
+    const colors = getChartColors(theme.getDesignToken());
+    const names = ["Viaje", "Transporte", "Hogar"];
+
+    expect(fillsFor(names)).toEqual(names.map((n) => getCategoryColor(n, colors)));
+    expect(fillsFor([...names].reverse())).toEqual(
+      [...names].reverse().map((n) => getCategoryColor(n, colors)),
+    );
+  });
+});
+
 describe("CategoryPieChart - theme colors", () => {
   const filters = {
     currency: CurrencyEnum.ARS,
@@ -148,8 +178,12 @@ describe("CategoryPieChart - theme colors", () => {
     const lightFills = fillsUnder(theme.defaultAlgorithm);
     const darkFills = fillsUnder(theme.darkAlgorithm);
 
-    expect(lightFills).toEqual(getChartColors(light).slice(0, 2));
-    expect(darkFills).toEqual(getChartColors(dark).slice(0, 2));
+    expect(lightFills).toEqual(
+      ["Hogar", "Ocio"].map((n) => getCategoryColor(n, getChartColors(light))),
+    );
+    expect(darkFills).toEqual(
+      ["Hogar", "Ocio"].map((n) => getCategoryColor(n, getChartColors(dark))),
+    );
     expect(darkFills).not.toEqual(lightFills);
   });
 });

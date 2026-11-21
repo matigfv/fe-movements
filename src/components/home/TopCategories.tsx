@@ -10,6 +10,7 @@ import { useCurrency } from "@/apis/hooks/useCurrency";
 import { formatAmount } from "@/utils/formatAmount";
 import { CurrencyEnum } from "@/enums/CurrencyEnum";
 import { getChartColors } from "@/utils/chartTheme";
+import { getCategoryColor } from "@/utils/categoryColor";
 
 const { Text } = Typography;
 
@@ -49,10 +50,10 @@ export default function TopCategories() {
     const sorted = [...data].sort((a, b) => b.total - a.total).slice(0, 5);
     const total = sorted.reduce((sum, item) => sum + item.total, 0);
     const colors = getChartColors(token);
-    return sorted.map((item, idx) => ({
+    return sorted.map((item) => ({
       ...item,
       percentage: total > 0 ? ((item.total / total) * 100).toFixed(1) : "0.0",
-      color: colors[idx % colors.length],
+      color: getCategoryColor(item.category, colors),
     }));
   }, [data, token]);
 
