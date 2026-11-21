@@ -10,11 +10,14 @@ import {
   beforeAll,
   afterEach,
   afterAll,
+  vi,
 } from "vitest";
 import { http, HttpResponse } from "msw";
 import { setupServer } from "msw/node";
 import AnnualEvolution from "@/components/home/AnnualEvolution";
 import type { MonthlyEvolutionRecord } from "@/models/Balance";
+
+vi.mock("recharts", async () => (await import("./chartTestMocks")).rechartsStub);
 
 const STORAGE_KEY = "annualEvolution.selectedCurrencies";
 
@@ -104,5 +107,19 @@ describe("AnnualEvolution — context label", () => {
     renderWithProviders(<AnnualEvolution year={2026} />);
 
     expect(await screen.findByText("2026")).toBeInTheDocument();
+  });
+});
+
+describe("AnnualEvolution - currency symbol", () => {
+  it("prints the series currency in the tooltip instead of a bare $", async () => {
+    server.use(
+      http.get("http://localhost:8080/balance/monthly-evolution", () =>
+        HttpResponse.json([{ month: 1, currencySymbol: "EUR", spent: 1234, savings: 0 }]),
+      ),
+    );
+    renderWithProviders(<AnnualEvolution year={2026} />);
+
+    const tip = await screen.findByTestId("tooltip");
+    expect(tip.textContent).toBe("EUR 1.234");
   });
 });

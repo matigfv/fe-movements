@@ -5,6 +5,7 @@ import dayjs from "dayjs";
 import "dayjs/locale/es";
 import { useTranslation } from "react-i18next";
 import {
+  Button,
   Card,
   Col,
   Flex,
@@ -20,6 +21,7 @@ import { useUserDefault } from "@/apis/hooks/useSettings";
 import { useWorkspaceSummary } from "@/apis/hooks/useWorkspaceSummary";
 import type { WorkspaceSummaryPerCurrency } from "@/models/WorkspaceSummary";
 import BudgetAlert from "@/components/home/BudgetAlert";
+import { formatAmount } from "@/utils/formatAmount";
 
 dayjs.locale("es");
 
@@ -32,9 +34,10 @@ interface DeltaBadgeProps {
   delta: number;
   /** Whether an increase is good news (income, net) or bad news (expenses). */
   upIsGood: boolean;
+  currency: string;
 }
 
-function DeltaBadge({ delta, upIsGood }: DeltaBadgeProps) {
+function DeltaBadge({ delta, upIsGood, currency }: DeltaBadgeProps) {
   const { token } = theme.useToken();
   const { t } = useTranslation();
 
@@ -50,10 +53,7 @@ function DeltaBadge({ delta, upIsGood }: DeltaBadgeProps) {
   // Arrow follows the real direction; color (and the words) carry good/bad.
   const color = isUp === upIsGood ? token.colorSuccess : token.colorError;
   const Icon = isUp ? ArrowUpOutlined : ArrowDownOutlined;
-  const amount = `$${new Intl.NumberFormat("es-AR", {
-    style: "decimal",
-    maximumFractionDigits: 0,
-  }).format(Math.abs(delta))}`;
+  const amount = formatAmount(Math.abs(delta), currency);
 
   return (
     <Flex align="center" gap={4}>
@@ -77,6 +77,7 @@ interface KpiCardProps {
   amount: number;
   delta: number;
   upIsGood: boolean;
+  currency: string;
   icon: React.ReactNode;
   iconBg: string;
   loading: boolean;
@@ -89,6 +90,7 @@ function KpiCard({
   amount,
   delta,
   upIsGood,
+  currency,
   icon,
   iconBg,
   loading,
@@ -139,7 +141,7 @@ function KpiCard({
             </Text>
             <Statistic
               value={Math.abs(amount)}
-              prefix={isNegative ? "-$" : "$"}
+              prefix={`${isNegative ? "-" : ""}${currency} `}
               precision={2}
               styles={{
                 content: {
@@ -152,7 +154,7 @@ function KpiCard({
               }}
               style={{ marginBottom: 4 }}
             />
-            <DeltaBadge delta={delta} upIsGood={upIsGood} />
+            <DeltaBadge delta={delta} upIsGood={upIsGood} currency={currency} />
           </div>
         </Flex>
       </Card>
@@ -180,6 +182,7 @@ function CurrencyPanel({ data, loading }: CurrencyPanelProps) {
           amount={net}
           delta={vsPreviousMonth.incomeDelta - vsPreviousMonth.spentDelta}
           upIsGood
+          currency={data.currency}
           icon={
             net >= 0 ? (
               <ArrowUpOutlined style={{ color: token.colorSuccess }} />
@@ -197,6 +200,7 @@ function CurrencyPanel({ data, loading }: CurrencyPanelProps) {
           amount={totalIncome}
           delta={vsPreviousMonth.incomeDelta}
           upIsGood
+          currency={data.currency}
           icon={<ArrowUpOutlined style={{ color: token.colorSuccess }} />}
           iconBg={token.colorSuccessBg}
           loading={loading}
@@ -207,6 +211,7 @@ function CurrencyPanel({ data, loading }: CurrencyPanelProps) {
           amount={-totalSpent}
           delta={vsPreviousMonth.spentDelta}
           upIsGood={false}
+          currency={data.currency}
           icon={<ArrowDownOutlined style={{ color: token.colorError }} />}
           iconBg={token.colorErrorBg}
           loading={loading}
@@ -254,7 +259,7 @@ export default function MonthlySummary() {
   const { data: defaultWorkspace } = useUserDefault("DEFAULT_WORKSPACE");
   const workspaceId = defaultWorkspace?.value ?? null;
 
-  const { data, isFetching, isError } = useWorkspaceSummary(
+  const { data, isFetching, isError, refetch } = useWorkspaceSummary(
     workspaceId,
     year,
     month,
@@ -262,9 +267,17 @@ export default function MonthlySummary() {
 
   if (isError) {
     return (
-      <Text type="secondary" style={{ display: "block", paddingTop: 16 }}>
-        {t("home.monthlySummary.errorMessage")}
-      </Text>
+      <Flex align="center" gap={8} wrap="wrap" style={{ paddingTop: 16 }}>
+        <Text type="secondary">{t("home.monthlySummary.errorMessage")}</Text>
+        <Button
+          type="link"
+          size="small"
+          loading={isFetching}
+          onClick={() => void refetch()}
+        >
+          {t("home.monthlySummary.retry")}
+        </Button>
+      </Flex>
     );
   }
 
@@ -361,14 +374,14 @@ export default function MonthlySummary() {
             <ArrowUpOutlined style={{ color: token.colorSuccess, fontSize: 12 }} />
             <Text type="secondary" style={{ fontSize: 12 }}>{t("home.monthlySummary.incomeLabel")}</Text>
             <Text style={{ fontSize: 12, fontVariantNumeric: "tabular-nums" }}>
-              ${(totalUSD.totalIncome).toLocaleString("es-AR", { maximumFractionDigits: 2 })}
+              {formatAmount(totalUSD.totalIncome, "USD", 2)}
             </Text>
           </Flex>
           <Flex align="center" gap={6}>
             <ArrowDownOutlined style={{ color: token.colorError, fontSize: 12 }} />
             <Text type="secondary" style={{ fontSize: 12 }}>{t("home.monthlySummary.expenseLabel")}</Text>
             <Text style={{ fontSize: 12, fontVariantNumeric: "tabular-nums" }}>
-              ${(totalUSD.totalSpent).toLocaleString("es-AR", { maximumFractionDigits: 2 })}
+              {formatAmount(totalUSD.totalSpent, "USD", 2)}
             </Text>
           </Flex>
           <Flex align="center" gap={6}>
@@ -385,8 +398,7 @@ export default function MonthlySummary() {
                 color: totalUSD.net >= 0 ? token.colorSuccess : token.colorError,
               }}
             >
-              {totalUSD.net >= 0 ? "" : "-"}$
-              {Math.abs(totalUSD.net).toLocaleString("es-AR", { maximumFractionDigits: 2 })}
+              {formatAmount(totalUSD.net, "USD", 2)}
             </Text>
           </Flex>
         </Flex>

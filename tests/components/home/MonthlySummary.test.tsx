@@ -159,17 +159,17 @@ describe("MonthlySummary", () => {
 
       // income +50.000, spent +20.000, net +30.000 (180.000 - 150.000)
       const income = within(cardOf("Ingresado"));
-      expect(income.getByText("$50.000 más que el mes pasado")).toBeInTheDocument();
+      expect(income.getByText("ARS 50.000 más que el mes pasado")).toBeInTheDocument();
       expect(income.getAllByRole("img", { name: "arrow-up" })).toHaveLength(2);
 
       // spending more is still an UP arrow; the words and error color say it is bad
       const spent = within(cardOf("Gastado"));
-      const spentText = spent.getByText("$20.000 más que el mes pasado");
+      const spentText = spent.getByText("ARS 20.000 más que el mes pasado");
       expect(spent.getAllByRole("img", { name: "arrow-up" }).length).toBeGreaterThanOrEqual(1);
-      expect(spentText.style.color).not.toBe(income.getByText("$50.000 más que el mes pasado").style.color);
+      expect(spentText.style.color).not.toBe(income.getByText("ARS 50.000 más que el mes pasado").style.color);
 
       const net = within(cardOf("Diferencia"));
-      expect(net.getByText("$30.000 más que el mes pasado")).toBeInTheDocument();
+      expect(net.getByText("ARS 30.000 más que el mes pasado")).toBeInTheDocument();
     });
 
     it("describes decreases in words with a down arrow for every KPI", async () => {
@@ -196,15 +196,15 @@ describe("MonthlySummary", () => {
       await screen.findByText("HOGAR");
 
       const income = within(cardOf("Ingresado"));
-      expect(income.getByText("$1.000 menos que el mes pasado")).toBeInTheDocument();
+      expect(income.getByText("ARS 1.000 menos que el mes pasado")).toBeInTheDocument();
       expect(income.getAllByRole("img", { name: "arrow-down" }).length).toBeGreaterThanOrEqual(1);
 
       const spent = within(cardOf("Gastado"));
-      expect(spent.getByText("$300 menos que el mes pasado")).toBeInTheDocument();
+      expect(spent.getByText("ARS 300 menos que el mes pasado")).toBeInTheDocument();
 
       // net = -1000 - (-300) = -700
       const net = within(cardOf("Diferencia"));
-      expect(net.getByText("$700 menos que el mes pasado")).toBeInTheDocument();
+      expect(net.getByText("ARS 700 menos que el mes pasado")).toBeInTheDocument();
     });
 
     it("says unchanged when the delta is zero and keeps text at least 12px", async () => {
@@ -345,7 +345,7 @@ describe("MonthlySummary", () => {
 
       // 1383.08 formatted as es-AR
       await waitFor(() => {
-        expect(screen.getByText("$1.383,08")).toBeInTheDocument();
+        expect(screen.getByText("USD 1.383,08")).toBeInTheDocument();
       });
     });
   });
@@ -367,6 +367,31 @@ describe("MonthlySummary", () => {
     });
   });
 
+  describe("currency symbol", () => {
+    const cardOf = (title: string) =>
+      screen.getAllByText(title)[0].closest(".ant-card") as HTMLElement;
+
+    it("uses the real currency code in KPIs and deltas, never a bare $", async () => {
+      const eur: WorkspaceSummary = {
+        ...mockSummaryOneMoneda,
+        perCurrency: [{ ...mockSummaryOneMoneda.perCurrency[0], currency: "EUR" }],
+      };
+      server.use(
+        http.get("http://localhost:8080/workspaces/:workspaceId/summary/monthly", () =>
+          HttpResponse.json(eur),
+        ),
+      );
+      const { container } = render(<MonthlySummary />, { wrapper: makeWrapper() });
+      await screen.findByText("HOGAR");
+
+      expect(within(cardOf("Ingresado")).getByText("EUR 50.000 más que el mes pasado")).toBeInTheDocument();
+      expect(
+        cardOf("Diferencia").querySelector(".ant-statistic-content-prefix")?.textContent,
+      ).toBe("EUR ");
+      expect(container.textContent).not.toContain("$");
+    });
+  });
+
   describe("error state", () => {
     it("shows an error message when the request fails", async () => {
       server.use(
@@ -380,6 +405,25 @@ describe("MonthlySummary", () => {
       expect(
         await screen.findByText("No se pudo cargar el resumen mensual."),
       ).toBeInTheDocument();
+    });
+
+    it("offers a retry button that refetches and recovers", async () => {
+      let calls = 0;
+      server.use(
+        http.get("http://localhost:8080/workspaces/:workspaceId/summary/monthly", () => {
+          calls += 1;
+          return calls === 1
+            ? HttpResponse.json({ message: "Error" }, { status: 500 })
+            : HttpResponse.json(mockSummaryOneMoneda);
+        }),
+      );
+
+      render(<MonthlySummary />, { wrapper: makeWrapper() });
+      const retry = await screen.findByRole("button", { name: "Reintentar" });
+      await userEvent.click(retry);
+
+      expect(await screen.findByText("HOGAR")).toBeInTheDocument();
+      expect(calls).toBe(2);
     });
   });
 

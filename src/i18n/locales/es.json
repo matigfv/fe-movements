@@ -309,6 +309,7 @@
     },
     "monthlySummary": {
       "errorMessage": "No se pudo cargar el resumen mensual.",
+      "retry": "Reintentar",
       "titlePrefix": "Resumen de",
       "emptyMessage": "Sin movimientos registrados este mes.",
       "incomeTitle": "Ingresado",

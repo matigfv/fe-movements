@@ -166,9 +166,26 @@ describe("TopCategories", () => {
 
     await waitFor(() => {
       // Vivienda: 50000 / (50000+30000+20000+15000+10000) = 40%
-      expect(screen.getByText(/\$50\.000/)).toBeInTheDocument();
+      expect(screen.getByText(/ARS 50\.000/)).toBeInTheDocument();
       expect(screen.getByText(/\(40\.0%\)/)).toBeInTheDocument();
     });
+  });
+
+  it("usa el código de la moneda activa en vez de un $ fijo", async () => {
+    server.use(
+      http.get("*/balance/category", () => HttpResponse.json(mockBalanceData)),
+      http.get("*/currencies", () =>
+        HttpResponse.json([{ id: "3", symbol: "EUR", name: "Euro" }]),
+      ),
+      http.get("*/settings/defaults/DEFAULT_CURRENCY", () =>
+        HttpResponse.json({ value: "3" }),
+      ),
+    );
+
+    renderWithProviders(<TopCategories />);
+
+    expect(await screen.findByText("EUR 50.000")).toBeInTheDocument();
+    expect(screen.queryByText(/\$/)).not.toBeInTheDocument();
   });
 
   it("ordena categorías por total descendente", async () => {

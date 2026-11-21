@@ -7,6 +7,7 @@ import "dayjs/locale/es";
 import { useBalanceSeparateByCategory } from "@/apis/hooks/useBalance";
 import { useUserDefault } from "@/apis/hooks/useSettings";
 import { useCurrency } from "@/apis/hooks/useCurrency";
+import { formatAmount } from "@/utils/formatAmount";
 import { CurrencyEnum } from "@/enums/CurrencyEnum";
 import { CHART_COLORS } from "@/components/home/constants";
 
@@ -177,7 +178,7 @@ export default function TopCategories() {
               {/* Monto y porcentaje */}
               <Flex align="baseline" gap={6} style={{ flexShrink: 0 }}>
                 <Text strong style={{ fontSize: 15 }}>
-                  ${item.total.toLocaleString("es-AR", { maximumFractionDigits: 0 })}
+                  {formatAmount(item.total, currencySymbol)}
                 </Text>
                 <Text type="secondary" style={{ fontSize: 12 }}>
                   ({item.percentage}%)

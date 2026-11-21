@@ -309,6 +309,7 @@
     },
     "monthlySummary": {
       "errorMessage": "Could not load the monthly summary.",
+      "retry": "Retry",
       "titlePrefix": "Summary for",
       "emptyMessage": "No movements recorded this month.",
       "incomeTitle": "Income",

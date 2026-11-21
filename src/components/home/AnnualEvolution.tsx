@@ -14,6 +14,7 @@ import {
 } from "recharts";
 import { useBalanceMonthlyEvolution } from "@/apis/hooks/useBalance";
 import AnnualEvolutionFilters from "@/components/home/AnnualEvolutionFilters";
+import { formatAmount } from "@/utils/formatAmount";
 import { useLocalStorage } from "@/utils/useLocalStorage";
 
 const SELECTED_CURRENCIES_STORAGE_KEY = "annualEvolution.selectedCurrencies";
@@ -116,7 +117,13 @@ export default function AnnualEvolution({ year }: Props) {
               <XAxis dataKey="month" tick={{ fontSize: 12 }} />
               <YAxis tick={{ fontSize: 12 }} width={70} />
               <Tooltip
-                formatter={(val) => `$${(val ?? 0).toLocaleString("es-AR")}`}
+                formatter={(val, _name, item) =>
+                  formatAmount(
+                    Number(val ?? 0),
+                    String(item.dataKey).split("_")[0],
+                    20,
+                  )
+                }
               />
               <Legend />
               {currencies.flatMap((currency, idx) =>

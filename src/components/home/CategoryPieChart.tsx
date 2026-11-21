@@ -13,6 +13,7 @@ import "dayjs/locale/es";
 import { useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { CHART_COLORS } from "@/components/home/constants";
+import { formatAmount } from "@/utils/formatAmount";
 import type { BalanceFilters } from "@/models/BalanceFilters";
 
 type CategoryChartItem = {
@@ -145,14 +146,14 @@ export default function CategoryPieChart({
               fontFamily: "inherit",
             }}
           >
-            ${total.toLocaleString("es-AR", { maximumFractionDigits: 0 })}
+            {formatAmount(total, filters.currency)}
           </text>
           <Tooltip
             formatter={(val, name) => {
               const pct =
                 total > 0 ? ((Number(val) / total) * 100).toFixed(1) : "0.0";
               return [
-                `$${Number(val).toLocaleString("es-AR")} (${pct}%)`,
+                `${formatAmount(Number(val), filters.currency, 20)} (${pct}%)`,
                 name,
               ];
             }}

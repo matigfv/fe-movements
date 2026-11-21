@@ -14,12 +14,9 @@ import {
 } from "recharts";
 import { useProjection } from "@/apis/hooks/useProjection";
 import { useUserDefault } from "@/apis/hooks/useSettings";
+import { formatAmount } from "@/utils/formatAmount";
 
 const { Text } = Typography;
-
-function formatAmount(value: number, currency: string): string {
-  return `${currency} ${value.toLocaleString("es-AR", { maximumFractionDigits: 0 })}`;
-}
 
 export default function ProjectionChart() {
   const { token } = theme.useToken();
