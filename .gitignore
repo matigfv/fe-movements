@@ -33,3 +33,5 @@ Thumbs.db
 # Brag video project
 brag-output*/
 .atl/
+.agents/
+.claude/
