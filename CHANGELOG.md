@@ -9,7 +9,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 - Google Search Console (versión 2.18.3): etiqueta `google-site-verification` en `index.html` para verificar
-  la propiedad del sitio.
+  la propiedad del sitio, más `sitemap.xml` (solo la página de inicio, que es la única pública) y
+  `robots.txt` que lo referencia.
 - Servicios (versión 2.18.0): el formulario "Nuevo Servicio" pasa a un modal con el botón **Agregar
   servicio** (queda en línea solo en el estado vacío). Marcar como pagado avisa y permite
   **Deshacer**: el pago se envía a los 5 segundos o al salir de la pantalla.
