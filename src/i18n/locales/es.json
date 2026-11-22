@@ -1100,8 +1100,20 @@
   "help": {
     "title": "Centro de Ayuda",
     "subtitle": "Aprendé a usar todas las funciones de la aplicación",
-    "footerNote": "¿Tenés más dudas? Escribinos a soporte@movements.app",
     "tipLabel": "Tip:",
+    "search": {
+      "label": "Buscar en la ayuda",
+      "placeholder": "Buscá un tema, por ejemplo \"importar\" o \"roles\"",
+      "results_one": "{{count}} sección encontrada",
+      "results_other": "{{count}} secciones encontradas",
+      "empty": "No encontramos nada para \"{{query}}\". Probá con otra palabra o borrá la búsqueda para ver todos los temas."
+    },
+    "groups": {
+      "start": "Empezar",
+      "daily": "Uso diario",
+      "planning": "Planificación",
+      "account": "Cuenta y grupo"
+    },
     "sections": {
       "workspace": {
         "title": "¿Qué es un Workspace?",
@@ -1117,35 +1129,98 @@
         "list2": [
           "Parejas o familias que quieren llevar un control conjunto de sus gastos del hogar",
           "Compañeros de piso que comparten gastos comunes (alquiler, servicios, limpieza)",
-          "Freelancers que quieren separar los gastos de cada cliente o proyecto",
-          "Propietarios con múltiples propiedades que necesitan trackear gastos por separado"
+          "Pequeños negocios que quieren separar los gastos por proyecto, cliente o área"
         ],
         "tip": "Podés cambiar entre tus workspaces desde el selector en la barra superior, junto al logo."
       },
       "invite": {
         "title": "Cómo invitar miembros",
-        "text1": "Podés invitar a otras personas a tu workspace para que puedan ver y registrar gastos en común. Solo necesitás su correo electrónico.",
+        "text1": "Podés invitar a otras personas a tu workspace para compartir los gastos. Solo necesitás su correo electrónico y decidir qué rol va a tener.",
         "list1": [
           "Andá a Ajustes → Mi Workspace",
-          "En la sección de miembros hacé click en \"Invitar\"",
-          "Ingresá el correo electrónico de la persona",
-          "La persona recibirá un email con la invitación",
-          "Una vez que acepte, podrá ver y registrar gastos en tu workspace"
+          "En Miembros e invitaciones, tocá el botón \"Invitar miembro al grupo\"",
+          "Ingresá el correo electrónico de la persona y elegí su rol: Colaborador o Solo lectura",
+          "Tocá \"Enviar invitación\"",
+          "La persona la ve en Invitaciones Pendientes, dentro de Ajustes → Mi Workspace, y puede Aceptar o Rechazar"
         ],
-        "tip": "Las invitaciones pendientes aparecen en la parte superior de la pestaña Mi Workspace hasta que la persona las acepte o rechace."
+        "tip": "Mientras la invitación no se acepte, la ves en Invitaciones Enviadas y podés cancelarla."
+      },
+      "roles": {
+        "title": "Roles y permisos",
+        "text1": "Los permisos salen de dos roles que se combinan: tu rol de usuario (lo ves en Ajustes → Cuenta) y tu rol dentro de cada workspace.",
+        "list1": [
+          "Administrador: accede a todas las pantallas, incluido el Panel de administración (Admin). También puede migrar categorías (Ajustes → Mi Workspace) y quitar miembros de un workspace",
+          "Familia: accede a todas las pantallas menos Admin y puede usar \"Eliminar todos los movimientos\" (Ajustes → Cuenta)",
+          "Invitado: accede a las mismas pantallas que Familia, pero no ve la opción \"Eliminar todos los movimientos\""
+        ],
+        "text2": "El rol dentro de un workspace se elige al invitar a alguien:",
+        "list2": [
+          "Colaborador: puede crear y editar",
+          "Solo lectura: solo puede ver. No le aparecen los botones \"Cargar movimiento\" ni para agregar servicios",
+          "Quien creó el workspace también puede quitar miembros desde Ajustes → Mi Workspace"
+        ],
+        "tip": "El rol de Solo lectura vale por workspace: la misma persona puede ser Colaborador en uno y Solo lectura en otro."
       },
       "movements": {
         "title": "Movimientos y gastos",
         "text1": "Los movimientos son el corazón de la aplicación. Cada vez que gastás dinero, podés registrarlo para llevar un control detallado de tus finanzas.",
         "list1": [
           "Andá a la sección \"Movimientos\" desde el menú",
-          "Hacé click en el botón \"Cargar movimiento\" para agregar un nuevo gasto",
-          "Completá los datos: monto, moneda, banco, tipo de pago, fecha, descripción y categoría",
-          "También podés importar movimientos en lote desde la pestaña de importación del mismo formulario",
-          "Los gastos aparecen en la lista ordenados por fecha",
-          "Podés editar o eliminar cualquier gasto desde la tabla"
+          "Hacé click en \"Cargar movimiento\" y completá monto, moneda, banco, tipo (Débito, Crédito, Ingreso o Reintegro), fecha, descripción y categoría",
+          "Con \"Desglosar compra\" podés detallar los ítems de una compra",
+          "Los movimientos aparecen en la lista ordenados por fecha",
+          "Filtrá por descripción, tipo, banco, moneda o categoría",
+          "Desde la tabla podés editar, repetir con la fecha de hoy o eliminar un movimiento",
+          "Para varios a la vez, seleccioná filas y usá \"Categorizar\" o \"Eliminar\""
         ],
-        "tip": "Usá los filtros de la tabla para buscar movimientos por descripción, tipo, banco, moneda o categoría."
+        "tip": "Al eliminar un movimiento tenés unos segundos para deshacerlo."
+      },
+      "import": {
+        "title": "Importar el extracto del banco",
+        "text1": "Si tu banco te da el resumen en PDF, podés cargar todos los movimientos de una vez en lugar de uno por uno. Por ahora solo se acepta Santander: el PDF de movimientos de la cuenta o el extracto de la tarjeta de crédito.",
+        "list1": [
+          "Andá a \"Movimientos\" y hacé click en \"Cargar movimiento\"",
+          "Elegí la pestaña \"Importar PDF\"",
+          "Tocá \"Seleccionar archivo\" y elegí el PDF (un archivo por vez)",
+          "Confirmá con \"Importar\"",
+          "Al terminar, un aviso te dice cuántos movimientos se importaron y cuántos ya estaban cargados"
+        ],
+        "tip": "Si el extracto se superpone con lo que ya cargaste, los movimientos repetidos se saltean. Si todos ya estaban, el aviso te dice que no hay movimientos nuevos."
+      },
+      "export": {
+        "title": "Exportar movimientos",
+        "text1": "Podés bajar tus movimientos en CSV o en PDF para guardarlos o compartirlos.",
+        "list1": [
+          "Andá a \"Movimientos\"",
+          "Arriba de la tabla, \"Exportar CSV\" descarga el archivo CSV",
+          "Para el PDF, abrí la flechita que está al lado de \"Exportar CSV\" y elegí \"Exportar PDF\"",
+          "Las columnas son Fecha, Descripción, Tipo, Categoría, Banco, Moneda, Monto y Cuota",
+          "Si no hay nada para exportar, la app te avisa"
+        ],
+        "tip": "Se exporta todo lo que coincide con los filtros activos, no solo lo que ves en la página. Limpiá los filtros para exportar todos tus movimientos."
+      },
+      "services": {
+        "title": "Servicios y suscripciones",
+        "text1": "Los servicios son gastos recurrentes que se repiten cada mes. Pueden ser tanto personales (Netflix, Spotify, luz, gas) como de negocio (hosting, dominio, software, coworking, seguros).",
+        "list1": [
+          "Andá a la sección \"Servicios\" desde el menú principal",
+          "Tocá el botón \"Agregar Servicio\" y completá la descripción, el monto y si ya está pagado este mes",
+          "Cada servicio aparece como una tarjeta que podés marcar como pagado con \"Marcar como pagado\"",
+          "Desde \"Más acciones\" en la tarjeta podés editar o eliminar un servicio",
+          "El resumen superior te muestra cuántos servicios tenés al día y cuántos pendientes"
+        ],
+        "tip": "Si tu tipo de uso es Emprendedor, los servicios se llaman \"Gastos Recurrentes\" y el botón es \"Agregar Gasto\"."
+      },
+      "income": {
+        "title": "Ingresos",
+        "text1": "Los ingresos representan tu sueldo u otras entradas de dinero recurrentes. Se configuran una vez y podés hacer que se generen automáticamente cada mes.",
+        "list1": [
+          "Andá a Ajustes → Mis finanzas para ver Gestionar Ingresos",
+          "Agregá un ingreso indicando banco, moneda y monto",
+          "Con \"Ingresar movimiento manualmente\" cargás ese ingreso como movimiento sin tipearlo de nuevo",
+          "Si eliminás un ingreso, deja de generar movimientos mensuales"
+        ],
+        "tip": "Activá \"Ingresos automáticos\" en Ajustes → Preferencias para que tus ingresos configurados se registren solos como movimientos cada mes."
       },
       "budgets": {
         "title": "Presupuestos",
@@ -1153,23 +1228,47 @@
         "list1": [
           "Andá a la sección \"Presupuestos\" desde el menú",
           "Elegí la moneda para la que querés ver o crear presupuestos",
-          "Creá un presupuesto por categoría: puede ser mensual, anual o recurrente (se repite todos los meses)",
+          "Creá un presupuesto por categoría: Recurrente (se repite todos los meses), Único (para un mes puntual) o Anual",
           "Cada tarjeta muestra lo presupuestado, lo gastado y una barra de progreso",
-          "La barra cambia de color a medida que te acercás o superás el límite (verde, amarillo, rojo)",
+          "La barra cambia de color a medida que te acercás al límite: amarillo desde el 80 % y rojo al llegar al 100 %",
           "Podés editar el monto o eliminar un presupuesto en cualquier momento"
         ],
-        "tip": "Si configurás presupuestos, vas a recibir alertas en el Balance cuando estés cerca de exceder tus límites."
+        "tip": "Los presupuestos que ya usaste en un 50 % o más aparecen en el Dashboard, en \"Presupuestos en alerta\"."
       },
-      "income": {
-        "title": "Ingresos",
-        "text1": "Los ingresos representan tu sueldo u otras entradas de dinero recurrentes. Se configuran una vez y podés hacer que se generen automáticamente cada mes.",
+      "goals": {
+        "title": "Metas de ahorro",
+        "text1": "Las metas de ahorro te ayudan a juntar plata para algo puntual, como un viaje, y a ver cuánto te falta.",
         "list1": [
-          "Andá a Ajustes → Mis finanzas para ver la sección de Ingresos",
-          "Agregá un ingreso indicando monto, moneda y banco",
-          "Podés recargar (repetir) un ingreso existente con un click en vez de cargarlo de nuevo a mano",
-          "Eliminá un ingreso si ya no corresponde"
-        ],
-        "tip": "Activá \"Ingresos automáticos\" en Ajustes → Preferencias para que tus ingresos configurados se registren solos como movimientos cada mes, sin tener que cargarlos manualmente."
+          "Entrá a \"Metas de ahorro\" desde el menú de tu perfil (avatar, arriba a la derecha) o desde el link \"Ver metas, racha y logros\" al final del Dashboard",
+          "Tocá \"+ Nueva meta\" y completá nombre, moneda, monto objetivo y, si querés, una fecha objetivo (un mes)",
+          "Cada tarjeta muestra el Objetivo, lo Ahorrado y el porcentaje completado",
+          "Con \"Agregar contribución\" sumás lo que vas ahorrando",
+          "Podés editar o eliminar una meta; al eliminarla tenés unos segundos para deshacerlo",
+          "Cuando llegás al monto objetivo, la tarjeta marca \"¡meta alcanzada!\""
+        ]
+      },
+      "dashboard": {
+        "title": "Dashboard",
+        "text1": "El Dashboard es la pantalla principal: llegás con un click en el logo de la barra superior. Muestra cómo viene tu mes.",
+        "list1": [
+          "El resumen del mes muestra lo Ingresado, lo Gastado y la Diferencia, comparados con el mes pasado",
+          "\"Presupuestos en alerta\" lista los presupuestos que ya usaste en un 50 % o más",
+          "\"Top Categorías del Mes\" te muestra dónde se va la mayor parte de tu plata",
+          "\"Gastos por Categoría\" es un gráfico de anillo con la distribución de tus gastos",
+          "\"Evolución Anual de Gastos y Ahorro\" te deja comparar mes a mes, filtrando monedas (tu selección se guarda para la próxima vez)",
+          "En \"Filtros de Análisis Avanzado\" elegís la moneda y el período de los gráficos",
+          "Cada gráfico tiene \"Ver datos en tabla\" si preferís leer los números"
+        ]
+      },
+      "insights": {
+        "title": "Insights, racha y proyección",
+        "text1": "Además de los números del mes, la app te da señales para entender cómo venís.",
+        "list1": [
+          "Insights de gasto, en el Dashboard: las categorías que se desvían de tu promedio de los últimos 6 meses, con el porcentaje por encima o por debajo y el monto de este mes contra el promedio. Si no hay desvíos, el panel no aparece",
+          "Proyección de balance, en el Dashboard: una estimación conservadora de tu balance a futuro, según cuánto ahorrás en promedio por mes",
+          "Racha, en Metas de ahorro: los días seguidos registrando movimientos y tu récord. Si se corta, registrá un movimiento para empezar otra",
+          "Badges, en Metas de ahorro: logros por cumplir tus presupuestos mes a mes"
+        ]
       },
       "utilities": {
         "title": "Utilidades: tiempo de recuperación",
@@ -1187,46 +1286,23 @@
         "title": "Ajustes",
         "text1": "Desde Ajustes podés configurar todo lo relacionado a tu cuenta, tu workspace y tus finanzas.",
         "list1": [
-          "Cuenta: tus datos personales y tipo de usuario",
-          "Workspace: invitaciones pendientes, workspace actual y categorías compartidas",
-          "Mis finanzas: bancos, monedas propias e ingresos",
-          "Preferencias: automatizaciones como los ingresos automáticos"
+          "Cuenta: tus datos, tu rol, tu tipo de uso y la Zona de peligro",
+          "Mi Workspace: invitaciones, miembros y categorías compartidas",
+          "Mis finanzas: bancos, monedas e ingresos",
+          "Preferencias: automatizaciones como los ingresos automáticos",
+          "En cuentas de tipo Emprendedor, esas pestañas se llaman Mi Espacio de Trabajo y Finanzas de la Empresa",
+          "En Cuenta → Zona de peligro, \"Eliminar todos los movimientos\" pide escribir ELIMINAR y no se puede deshacer: exportá antes si querés una copia"
         ],
         "tip": "En Mis finanzas podés crear tus propias monedas además de las globales del sistema. Las que vos creás se pueden eliminar libremente; las globales o la que tenés configurada como moneda por defecto, no."
       },
-      "services": {
-        "title": "Servicios y suscripciones",
-        "text1": "Los servicios son gastos recurrentes que se repiten cada mes. Pueden ser tanto personales (Netflix, Spotify, luz, gas) como de negocio (hosting, dominio, software, coworking, seguros).",
-        "list1": [
-          "Andá a la sección \"Servicios\" desde el menú principal",
-          "Tocá el botón \"Agregar Servicio\" y completá el formulario para sumar uno nuevo",
-          "Indicá el nombre, monto mensual y si ya está pago este mes",
-          "Cada servicio aparece como una tarjeta que podés marcar como pagado",
-          "El resumen superior te muestra cuántos servicios tenés al día y cuántos pendientes"
-        ],
-        "tip": "Registrar los servicios te ayuda a tener una visión clara de tus gastos fijos mensuales y no olvidarte de pagar ninguno."
-      },
-      "balance": {
-        "title": "Balance y reportes",
-        "text1": "La página principal te muestra un resumen completo de tus finanzas del mes. Podés ver cuánto ingresaste, cuánto gastaste y cómo se distribuyen tus gastos.",
-        "list1": [
-          "El resumen mensual muestra ingresos, gastos y la diferencia neta",
-          "Si tenés movimientos en múltiples monedas, podés ver cada una por separado",
-          "El \"Top 5 Categorías\" te muestra dónde se va la mayor parte de tu plata",
-          "El gráfico de torta visualiza la distribución por categorías",
-          "La evolución anual te permite comparar mes a mes, filtrando por moneda (tu selección se guarda para la próxima vez)"
-        ],
-        "tip": "Si configuraste presupuestos, las alertas te avisan cuando estás cerca de exceder tus límites."
-      },
       "admin": {
         "title": "Panel de administración",
-        "text1": "El panel de administración es visible solo para usuarios con rol Admin. Permite gestionar configuraciones globales que afectan a todo tu workspace.",
+        "text1": "El panel de administración es visible solo para usuarios con rol Administrador.",
         "list1": [
-          "Accedé desde \"Admin\" en el menú de tu perfil (avatar, arriba a la derecha) — solo aparece si tenés rol de administrador",
-          "Mi Perfil: configurá tu tipo de usuario (particular o negocio), que ajusta las etiquetas y textos de toda la app",
-          "Mantenimiento: espacio reservado para futuras acciones administrativas"
-        ],
-        "tip": "Si no ves \"Admin\" en tu menú, es porque tu rol actual es Family o Guest — pedile a un administrador del workspace que te asigne el rol si lo necesitás."
+          "Accedé desde \"Admin\" en el menú de tu perfil (avatar, arriba a la derecha)",
+          "Tipo de Usuario: elegí si tu uso es Personal o Enterprise, lo que ajusta las etiquetas y textos de toda la app",
+          "Mantenimiento: ejecutá a mano los trabajos programados del sistema (ingresos recurrentes, cuotas de crédito, servicios vencidos y badges de presupuesto)"
+        ]
       }
     }
   }

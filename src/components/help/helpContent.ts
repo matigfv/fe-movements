@@ -1,10 +1,20 @@
 import type { TFunction } from "i18next";
 
 export interface HelpSection {
+  /** Clave i18n (`help.sections.<key>`). */
   key: string;
+  /** Id estable usado como ancla (`/help#<id>`). */
+  id: string;
   title: string;
   icon: string; // Nombre del icono de Ant Design
+  adminOnly: boolean;
   content: HelpParagraph[];
+}
+
+export interface HelpGroup {
+  key: string;
+  title: string;
+  sections: HelpSection[];
 }
 
 export interface HelpParagraph {
@@ -12,142 +22,89 @@ export interface HelpParagraph {
   content: string | string[];
 }
 
-// El contenido se genera a partir de las claves i18n `help.sections.*` para poder
-// traducirse. Ver src/components/help/HelpPage.tsx para el uso con useTranslation().
-export const getHelpSections = (t: TFunction): HelpSection[] => [
+interface SectionDef {
+  key: string;
+  id: string;
+  icon: string;
+  adminOnly?: boolean;
+  /** Bloques i18n de la sección, en orden: textN, listN o tip. */
+  parts: string[];
+}
+
+interface GroupDef {
+  key: string;
+  sections: SectionDef[];
+}
+
+const GROUPS: GroupDef[] = [
   {
-    key: "workspace",
-    title: t("help.sections.workspace.title"),
-    icon: "TeamOutlined",
-    content: [
-      { type: "text", content: t("help.sections.workspace.text1") },
-      {
-        type: "list",
-        content: t("help.sections.workspace.list1", { returnObjects: true }) as string[],
-      },
-      { type: "text", content: t("help.sections.workspace.text2") },
-      {
-        type: "list",
-        content: t("help.sections.workspace.list2", { returnObjects: true }) as string[],
-      },
-      { type: "tip", content: t("help.sections.workspace.tip") },
+    key: "start",
+    sections: [
+      { key: "workspace", id: "workspace", icon: "TeamOutlined", parts: ["text1", "list1", "text2", "list2", "tip"] },
+      { key: "invite", id: "invitar-miembros", icon: "UserAddOutlined", parts: ["text1", "list1", "tip"] },
+      { key: "roles", id: "roles-y-permisos", icon: "LockOutlined", parts: ["text1", "list1", "text2", "list2", "tip"] },
     ],
   },
   {
-    key: "invite",
-    title: t("help.sections.invite.title"),
-    icon: "UserAddOutlined",
-    content: [
-      { type: "text", content: t("help.sections.invite.text1") },
-      {
-        type: "list",
-        content: t("help.sections.invite.list1", { returnObjects: true }) as string[],
-      },
-      { type: "tip", content: t("help.sections.invite.tip") },
+    key: "daily",
+    sections: [
+      { key: "movements", id: "movimientos", icon: "DollarOutlined", parts: ["text1", "list1", "tip"] },
+      { key: "import", id: "importar-extracto", icon: "UploadOutlined", parts: ["text1", "list1", "tip"] },
+      { key: "export", id: "exportar-movimientos", icon: "DownloadOutlined", parts: ["text1", "list1", "tip"] },
+      { key: "services", id: "servicios", icon: "CalendarOutlined", parts: ["text1", "list1", "tip"] },
+      { key: "income", id: "ingresos", icon: "WalletOutlined", parts: ["text1", "list1", "tip"] },
     ],
   },
   {
-    key: "movements",
-    title: t("help.sections.movements.title"),
-    icon: "DollarOutlined",
-    content: [
-      { type: "text", content: t("help.sections.movements.text1") },
-      {
-        type: "list",
-        content: t("help.sections.movements.list1", { returnObjects: true }) as string[],
-      },
-      { type: "tip", content: t("help.sections.movements.tip") },
+    key: "planning",
+    sections: [
+      { key: "budgets", id: "presupuestos", icon: "FundOutlined", parts: ["text1", "list1", "tip"] },
+      { key: "goals", id: "metas-de-ahorro", icon: "TrophyOutlined", parts: ["text1", "list1"] },
+      { key: "dashboard", id: "dashboard", icon: "PieChartOutlined", parts: ["text1", "list1"] },
+      { key: "insights", id: "insights-racha-proyeccion", icon: "LineChartOutlined", parts: ["text1", "list1"] },
+      { key: "utilities", id: "utilidades", icon: "CalculatorOutlined", parts: ["text1", "list1", "tip"] },
     ],
   },
   {
-    key: "budgets",
-    title: t("help.sections.budgets.title"),
-    icon: "FundOutlined",
-    content: [
-      { type: "text", content: t("help.sections.budgets.text1") },
-      {
-        type: "list",
-        content: t("help.sections.budgets.list1", { returnObjects: true }) as string[],
-      },
-      { type: "tip", content: t("help.sections.budgets.tip") },
-    ],
-  },
-  {
-    key: "income",
-    title: t("help.sections.income.title"),
-    icon: "WalletOutlined",
-    content: [
-      { type: "text", content: t("help.sections.income.text1") },
-      {
-        type: "list",
-        content: t("help.sections.income.list1", { returnObjects: true }) as string[],
-      },
-      { type: "tip", content: t("help.sections.income.tip") },
-    ],
-  },
-  {
-    key: "utilities",
-    title: t("help.sections.utilities.title"),
-    icon: "CalculatorOutlined",
-    content: [
-      { type: "text", content: t("help.sections.utilities.text1") },
-      {
-        type: "list",
-        content: t("help.sections.utilities.list1", { returnObjects: true }) as string[],
-      },
-      { type: "tip", content: t("help.sections.utilities.tip") },
-    ],
-  },
-  {
-    key: "settings",
-    title: t("help.sections.settings.title"),
-    icon: "SettingOutlined",
-    content: [
-      { type: "text", content: t("help.sections.settings.text1") },
-      {
-        type: "list",
-        content: t("help.sections.settings.list1", { returnObjects: true }) as string[],
-      },
-      { type: "tip", content: t("help.sections.settings.tip") },
-    ],
-  },
-  {
-    key: "services",
-    title: t("help.sections.services.title"),
-    icon: "CalendarOutlined",
-    content: [
-      { type: "text", content: t("help.sections.services.text1") },
-      {
-        type: "list",
-        content: t("help.sections.services.list1", { returnObjects: true }) as string[],
-      },
-      { type: "tip", content: t("help.sections.services.tip") },
-    ],
-  },
-  {
-    key: "balance",
-    title: t("help.sections.balance.title"),
-    icon: "PieChartOutlined",
-    content: [
-      { type: "text", content: t("help.sections.balance.text1") },
-      {
-        type: "list",
-        content: t("help.sections.balance.list1", { returnObjects: true }) as string[],
-      },
-      { type: "tip", content: t("help.sections.balance.tip") },
-    ],
-  },
-  {
-    key: "admin",
-    title: t("help.sections.admin.title"),
-    icon: "SafetyOutlined",
-    content: [
-      { type: "text", content: t("help.sections.admin.text1") },
-      {
-        type: "list",
-        content: t("help.sections.admin.list1", { returnObjects: true }) as string[],
-      },
-      { type: "tip", content: t("help.sections.admin.tip") },
+    key: "account",
+    sections: [
+      { key: "settings", id: "ajustes", icon: "SettingOutlined", parts: ["text1", "list1", "tip"] },
+      { key: "admin", id: "administracion", icon: "SafetyOutlined", adminOnly: true, parts: ["text1", "list1"] },
     ],
   },
 ];
+
+const toParagraph = (t: TFunction, base: string, part: string): HelpParagraph => {
+  const key = `${base}.${part}`;
+  if (part.startsWith("list")) return { type: "list", content: t(key, { returnObjects: true }) as string[] };
+  return { type: part === "tip" ? "tip" : "text", content: t(key) };
+};
+
+// El contenido se genera a partir de las claves i18n `help.groups.*` y `help.sections.*` para
+// poder traducirse. Ver src/components/help/HelpPage.tsx para el uso con useTranslation().
+export const getHelpGroups = (t: TFunction): HelpGroup[] =>
+  GROUPS.map((group) => ({
+    key: group.key,
+    title: t(`help.groups.${group.key}`),
+    sections: group.sections.map((def) => {
+      const base = `help.sections.${def.key}`;
+      return {
+        key: def.key,
+        id: def.id,
+        title: t(`${base}.title`),
+        icon: def.icon,
+        adminOnly: def.adminOnly ?? false,
+        content: def.parts.map((part) => toParagraph(t, base, part)),
+      };
+    }),
+  }));
+
+/** Minúsculas y sin tildes, para comparar texto en la búsqueda. */
+export const normalizeText = (value: string): string =>
+  value.normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase();
+
+/** Todo el texto buscable de una sección: título y cuerpo. */
+export const getSectionSearchText = (section: HelpSection): string =>
+  normalizeText(
+    [section.title, ...section.content.flatMap((p) => (Array.isArray(p.content) ? p.content : [p.content]))].join(" "),
+  );
