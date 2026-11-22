@@ -84,35 +84,61 @@ describe("SettingBank", () => {
       });
     });
 
-    it("muestra el badge Default en el banco por defecto", async () => {
+    it("muestra el badge Predeterminado (i18n) en el banco por defecto", async () => {
       renderSettingBank();
       await waitFor(() =>
-        expect(screen.getByText("★ Default")).toBeInTheDocument(),
+        expect(screen.getByText("Predeterminado")).toBeInTheDocument(),
+      );
+      expect(screen.queryByText(/★/)).not.toBeInTheDocument();
+    });
+
+    it("explica qué significa banco predeterminado", async () => {
+      renderSettingBank();
+      expect(
+        await screen.findByText(/El banco predeterminado se selecciona solo/),
+      ).toBeInTheDocument();
+    });
+
+    it("oculta el formulario hasta presionar Agregar", async () => {
+      const user = userEvent.setup();
+      renderSettingBank();
+      await waitFor(() => expect(screen.getByText("GALICIA")).toBeInTheDocument());
+      expect(screen.queryByLabelText("Nombre del banco")).not.toBeInTheDocument();
+
+      await user.click(screen.getByRole("button", { name: /Agregar/ }));
+
+      expect(await screen.findByLabelText("Nombre del banco")).toBeInTheDocument();
+      expect(screen.getByPlaceholderText("Nombre del banco...")).toBeInTheDocument();
+    });
+
+    it("cierra el formulario con Cancelar", async () => {
+      const user = userEvent.setup();
+      renderSettingBank();
+      await waitFor(() => expect(screen.getByText("GALICIA")).toBeInTheDocument());
+      await user.click(screen.getByRole("button", { name: /Agregar/ }));
+      await user.click(await screen.findByRole("button", { name: "Cancelar" }));
+      await waitFor(() =>
+        expect(screen.queryByLabelText("Nombre del banco")).not.toBeInTheDocument(),
       );
     });
 
-    it("muestra el formulario para agregar banco", async () => {
-      renderSettingBank();
-      await waitFor(() =>
-        expect(screen.getByPlaceholderText("Nombre del banco...")).toBeInTheDocument(),
-      );
-      expect(screen.getByText("Agregar")).toBeInTheDocument();
-    });
-
-    it("muestra el mensaje cuando no hay bancos", async () => {
+    it("abre el formulario por defecto cuando no hay bancos", async () => {
       server.use(
         http.get("http://localhost:8080/banks", () => HttpResponse.json([])),
       );
       renderSettingBank();
-      // Espera que el formulario se renderice (carga completa) pero no hay tarjetas de banco
-      await waitFor(() =>
-        expect(screen.getByPlaceholderText("Nombre del banco...")).toBeInTheDocument(),
-      );
+      expect(await screen.findByLabelText("Nombre del banco")).toBeInTheDocument();
       expect(screen.queryByText("GALICIA")).not.toBeInTheDocument();
     });
   });
 
   describe("formulario de creación", () => {
+    async function openForm(user: ReturnType<typeof userEvent.setup>) {
+      await waitFor(() => expect(screen.getByText("GALICIA")).toBeInTheDocument());
+      await user.click(screen.getByRole("button", { name: /Agregar/ }));
+      return screen.findByLabelText("Nombre del banco");
+    }
+
     it("llama POST /banks con el texto ingresado al hacer submit", async () => {
       const user = userEvent.setup();
       let postedBody: unknown;
@@ -124,12 +150,26 @@ describe("SettingBank", () => {
       );
 
       renderSettingBank();
+      await user.type(await openForm(user), "nacion");
+      await user.click(screen.getByText("Agregar"));
+
       await waitFor(() =>
-        expect(screen.getByPlaceholderText("Nombre del banco...")).toBeInTheDocument(),
+        expect(postedBody).toEqual({ description: "nacion" }),
+      );
+    });
+
+    it("agrega con Enter", async () => {
+      const user = userEvent.setup();
+      let postedBody: unknown;
+      server.use(
+        http.post("http://localhost:8080/banks", async ({ request }) => {
+          postedBody = await request.json();
+          return HttpResponse.json(newBank, { status: 201 });
+        }),
       );
 
-      await user.type(screen.getByPlaceholderText("Nombre del banco..."), "nacion");
-      await user.click(screen.getByText("Agregar"));
+      renderSettingBank();
+      await user.type(await openForm(user), "nacion{Enter}");
 
       await waitFor(() =>
         expect(postedBody).toEqual({ description: "nacion" }),
@@ -139,10 +179,7 @@ describe("SettingBank", () => {
     it("muestra error de validación si se envía el form vacío", async () => {
       const user = userEvent.setup();
       renderSettingBank();
-
-      await waitFor(() =>
-        expect(screen.getByText("Agregar")).toBeInTheDocument(),
-      );
+      await openForm(user);
 
       await user.click(screen.getByText("Agregar"));
 
@@ -153,19 +190,14 @@ describe("SettingBank", () => {
       );
     });
 
-    it("limpia el input tras agregar con éxito", async () => {
+    it("cierra el formulario tras agregar con éxito", async () => {
       const user = userEvent.setup();
       renderSettingBank();
-
-      await waitFor(() =>
-        expect(screen.getByPlaceholderText("Nombre del banco...")).toBeInTheDocument(),
-      );
-
-      await user.type(screen.getByPlaceholderText("Nombre del banco..."), "nacion");
+      await user.type(await openForm(user), "nacion");
       await user.click(screen.getByText("Agregar"));
 
       await waitFor(() =>
-        expect(screen.getByPlaceholderText("Nombre del banco...")).toHaveValue(""),
+        expect(screen.queryByLabelText("Nombre del banco")).not.toBeInTheDocument(),
       );
     });
   });

@@ -8,7 +8,6 @@ import {
   Button,
   Card,
   Col,
-  Divider,
   Flex,
   Form,
   Input,
@@ -19,6 +18,7 @@ import {
   Tooltip,
   Typography,
 } from "antd";
+import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import {
   useAddCurrency,
@@ -29,8 +29,11 @@ import { useUserDefault, useSetUserDefault } from "@/apis/hooks/useSettings";
 import type { Currency } from "@/models/Currency";
 import { useCurrentUser } from "@/apis/hooks/useCurrentUser";
 import { getEntityLabels } from "@/utils/entityLabels";
+import { useUndoableDelete } from "@/utils/useUndoableDelete";
+import PendingDeleteIndicator from "@/components/PendingDeleteIndicator";
+import { DefaultPill, SettingSection } from "@/components/settings/SettingSection";
 
-const { Title, Text } = Typography;
+const { Text } = Typography;
 
 interface AddCurrencyForm {
   symbol: string;
@@ -44,6 +47,7 @@ interface CurrencyCardProps {
   isSettingDefault?: boolean;
   onDelete: (id: number) => void;
   isDeleting?: boolean;
+  isPendingRemoval?: boolean;
   monedasQuitar: string;
 }
 
@@ -54,6 +58,7 @@ function CurrencyCard({
   isSettingDefault,
   onDelete,
   isDeleting,
+  isPendingRemoval,
   monedasQuitar,
 }: CurrencyCardProps) {
   const { token } = theme.useToken();
@@ -63,85 +68,49 @@ function CurrencyCard({
 
   return (
     <Card
-      hoverable
-      styles={{ body: { padding: "14px 18px", cursor: "default" } }}
+      styles={{ body: { padding: "12px 16px" } }}
       style={{
-        borderRadius: 16,
-        border: `1.5px solid ${isDefault ? token.colorPrimaryBorder : token.colorBorderSecondary}`,
+        position: "relative",
+        borderRadius: token.borderRadiusLG,
+        borderColor: isDefault ? token.colorPrimaryBorder : token.colorBorderSecondary,
         background: isDefault ? token.colorPrimaryBg : token.colorFillAlter,
-        transition: "all 0.25s ease",
         overflow: "hidden",
+        ...(isPendingRemoval
+          ? { opacity: 0.45, filter: "grayscale(70%)", pointerEvents: "none" }
+          : {}),
       }}
     >
-      <Flex align="center" justify="space-between">
-        <Flex align="center" gap={14}>
+      {isPendingRemoval && <PendingDeleteIndicator />}
+      <Flex align="center" justify="space-between" gap={12}>
+        <Flex align="center" gap={12} style={{ minWidth: 0 }}>
           <div
             style={{
-              width: 44,
-              height: 44,
-              borderRadius: 13,
-              background: isDefault
-                ? `linear-gradient(135deg, ${token.colorPrimary} 0%, ${token.colorPrimaryHover} 100%)`
-                : `linear-gradient(135deg, ${token.colorFill} 0%, ${token.colorFillSecondary} 100%)`,
+              minWidth: 40,
+              height: 40,
+              borderRadius: token.borderRadius,
+              background: token.colorFillTertiary,
+              color: token.colorTextSecondary,
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
-              boxShadow: isDefault
-                ? `0 4px 14px ${token.colorPrimaryBorder}`
-                : "0 2px 6px rgba(0,0,0,0.08)",
               flexShrink: 0,
-              transition: "all 0.25s ease",
+              padding: "0 6px",
             }}
           >
-            <Text
-              style={{
-                color: "#fff",
-                fontSize: 13,
-                fontWeight: 700,
-                letterSpacing: "-0.5px",
-                lineHeight: 1,
-              }}
-            >
+            <Text strong style={{ fontSize: 14, color: "inherit" }}>
               {currency.symbol}
             </Text>
           </div>
-          <Flex vertical gap={3}>
-            <Flex align="center" gap={8}>
-              <Text
-                strong
-                style={{
-                  fontSize: 15,
-                  color: token.colorText,
-                  letterSpacing: "-0.2px",
-                  lineHeight: 1,
-                }}
-              >
-                {currency.description}
-              </Text>
-              {isDefault && (
-                <span
-                  style={{
-                    background: `linear-gradient(90deg, ${token.colorPrimary}, ${token.colorPrimaryHover})`,
-                    borderRadius: 20,
-                    color: "#fff",
-                    fontSize: 10,
-                    fontWeight: 700,
-                    letterSpacing: "0.5px",
-                    padding: "2px 9px",
-                    textTransform: "uppercase",
-                    lineHeight: "18px",
-                  }}
-                >
-                  ★ {t("settings.currency.defaultBadge")}
-                </span>
-              )}
-            </Flex>
-            <Text type="secondary" style={{ fontSize: 12 }}>
-              {currency.symbol}
+          <Flex align="center" gap={8} wrap style={{ minWidth: 0 }}>
+            <Text strong style={{ fontSize: 15 }}>
+              {currency.description}
             </Text>
+            {isDefault && (
+              <DefaultPill>{t("settings.currency.defaultBadge")}</DefaultPill>
+            )}
           </Flex>
         </Flex>
-        <Space size={4}>
+        <Space size={8}>
           <Tooltip
             title={
               isDefault
@@ -151,23 +120,16 @@ function CurrencyCard({
           >
             <Button
               type="text"
+              size="large"
+              shape="circle"
               aria-label={t("settings.currency.starAriaLabel", { name: currency.description })}
-              style={{
-                borderRadius: "50%",
-                width: 34,
-                height: 34,
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                padding: 0,
-              }}
               disabled={isDefault || isSettingDefault}
               onClick={() => onSetDefault(currency.id)}
               icon={
                 isDefault ? (
-                  <StarFilled style={{ color: token.colorWarning, fontSize: 18 }} />
+                  <StarFilled style={{ color: token.colorWarning }} />
                 ) : (
-                  <StarOutlined style={{ color: token.colorTextQuaternary, fontSize: 18 }} />
+                  <StarOutlined style={{ color: token.colorTextTertiary }} />
                 )
               }
             />
@@ -193,18 +155,11 @@ function CurrencyCard({
               <Button
                 type="text"
                 danger
+                size="large"
+                shape="circle"
                 aria-label={t("settings.currency.deleteAriaLabel", { name: currency.description })}
-                style={{
-                  borderRadius: "50%",
-                  width: 34,
-                  height: 34,
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  padding: 0,
-                }}
                 disabled={!canDelete || isDeleting}
-                icon={<DeleteOutlined style={{ fontSize: 16 }} />}
+                icon={<DeleteOutlined />}
               />
             </Popconfirm>
           </Tooltip>
@@ -220,149 +175,134 @@ export function SettingCurrency() {
   const setDefaultMutation = useSetUserDefault();
   const addCurrencyMutation = useAddCurrency();
   const deleteCurrencyMutation = useDeleteCurrency();
+  const { requestDelete: requestDeleteCurrency, isPending: isPendingCurrencyRemoval } =
+    useUndoableDelete<number>({
+      getId: (id) => id,
+      onDelete: (id) => deleteCurrencyMutation.mutateAsync(id),
+    });
   const [form] = Form.useForm<AddCurrencyForm>();
   const { token } = theme.useToken();
   const { t } = useTranslation();
   const { data: currentUser } = useCurrentUser();
   const labels = getEntityLabels(currentUser?.userType ?? null, t);
 
+  // null = el usuario todavía no decidió: el form queda abierto solo si no hay monedas.
+  const [showForm, setShowForm] = useState<boolean | null>(null);
+  const isEmpty = !isLoading && currencies.length === 0;
+  const formOpen = showForm ?? isEmpty;
+
+  const closeForm = () => {
+    form.resetFields();
+    setShowForm(false);
+  };
+
   const onFinish = (values: AddCurrencyForm) => {
     addCurrencyMutation.mutate(
       { symbol: values.symbol, description: values.description },
-      { onSuccess: () => form.resetFields() },
+      { onSuccess: closeForm },
     );
   };
 
   return (
-    <Card loading={isLoading} style={{ borderRadius: 16 }}>
-      {/* Header */}
-      <Flex align="center" gap={10} style={{ marginBottom: 4 }}>
-        <div
-          style={{
-            width: 36,
-            height: 36,
-            borderRadius: 10,
-            background: `linear-gradient(135deg, ${token.colorPrimary}, ${token.colorPrimaryHover})`,
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            boxShadow: `0 3px 10px ${token.colorPrimaryBorder}`,
-          }}
-        >
-          <DollarOutlined style={{ color: "#fff", fontSize: 18 }} />
-        </div>
-        <div>
-          <Title level={5} style={{ margin: 0 }}>
-            {t("settings.currency.title")}
-          </Title>
-          <Text type="secondary" style={{ fontSize: 12 }}>
-            {labels.monedasSubtitle}
-          </Text>
-        </div>
-      </Flex>
-
-      <Divider style={{ margin: "14px 0" }} />
-
-      {!isLoading && currencies.length === 0 && (
+    <SettingSection
+      loading={isLoading}
+      icon={<DollarOutlined />}
+      title={t("settings.currency.title")}
+      subtitle={
+        <>
+          {labels.monedasSubtitle}
+          <br />
+          {t("settings.currency.defaultHint")}
+        </>
+      }
+      extra={
+        !formOpen && (
+          <Button icon={<PlusOutlined />} onClick={() => setShowForm(true)}>
+            {t("settings.currency.openAddButton")}
+          </Button>
+        )
+      }
+    >
+      {isEmpty && (
         <Alert
           type="warning"
           showIcon
           title={t("settings.currency.requiredNoticeTitle")}
           description={t("settings.currency.requiredNoticeDescription")}
-          style={{ borderRadius: 12, marginBottom: 16 }}
+          style={{ marginBottom: token.marginMD }}
         />
       )}
 
-      {/* Agregar moneda */}
-      <Card
-        styles={{ body: { padding: "14px 16px" } }}
-        style={{
-          borderRadius: 14,
-          border: `1.5px dashed ${token.colorPrimaryBorder}`,
-          background: token.colorPrimaryBg,
-          marginBottom: 20,
-        }}
-      >
-        <Text
-          strong
+      <Flex vertical gap={10}>
+        {currencies.map((currency: Currency) => (
+          <CurrencyCard
+            key={currency.id}
+            currency={currency}
+            defaultCurrencyId={defaultCurrency?.value}
+            onSetDefault={(id) =>
+              setDefaultMutation.mutate({ key: "DEFAULT_CURRENCY", value: id })
+            }
+            isSettingDefault={setDefaultMutation.isPending}
+            onDelete={(id) => requestDeleteCurrency(id)}
+            isDeleting={deleteCurrencyMutation.isPending}
+            isPendingRemoval={isPendingCurrencyRemoval(currency.id)}
+            monedasQuitar={labels.monedasQuitar}
+          />
+        ))}
+      </Flex>
+
+      {formOpen && (
+        <Card
+          size="small"
           style={{
-            fontSize: 13,
-            color: token.colorText,
-            display: "block",
-            marginBottom: 10,
+            borderRadius: token.borderRadiusLG,
+            background: token.colorFillAlter,
+            marginTop: token.marginMD,
           }}
         >
-          {t("settings.currency.newCurrencyLabel")}
-        </Text>
-        <Form form={form} layout="vertical" onFinish={onFinish}>
-          <Row gutter={[12, 0]} align="middle">
-            <Col xs={24} sm={6} md={5}>
-              <Form.Item
-                name="symbol"
-                style={{ margin: 0 }}
-                rules={[
-                  { required: true, message: t("settings.currency.symbolRequired") },
-                ]}
-              >
-                <Input
-                  style={{ borderRadius: 10, height: 40, fontSize: 14 }}
-                  placeholder={t("settings.currency.symbolPlaceholder")}
-                  maxLength={10}
-                />
-              </Form.Item>
-            </Col>
-            <Col xs={24} sm={12} md={13}>
-              <Form.Item
-                name="description"
-                style={{ margin: 0 }}
-                rules={[
-                  { required: true, message: t("settings.currency.nameRequired") },
-                ]}
-              >
-                <Input
-                  style={{ borderRadius: 10, height: 40, fontSize: 14 }}
-                  placeholder={t("settings.currency.namePlaceholder")}
-                />
-              </Form.Item>
-            </Col>
-            <Col xs={24} sm={6} md={6}>
+          <Form form={form} layout="vertical" onFinish={onFinish}>
+            <Row gutter={[12, 0]}>
+              <Col xs={24} sm={8}>
+                <Form.Item
+                  name="symbol"
+                  label={t("settings.currency.symbolLabel")}
+                  rules={[
+                    { required: true, message: t("settings.currency.symbolRequired") },
+                  ]}
+                >
+                  <Input
+                    autoFocus
+                    placeholder={t("settings.currency.symbolPlaceholder")}
+                    maxLength={10}
+                  />
+                </Form.Item>
+              </Col>
+              <Col xs={24} sm={16}>
+                <Form.Item
+                  name="description"
+                  label={t("settings.currency.nameLabel")}
+                  rules={[
+                    { required: true, message: t("settings.currency.nameRequired") },
+                  ]}
+                >
+                  <Input placeholder={t("settings.currency.namePlaceholder")} />
+                </Form.Item>
+              </Col>
+            </Row>
+            <Flex justify="flex-end" gap={8}>
+              <Button onClick={closeForm}>{t("settings.currency.cancelButton")}</Button>
               <Button
                 icon={<PlusOutlined />}
                 type="primary"
-                block
                 htmlType="submit"
-                style={{ height: 40, borderRadius: 10, fontWeight: 600 }}
                 loading={addCurrencyMutation.isPending}
               >
                 {t("settings.currency.addButton")}
               </Button>
-            </Col>
-          </Row>
-        </Form>
-      </Card>
-
-      {/* Lista de monedas */}
-      <Flex vertical gap={10}>
-        {currencies.map((currency: Currency, index: number) => (
-          <div
-            key={currency.id}
-            className="step-enter-right"
-            style={{ animationDelay: `${Math.min(index, 7) * 55}ms` }}
-          >
-            <CurrencyCard
-              currency={currency}
-              defaultCurrencyId={defaultCurrency?.value}
-              onSetDefault={(id) =>
-                setDefaultMutation.mutate({ key: "DEFAULT_CURRENCY", value: id })
-              }
-              isSettingDefault={setDefaultMutation.isPending}
-              onDelete={(id) => deleteCurrencyMutation.mutate(id)}
-              isDeleting={deleteCurrencyMutation.isPending}
-              monedasQuitar={labels.monedasQuitar}
-            />
-          </div>
-        ))}
-      </Flex>
-    </Card>
+            </Flex>
+          </Form>
+        </Card>
+      )}
+    </SettingSection>
   );
 }

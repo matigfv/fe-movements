@@ -43,13 +43,11 @@ export default function SettingInviteWorkspaceCard({
 
   return (
     <Card
-      hoverable
       styles={{ body: { padding: "14px 18px" } }}
       style={{
-        borderRadius: 14,
-        border: `1.5px solid ${token.colorPrimaryBorder}`,
+        borderRadius: token.borderRadiusLG,
+        borderColor: token.colorPrimaryBorder,
         background: token.colorBgContainer,
-        transition: "all 0.2s ease",
       }}
     >
       <Flex vertical gap={12}>
@@ -57,18 +55,19 @@ export default function SettingInviteWorkspaceCard({
         <Flex align="center" gap={12} style={{ minWidth: 0 }}>
           <div
             style={{
-              width: 44,
-              height: 44,
-              borderRadius: 13,
+              width: 40,
+              height: 40,
+              borderRadius: token.borderRadius,
               flexShrink: 0,
-              background: `linear-gradient(135deg, ${token.colorPrimary} 0%, ${token.colorPrimaryHover} 100%)`,
+              background: token.colorFillTertiary,
+              color: token.colorTextSecondary,
+              fontSize: 18,
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
-              boxShadow: `0 4px 12px ${token.colorPrimaryBorder}`,
             }}
           >
-            <TeamOutlined style={{ color: "#fff", fontSize: 20 }} />
+            <TeamOutlined />
           </div>
           <Flex
             vertical
@@ -90,12 +89,12 @@ export default function SettingInviteWorkspaceCard({
               {getWorkspaceDisplayName(invite.workspaceName, t)}
             </Text>
             <Flex align="center" gap={6} style={{ minWidth: 0 }}>
-              <Text type="secondary" style={{ fontSize: 12, flexShrink: 0 }}>
+              <Text type="secondary" style={{ fontSize: 13, flexShrink: 0 }}>
                 {t("settings.inviteWorkspace.invitedByLabel")}
               </Text>
               <Text
                 style={{
-                  fontSize: 12,
+                  fontSize: 13,
                   color: token.colorPrimary,
                   fontWeight: 600,
                   overflow: "hidden",
@@ -119,7 +118,6 @@ export default function SettingInviteWorkspaceCard({
               onClick={handleAccept}
               block
               style={{
-                borderRadius: 20,
                 fontWeight: 600,
                 background: token.colorSuccess,
                 borderColor: token.colorSuccess,
@@ -136,7 +134,7 @@ export default function SettingInviteWorkspaceCard({
               disabled={respondInvitationMutation.isPending}
               onClick={handleReject}
               block
-              style={{ borderRadius: 20, fontWeight: 600 }}
+              style={{ fontWeight: 600 }}
             >
               {t("settings.inviteWorkspace.rejectButton")}
             </Button>

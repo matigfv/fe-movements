@@ -5,13 +5,10 @@ import TagOutlined from "@ant-design/icons/TagOutlined";
 import {
   Button,
   Card,
-  Col,
-  Divider,
   Flex,
   Form,
   Input,
   Popconfirm,
-  Row,
   Space,
   theme,
   Tooltip,
@@ -32,8 +29,9 @@ import { CategoryEditModal } from "@/components/settings/CategoryEditModal";
 import { getIconComponent } from "@/utils/getIconComponent";
 import { useUndoableDelete } from "@/utils/useUndoableDelete";
 import PendingDeleteIndicator from "@/components/PendingDeleteIndicator";
+import { SettingSection } from "@/components/settings/SettingSection";
 
-const { Title, Text } = Typography;
+const { Text } = Typography;
 
 interface AddCategoryForm {
   description: string;
@@ -62,23 +60,20 @@ function CategoryCard({
   // Usar iconName e iconColor de la categoría, o defaults si no están definidos
   const iconElement = useMemo(() => {
     const IconComponent = getIconComponent(category.iconName ?? "TagOutlined");
-    return React.createElement(IconComponent, {
-      style: { color: "#fff", fontSize: 20 },
-    });
+    return React.createElement(IconComponent);
   }, [category.iconName]);
 
+  // El color es dato de la categoría (la identifica en el resto de la app): se mantiene, sin gradiente ni glow.
   const iconColor = category.iconColor ?? token.colorPrimary;
 
   return (
     <Card
-      hoverable
-      styles={{ body: { padding: "14px 18px", cursor: "default" } }}
+      styles={{ body: { padding: "12px 16px" } }}
       style={{
         position: "relative",
-        borderRadius: 16,
-        border: `1.5px solid ${token.colorBorderSecondary}`,
+        borderRadius: token.borderRadiusLG,
+        borderColor: token.colorBorderSecondary,
         background: token.colorFillAlter,
-        transition: "all 0.25s ease",
         overflow: "hidden",
         ...(isPendingRemoval
           ? { opacity: 0.45, filter: "grayscale(70%)", pointerEvents: "none" }
@@ -86,52 +81,37 @@ function CategoryCard({
       }}
     >
       {isPendingRemoval && <PendingDeleteIndicator />}
-      <Flex align="center" justify="space-between">
-        <Flex align="center" gap={14}>
+      <Flex align="center" justify="space-between" gap={12}>
+        <Flex align="center" gap={12} style={{ minWidth: 0 }}>
           <div
             style={{
-              width: 44,
-              height: 44,
-              borderRadius: 13,
-              background: `linear-gradient(135deg, ${iconColor} 0%, ${iconColor}dd 100%)`,
+              width: 40,
+              height: 40,
+              borderRadius: token.borderRadius,
+              background: iconColor,
+              color: "#fff",
+              fontSize: 18,
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
-              boxShadow: `0 4px 14px ${iconColor}60`,
               flexShrink: 0,
-              transition: "all 0.25s ease",
             }}
           >
             {iconElement}
           </div>
-          <Text
-            strong
-            style={{
-              fontSize: 15,
-              color: token.colorText,
-              letterSpacing: "-0.2px",
-              lineHeight: 1,
-            }}
-          >
+          <Text strong style={{ fontSize: 15 }}>
             {category.description}
           </Text>
         </Flex>
-        <Space size={4}>
+        <Space size={8}>
           <Tooltip title={t("settings.category.editTooltip")}>
             <Button
               type="text"
+              size="large"
+              shape="circle"
               aria-label={t("settings.category.editAriaLabel", { name: category.description })}
               onClick={() => onEdit(category)}
-              style={{
-                borderRadius: "50%",
-                width: 34,
-                height: 34,
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                padding: 0,
-              }}
-              icon={<EditOutlined style={{ fontSize: 16 }} />}
+              icon={<EditOutlined />}
             />
           </Tooltip>
           <Tooltip
@@ -153,18 +133,11 @@ function CategoryCard({
               <Button
                 type="text"
                 danger
+                size="large"
+                shape="circle"
                 aria-label={t("settings.category.deleteAriaLabel", { name: category.description })}
-                style={{
-                  borderRadius: "50%",
-                  width: 34,
-                  height: 34,
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  padding: 0,
-                }}
                 disabled={!category.isDeletable || isDeleting}
-                icon={<DeleteOutlined style={{ fontSize: 16 }} />}
+                icon={<DeleteOutlined />}
               />
             </Popconfirm>
           </Tooltip>
@@ -194,15 +167,20 @@ export function SettingCategory() {
   const [editingCategory, setEditingCategory] = useState<Category | null>(null);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
 
+  // null = el usuario todavía no decidió: el form queda abierto solo si no hay categorías.
+  const [showForm, setShowForm] = useState<boolean | null>(null);
+  const formOpen = showForm ?? (!isLoading && categories.length === 0);
+
+  const closeForm = () => {
+    form.resetFields();
+    setShowForm(false);
+  };
+
   const onFinish = (values: AddCategoryForm) => {
     addCategoryMutation.mutate(
       { description: values.description },
-      { onSuccess: () => form.resetFields() },
+      { onSuccess: closeForm },
     );
-  };
-
-  const handleDelete = (categoryId: number) => {
-    requestDeleteCategory(categoryId);
   };
 
   const handleEdit = (category: Category) => {
@@ -217,115 +195,67 @@ export function SettingCategory() {
 
   return (
     <>
-      <Card loading={isLoading} style={{ borderRadius: 16 }}>
-        {/* Header */}
-        <Flex align="center" gap={10} style={{ marginBottom: 4 }}>
-          <div
-            style={{
-              width: 36,
-              height: 36,
-              borderRadius: 10,
-              background: `linear-gradient(135deg, ${token.colorPrimary}, ${token.colorPrimaryHover})`,
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              boxShadow: `0 3px 10px ${token.colorPrimaryBorder}`,
-            }}
-          >
-            <TagOutlined style={{ color: "#fff", fontSize: 18 }} />
-          </div>
-          <div>
-            <Title level={5} style={{ margin: 0 }}>
-              {t("settings.category.title")}
-            </Title>
-            <Text type="secondary" style={{ fontSize: 12 }}>
-              {labels.categoriasSubtitle}
-            </Text>
-          </div>
+      <SettingSection
+        loading={isLoading}
+        icon={<TagOutlined />}
+        title={t("settings.category.title")}
+        subtitle={labels.categoriasSubtitle}
+        extra={
+          !formOpen && (
+            <Button icon={<PlusOutlined />} onClick={() => setShowForm(true)}>
+              {t("settings.category.openAddButton")}
+            </Button>
+          )
+        }
+      >
+        <Flex vertical gap={10}>
+          {categories.map((category: Category) => (
+            <CategoryCard
+              key={category.id}
+              category={category}
+              onDelete={(categoryId) => requestDeleteCategory(categoryId)}
+              onEdit={handleEdit}
+              isDeleting={deleteCategoryMutation.isPending}
+              isPendingRemoval={isPendingCategoryRemoval(category.id)}
+              categoriasQuitar={labels.categoriasQuitar}
+            />
+          ))}
         </Flex>
 
-        <Divider style={{ margin: "14px 0" }} />
-
-        {/* Agregar categoría */}
-        <Card
-          styles={{ body: { padding: "14px 16px" } }}
-          style={{
-            borderRadius: 14,
-            border: `1.5px dashed ${token.colorPrimaryBorder}`,
-            background: token.colorPrimaryBg,
-            marginBottom: 20,
-          }}
-        >
-          <Text
-            strong
+        {formOpen && (
+          <Card
+            size="small"
             style={{
-              fontSize: 13,
-              color: token.colorText,
-              display: "block",
-              marginBottom: 10,
+              borderRadius: token.borderRadiusLG,
+              background: token.colorFillAlter,
+              marginTop: token.marginMD,
             }}
           >
-            {t("settings.category.newCategoryLabel")}
-          </Text>
-          <Form form={form} layout="vertical" onFinish={onFinish}>
-            <Row gutter={[12, 0]} align="middle">
-              <Col xs={24} sm={16} md={18}>
-                <Form.Item
-                  name="description"
-                  style={{ margin: 0 }}
-                  rules={[
-                    {
-                      required: true,
-                      message: t("settings.category.nameRequired"),
-                    },
-                  ]}
-                >
-                  <Input
-                    style={{
-                      borderRadius: 10,
-                      height: 40,
-                      fontSize: 14,
-                    }}
-                    placeholder={t("settings.category.namePlaceholder")}
-                  />
-                </Form.Item>
-              </Col>
-              <Col xs={24} sm={8} md={6}>
+            <Form form={form} layout="vertical" onFinish={onFinish}>
+              <Form.Item
+                name="description"
+                label={t("settings.category.nameLabel")}
+                rules={[
+                  { required: true, message: t("settings.category.nameRequired") },
+                ]}
+              >
+                <Input autoFocus placeholder={t("settings.category.namePlaceholder")} />
+              </Form.Item>
+              <Flex justify="flex-end" gap={8}>
+                <Button onClick={closeForm}>{t("settings.category.cancelButton")}</Button>
                 <Button
                   icon={<PlusOutlined />}
                   type="primary"
-                  block
                   htmlType="submit"
-                  style={{ height: 40, borderRadius: 10, fontWeight: 600 }}
                   loading={addCategoryMutation.isPending}
                 >
                   {t("settings.category.addButton")}
                 </Button>
-              </Col>
-            </Row>
-          </Form>
-        </Card>
-
-        {/* Lista de categorías */}
-        <Flex vertical gap={10}>
-          {categories.map((category: Category, index: number) => (
-            <div
-              key={category.id}
-              className="step-enter-right"
-              style={{ animationDelay: `${Math.min(index, 7) * 55}ms` }}
-            >
-              <CategoryCard
-                category={category}
-                onDelete={(categoryId) => handleDelete(categoryId)}
-                onEdit={(cat) => handleEdit(cat)}
-                isDeleting={deleteCategoryMutation.isPending}
-                isPendingRemoval={isPendingCategoryRemoval(category.id)}
-                categoriasQuitar={labels.categoriasQuitar}
-              />
-            </div>
-          ))}
-        </Flex>
-      </Card>
+              </Flex>
+            </Form>
+          </Card>
+        )}
+      </SettingSection>
 
       <SettingCategoryMigrate />
 

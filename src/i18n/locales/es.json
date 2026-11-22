@@ -705,13 +705,29 @@
   },
   "settings": {
     "account": {
-      "title": "Configuración de la cuenta",
-      "deleteAllConfirmTitle": "¿Estás seguro?",
-      "deleteAllConfirmDescription": "Se eliminarán todos los movimientos permanentemente.",
-      "deleteAllConfirmOk": "Sí, eliminar",
-      "deleteAllConfirmCancel": "Cancelar",
+      "title": "Tu cuenta",
+      "summarySubtitle": "Tus datos de acceso y el tipo de uso.",
+      "nameLabel": "Nombre",
+      "emailLabel": "Correo",
+      "roleLabel": "Rol",
+      "typeLabel": "Tipo de uso",
+      "roleADMIN": "Administrador",
+      "roleFAMILY": "Familia",
+      "roleGUEST": "Invitado",
+      "typePERSONAL": "Usuario",
+      "typeENTERPRISE": "Emprendedor",
+      "notAvailable": "Sin datos",
+      "dangerTitle": "Zona de peligro",
+      "dangerDescription": "Acciones que no se pueden deshacer.",
       "deleteAllButton": "Eliminar todos los movimientos",
-      "deleteAccountButton": "Eliminar la cuenta"
+      "deleteAllModalTitle": "Eliminar todos los movimientos",
+      "deleteAllModalBody": "Se eliminan todos los movimientos de forma permanente y no se puede deshacer. Si querés conservar una copia, exportala antes desde Movimientos (CSV o PDF).",
+      "deleteAllTypePrompt": "Para confirmar, escribí {{word}}",
+      "deleteAllWord": "ELIMINAR",
+      "deleteAllOk": "Eliminar todo",
+      "deleteAllConfirmCancel": "Cancelar",
+      "deleteAllSuccess": "Se eliminaron todos los movimientos.",
+      "deleteAllError": "No pudimos eliminar los movimientos. Probá de nuevo."
     },
     "tabs": {
       "account": "Cuenta",
@@ -730,7 +746,10 @@
       "deleteConfirmTitle": "¿Eliminar esta categoría?",
       "deleteConfirmOk": "Eliminar",
       "deleteConfirmCancel": "Cancelar",
-      "deleteAriaLabel": "Eliminar categoría {{name}}"
+      "deleteAriaLabel": "Eliminar categoría {{name}}",
+      "openAddButton": "Agregar",
+      "nameLabel": "Nombre de la categoría",
+      "cancelButton": "Cancelar"
     },
     "categoryMigrate": {
       "title": "Migrar Categoría",
@@ -804,7 +823,7 @@
       "nameRequired": "Ingresá el nombre de la moneda",
       "namePlaceholder": "Nombre de la moneda...",
       "addButton": "Agregar",
-      "defaultBadge": "Default",
+      "defaultBadge": "Predeterminada",
       "starTooltipDefault": "Ya es la moneda por defecto",
       "starTooltipSetDefault": "Establecer como moneda por defecto",
       "starAriaLabel": "Estrella moneda {{name}}",
@@ -816,7 +835,12 @@
       "deleteConfirmCancel": "Cancelar",
       "deleteAriaLabel": "Eliminar moneda {{name}}",
       "requiredNoticeTitle": "Necesitás agregar una moneda",
-      "requiredNoticeDescription": "Para registrar movimientos necesitás tener al menos una moneda cargada. Agregá una acá abajo para continuar."
+      "requiredNoticeDescription": "Para registrar movimientos necesitás tener al menos una moneda cargada. Agregá una acá abajo para continuar.",
+      "defaultHint": "La moneda predeterminada se usa por defecto al cargar un movimiento.",
+      "openAddButton": "Agregar",
+      "symbolLabel": "Símbolo",
+      "nameLabel": "Nombre de la moneda",
+      "cancelButton": "Cancelar"
     },
     "income": {
       "title": "Gestionar Ingresos",
@@ -894,7 +918,19 @@
       "deleteConfirmCancel": "Cancelar",
       "deleteAriaLabel": "Eliminar banco {{name}}",
       "requiredNoticeTitle": "Necesitás agregar un banco",
-      "requiredNoticeDescription": "Para registrar movimientos necesitás tener al menos un banco cargado. Agregá uno acá abajo para continuar."
+      "requiredNoticeDescription": "Para registrar movimientos necesitás tener al menos un banco cargado. Agregá uno acá abajo para continuar.",
+      "defaultBadge": "Predeterminado",
+      "defaultHint": "El banco predeterminado se selecciona solo al cargar un movimiento.",
+      "openAddButton": "Agregar",
+      "nameLabel": "Nombre del banco",
+      "cancelButton": "Cancelar"
+    },
+    "sections": {
+      "members": "Miembros e invitaciones",
+      "categories": "Categorías",
+      "banks": "Bancos",
+      "currencies": "Monedas",
+      "income": "Ingreso"
     }
   },
   "services": {

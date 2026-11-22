@@ -705,13 +705,29 @@
   },
   "settings": {
     "account": {
-      "title": "Account settings",
-      "deleteAllConfirmTitle": "Are you sure?",
-      "deleteAllConfirmDescription": "All movements will be permanently deleted.",
-      "deleteAllConfirmOk": "Yes, delete",
-      "deleteAllConfirmCancel": "Cancel",
+      "title": "Your account",
+      "summarySubtitle": "Your sign-in details and how you use the app.",
+      "nameLabel": "Name",
+      "emailLabel": "Email",
+      "roleLabel": "Role",
+      "typeLabel": "Type of use",
+      "roleADMIN": "Admin",
+      "roleFAMILY": "Family",
+      "roleGUEST": "Guest",
+      "typePERSONAL": "User",
+      "typeENTERPRISE": "Entrepreneur",
+      "notAvailable": "No data",
+      "dangerTitle": "Danger zone",
+      "dangerDescription": "Actions that cannot be undone.",
       "deleteAllButton": "Delete all movements",
-      "deleteAccountButton": "Delete account"
+      "deleteAllModalTitle": "Delete all movements",
+      "deleteAllModalBody": "All movements are permanently deleted and this cannot be undone. If you want to keep a copy, export it first from Movements (CSV or PDF).",
+      "deleteAllTypePrompt": "To confirm, type {{word}}",
+      "deleteAllWord": "DELETE",
+      "deleteAllOk": "Delete everything",
+      "deleteAllConfirmCancel": "Cancel",
+      "deleteAllSuccess": "All movements were deleted.",
+      "deleteAllError": "We couldn't delete the movements. Try again."
     },
     "tabs": {
       "account": "Account",
@@ -730,7 +746,10 @@
       "deleteConfirmTitle": "Delete this category?",
       "deleteConfirmOk": "Delete",
       "deleteConfirmCancel": "Cancel",
-      "deleteAriaLabel": "Delete category {{name}}"
+      "deleteAriaLabel": "Delete category {{name}}",
+      "openAddButton": "Add",
+      "nameLabel": "Category name",
+      "cancelButton": "Cancel"
     },
     "categoryMigrate": {
       "title": "Migrate Category",
@@ -816,7 +835,12 @@
       "deleteConfirmCancel": "Cancel",
       "deleteAriaLabel": "Delete currency {{name}}",
       "requiredNoticeTitle": "You need to add a currency",
-      "requiredNoticeDescription": "To register movements you need at least one currency set up. Add one below to continue."
+      "requiredNoticeDescription": "To register movements you need at least one currency set up. Add one below to continue.",
+      "defaultHint": "The default currency is used by default when you add a movement.",
+      "openAddButton": "Add",
+      "symbolLabel": "Symbol",
+      "nameLabel": "Currency name",
+      "cancelButton": "Cancel"
     },
     "income": {
       "title": "Manage Income",
@@ -894,7 +918,19 @@
       "deleteConfirmCancel": "Cancel",
       "deleteAriaLabel": "Delete bank {{name}}",
       "requiredNoticeTitle": "You need to add a bank",
-      "requiredNoticeDescription": "To register movements you need at least one bank set up. Add one below to continue."
+      "requiredNoticeDescription": "To register movements you need at least one bank set up. Add one below to continue.",
+      "defaultBadge": "Default",
+      "defaultHint": "The default bank is preselected when you add a movement.",
+      "openAddButton": "Add",
+      "nameLabel": "Bank name",
+      "cancelButton": "Cancel"
+    },
+    "sections": {
+      "members": "Members and invitations",
+      "categories": "Categories",
+      "banks": "Banks",
+      "currencies": "Currencies",
+      "income": "Income"
     }
   },
   "services": {

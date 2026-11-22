@@ -94,33 +94,50 @@ describe("SettingCategory", () => {
       });
     });
 
-    it("muestra el formulario para agregar categoría", async () => {
+    it("oculta el formulario hasta presionar Agregar y muestra la etiqueta visible", async () => {
+      const user = userEvent.setup();
       renderSettingCategory();
-      await waitFor(() =>
-        expect(
-          screen.getByPlaceholderText("Nombre de la categoría..."),
-        ).toBeInTheDocument(),
-      );
-      expect(screen.getByText("Agregar")).toBeInTheDocument();
+      await waitFor(() => expect(screen.getByText("Servicios")).toBeInTheDocument());
+      expect(screen.queryByLabelText("Nombre de la categoría")).not.toBeInTheDocument();
+
+      await user.click(screen.getByRole("button", { name: /Agregar/ }));
+
+      expect(await screen.findByLabelText("Nombre de la categoría")).toBeInTheDocument();
+      expect(
+        screen.getByPlaceholderText("Nombre de la categoría..."),
+      ).toBeInTheDocument();
     });
 
-    it("muestra solo el formulario cuando no hay categorías", async () => {
+    it("cierra el formulario con Cancelar", async () => {
+      const user = userEvent.setup();
+      renderSettingCategory();
+      await waitFor(() => expect(screen.getByText("Servicios")).toBeInTheDocument());
+      await user.click(screen.getByRole("button", { name: /Agregar/ }));
+      await user.click(await screen.findByRole("button", { name: "Cancelar" }));
+      await waitFor(() =>
+        expect(screen.queryByLabelText("Nombre de la categoría")).not.toBeInTheDocument(),
+      );
+    });
+
+    it("abre el formulario por defecto cuando no hay categorías", async () => {
       server.use(
         http.get("http://localhost:8080/workspace/categories", () =>
           HttpResponse.json([]),
         ),
       );
       renderSettingCategory();
-      await waitFor(() =>
-        expect(
-          screen.getByPlaceholderText("Nombre de la categoría..."),
-        ).toBeInTheDocument(),
-      );
+      expect(await screen.findByLabelText("Nombre de la categoría")).toBeInTheDocument();
       expect(screen.queryByText("Servicios")).not.toBeInTheDocument();
     });
   });
 
   describe("formulario de creación", () => {
+    async function openForm(user: ReturnType<typeof userEvent.setup>) {
+      await waitFor(() => expect(screen.getByText("Servicios")).toBeInTheDocument());
+      await user.click(screen.getByRole("button", { name: /Agregar/ }));
+      return screen.findByLabelText("Nombre de la categoría");
+    }
+
     it("llama POST /workspace/categories con la descripción como query param al hacer submit", async () => {
       const user = userEvent.setup();
       let capturedUrl: string | undefined;
@@ -132,16 +149,7 @@ describe("SettingCategory", () => {
       );
 
       renderSettingCategory();
-      await waitFor(() =>
-        expect(
-          screen.getByPlaceholderText("Nombre de la categoría..."),
-        ).toBeInTheDocument(),
-      );
-
-      await user.type(
-        screen.getByPlaceholderText("Nombre de la categoría..."),
-        "viajes",
-      );
+      await user.type(await openForm(user), "viajes");
       await user.click(screen.getByText("Agregar"));
 
       await waitFor(() => {
@@ -149,13 +157,26 @@ describe("SettingCategory", () => {
       });
     });
 
+    it("agrega con Enter", async () => {
+      const user = userEvent.setup();
+      let capturedUrl: string | undefined;
+      server.use(
+        http.post("http://localhost:8080/workspace/categories", ({ request }) => {
+          capturedUrl = request.url;
+          return HttpResponse.json(newCategory, { status: 201 });
+        }),
+      );
+
+      renderSettingCategory();
+      await user.type(await openForm(user), "viajes{Enter}");
+
+      await waitFor(() => expect(capturedUrl).toContain("description=viajes"));
+    });
+
     it("muestra error de validación si se envía el form vacío", async () => {
       const user = userEvent.setup();
       renderSettingCategory();
-
-      await waitFor(() =>
-        expect(screen.getByText("Agregar")).toBeInTheDocument(),
-      );
+      await openForm(user);
 
       await user.click(screen.getByText("Agregar"));
 
@@ -166,26 +187,14 @@ describe("SettingCategory", () => {
       );
     });
 
-    it("limpia el input tras agregar con éxito", async () => {
+    it("cierra el formulario tras agregar con éxito", async () => {
       const user = userEvent.setup();
       renderSettingCategory();
-
-      await waitFor(() =>
-        expect(
-          screen.getByPlaceholderText("Nombre de la categoría..."),
-        ).toBeInTheDocument(),
-      );
-
-      await user.type(
-        screen.getByPlaceholderText("Nombre de la categoría..."),
-        "viajes",
-      );
+      await user.type(await openForm(user), "viajes");
       await user.click(screen.getByText("Agregar"));
 
       await waitFor(() =>
-        expect(
-          screen.getByPlaceholderText("Nombre de la categoría..."),
-        ).toHaveValue(""),
+        expect(screen.queryByLabelText("Nombre de la categoría")).not.toBeInTheDocument(),
       );
     });
   });

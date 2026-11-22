@@ -1,12 +1,11 @@
 import MailOutlined from "@ant-design/icons/MailOutlined";
-import { Badge, Card, Space, theme, Typography } from "antd";
+import { Badge, Space, theme } from "antd";
 import { useTranslation } from "react-i18next";
 import { useSentWorkspaceInvitations } from "@/apis/hooks/useWorkspaces";
 import type { SentInvitation } from "@/models/UserWorkspace";
 import { InvitationStatusEnum } from "@/enums/InvitationStatusEnum";
+import { SettingSection } from "@/components/settings/SettingSection";
 import SettingSentInvitationCard from "@/components/settings/SettingSentInvitationCard";
-
-const { Text } = Typography;
 
 export function SettingSentInvitations() {
   const { data: invitations, isFetching } = useSentWorkspaceInvitations();
@@ -25,46 +24,22 @@ export function SettingSentInvitations() {
 
   return (
     <div className="fade-in-down">
-      <Card
+      <SettingSection
         loading={isFetching}
+        icon={<MailOutlined />}
         title={
-          <Space align="center">
-            <MailOutlined style={{ color: token.colorPrimary, fontSize: 18 }} />
-            <Text strong>{t("settings.sentInvitations.title")}</Text>
-            <Badge
-              count={pendingSent.length}
-              style={{
-                backgroundColor: token.colorPrimary,
-                fontWeight: "bold",
-              }}
-            />
+          <Space size={8}>
+            {t("settings.sentInvitations.title")}
+            <Badge count={pendingSent.length} style={{ backgroundColor: token.colorPrimary }} />
           </Space>
         }
-        style={{
-          backgroundColor: token.colorFillTertiary,
-          borderRadius: 12,
-          boxShadow: "0 2px 6px rgba(0,0,0,0.05)",
-        }}
-        styles={{
-          header: {
-            borderBottom: "none",
-            padding: "12px 16px",
-          },
-          body: {
-            display: "flex",
-            justifyContent: "space-between",
-            padding: "12px 16px",
-            cursor: "default",
-            transition: "all 0.2s ease",
-          },
-        }}
       >
         <Space orientation="vertical" size="middle" style={{ width: "100%" }}>
           {pendingSent.map((invite: SentInvitation) => (
             <SettingSentInvitationCard key={invite.id} invite={invite} />
           ))}
         </Space>
-      </Card>
+      </SettingSection>
     </div>
   );
 }

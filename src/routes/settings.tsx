@@ -1,7 +1,7 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useTranslation } from "react-i18next";
 import { SettingIncome } from "@/components/settings/SettingIncome";
-import { Col, Flex, Grid, Row, Tabs } from "antd";
+import { Col, Flex, Grid, Row, Tabs, Typography } from "antd";
 import { SettingCurrentWorkspace } from "@/components/settings/SettingCurrentWorkspace";
 import { SettingInviteWorkspaces } from "@/components/settings/SettingInviteWorkspaces";
 import { SettingSentInvitations } from "@/components/settings/SettingSentInvitations";
@@ -60,11 +60,21 @@ function RouteComponent() {
       label: labels.settingsTabWorkspace,
       icon: <TeamOutlined />,
       children: (
-        <Flex vertical gap={16}>
-          <SettingInviteWorkspaces />
-          <SettingSentInvitations />
-          <SettingCurrentWorkspace />
-          <SettingCategory />
+        <Flex vertical gap={24}>
+          <Flex vertical gap={16}>
+            <Typography.Title level={4} style={{ margin: 0 }}>
+              {t("settings.sections.members")}
+            </Typography.Title>
+            <SettingInviteWorkspaces />
+            <SettingCurrentWorkspace />
+            <SettingSentInvitations />
+          </Flex>
+          <Flex vertical gap={16}>
+            <Typography.Title level={4} style={{ margin: 0 }}>
+              {t("settings.sections.categories")}
+            </Typography.Title>
+            <SettingCategory />
+          </Flex>
         </Flex>
       ),
     },

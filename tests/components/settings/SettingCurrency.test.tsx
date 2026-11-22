@@ -97,35 +97,63 @@ describe("SettingCurrency", () => {
       });
     });
 
-    it("muestra el badge Default en la moneda por defecto", async () => {
+    it("muestra el badge Predeterminada (i18n) y el símbolo una sola vez", async () => {
       renderSettingCurrency();
       await waitFor(() =>
-        expect(screen.getByText("★ Default")).toBeInTheDocument(),
+        expect(screen.getByText("Predeterminada")).toBeInTheDocument(),
+      );
+      expect(screen.queryByText(/★/)).not.toBeInTheDocument();
+      expect(screen.getAllByText("US$")).toHaveLength(1);
+    });
+
+    it("explica qué significa moneda predeterminada", async () => {
+      renderSettingCurrency();
+      expect(
+        await screen.findByText(/La moneda predeterminada se usa por defecto/),
+      ).toBeInTheDocument();
+    });
+
+    it("oculta el formulario hasta presionar Agregar y muestra etiquetas visibles", async () => {
+      const user = userEvent.setup();
+      renderSettingCurrency();
+      await waitFor(() => expect(screen.getByText("Euro")).toBeInTheDocument());
+      expect(screen.queryByLabelText("Símbolo")).not.toBeInTheDocument();
+
+      await user.click(screen.getByRole("button", { name: /Agregar/ }));
+
+      expect(await screen.findByLabelText("Símbolo")).toBeInTheDocument();
+      expect(screen.getByLabelText("Nombre de la moneda")).toBeInTheDocument();
+      expect(screen.getByPlaceholderText("Símbolo...")).toBeInTheDocument();
+    });
+
+    it("cierra el formulario con Cancelar", async () => {
+      const user = userEvent.setup();
+      renderSettingCurrency();
+      await waitFor(() => expect(screen.getByText("Euro")).toBeInTheDocument());
+      await user.click(screen.getByRole("button", { name: /Agregar/ }));
+      await user.click(await screen.findByRole("button", { name: "Cancelar" }));
+      await waitFor(() =>
+        expect(screen.queryByLabelText("Símbolo")).not.toBeInTheDocument(),
       );
     });
 
-    it("muestra el formulario para agregar moneda", async () => {
-      renderSettingCurrency();
-      await waitFor(() =>
-        expect(screen.getByPlaceholderText("Símbolo...")).toBeInTheDocument(),
-      );
-      expect(screen.getByPlaceholderText("Nombre de la moneda...")).toBeInTheDocument();
-      expect(screen.getByText("Agregar")).toBeInTheDocument();
-    });
-
-    it("muestra el mensaje cuando no hay monedas", async () => {
+    it("abre el formulario por defecto cuando no hay monedas", async () => {
       server.use(
         http.get("http://localhost:8080/workspace/currencies", () => HttpResponse.json([])),
       );
       renderSettingCurrency();
-      await waitFor(() =>
-        expect(screen.getByPlaceholderText("Símbolo...")).toBeInTheDocument(),
-      );
+      expect(await screen.findByLabelText("Símbolo")).toBeInTheDocument();
       expect(screen.queryByText("Peso Argentino")).not.toBeInTheDocument();
     });
   });
 
   describe("formulario de creación", () => {
+    async function openForm(user: ReturnType<typeof userEvent.setup>) {
+      await waitFor(() => expect(screen.getByText("Euro")).toBeInTheDocument());
+      await user.click(screen.getByRole("button", { name: /Agregar/ }));
+      return screen.findByLabelText("Símbolo");
+    }
+
     it("llama POST /workspace/currencies con el símbolo y descripción ingresados al hacer submit", async () => {
       const user = userEvent.setup();
       let postedBody: unknown;
@@ -137,15 +165,8 @@ describe("SettingCurrency", () => {
       );
 
       renderSettingCurrency();
-      await waitFor(() =>
-        expect(screen.getByPlaceholderText("Símbolo...")).toBeInTheDocument(),
-      );
-
-      await user.type(screen.getByPlaceholderText("Símbolo..."), "R$");
-      await user.type(
-        screen.getByPlaceholderText("Nombre de la moneda..."),
-        "Real Brasileño",
-      );
+      await user.type(await openForm(user), "R$");
+      await user.type(screen.getByLabelText("Nombre de la moneda"), "Real Brasileño");
       await user.click(screen.getByText("Agregar"));
 
       await waitFor(() =>
@@ -156,10 +177,7 @@ describe("SettingCurrency", () => {
     it("muestra error de validación si se envía el form vacío", async () => {
       const user = userEvent.setup();
       renderSettingCurrency();
-
-      await waitFor(() =>
-        expect(screen.getByText("Agregar")).toBeInTheDocument(),
-      );
+      await openForm(user);
 
       await user.click(screen.getByText("Agregar"));
 
@@ -171,25 +189,16 @@ describe("SettingCurrency", () => {
       ).toBeInTheDocument();
     });
 
-    it("limpia el formulario tras agregar con éxito", async () => {
+    it("cierra el formulario tras agregar con éxito", async () => {
       const user = userEvent.setup();
       renderSettingCurrency();
-
-      await waitFor(() =>
-        expect(screen.getByPlaceholderText("Símbolo...")).toBeInTheDocument(),
-      );
-
-      await user.type(screen.getByPlaceholderText("Símbolo..."), "R$");
-      await user.type(
-        screen.getByPlaceholderText("Nombre de la moneda..."),
-        "Real Brasileño",
-      );
+      await user.type(await openForm(user), "R$");
+      await user.type(screen.getByLabelText("Nombre de la moneda"), "Real Brasileño");
       await user.click(screen.getByText("Agregar"));
 
       await waitFor(() =>
-        expect(screen.getByPlaceholderText("Símbolo...")).toHaveValue(""),
+        expect(screen.queryByLabelText("Símbolo")).not.toBeInTheDocument(),
       );
-      expect(screen.getByPlaceholderText("Nombre de la moneda...")).toHaveValue("");
     });
   });
 
@@ -240,8 +249,10 @@ describe("SettingCurrency", () => {
       const confirmBtn = await screen.findByText("Eliminar");
       await user.click(confirmBtn);
 
-      await waitFor(() => expect(deletedId).toBe("3"));
-    });
+      // Es deshacible: el DELETE real recién se dispara tras la ventana de "deshacer".
+      expect(deletedId).toBeUndefined();
+      await waitFor(() => expect(deletedId).toBe("3"), { timeout: 9000 });
+    }, 12000);
   });
 
   describe("aviso de moneda requerida", () => {

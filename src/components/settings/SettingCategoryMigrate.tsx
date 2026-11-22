@@ -2,9 +2,7 @@ import SwapRightOutlined from "@ant-design/icons/SwapRightOutlined";
 import RetweetOutlined from "@ant-design/icons/RetweetOutlined";
 import {
   Button,
-  Card,
   Col,
-  Divider,
   Flex,
   Form,
   Popconfirm,
@@ -17,8 +15,9 @@ import {
 import { useKeycloak } from "@react-keycloak/web";
 import { useTranslation } from "react-i18next";
 import { useCategory, useMigrateCategory } from "@/apis/hooks/useCategory";
+import { SettingSection } from "@/components/settings/SettingSection";
 
-const { Title, Text } = Typography;
+const { Text } = Typography;
 
 interface MigrateCategoryForm {
   fromCategoryId: number;
@@ -81,51 +80,23 @@ export function SettingCategoryMigrate() {
   const confirmDescription = t("settings.categoryMigrate.confirmDescription");
 
   return (
-    <Card
+    <SettingSection
+      icon={<RetweetOutlined />}
+      title={t("settings.categoryMigrate.title")}
+      subtitle={t("settings.categoryMigrate.subtitle")}
       style={{
-        borderRadius: 16,
-        border: `1.5px dashed ${token.colorWarningBorder}`,
-        background: token.colorWarningBg,
-        marginTop: 20,
+        borderStyle: "dashed",
+        borderColor: token.colorWarningBorder,
+        marginTop: token.marginLG,
       }}
-      styles={{ body: { padding: "18px 20px" } }}
     >
-      {/* Header */}
-      <Flex align="center" gap={10} style={{ marginBottom: 4 }}>
-        <div
-          style={{
-            width: 36,
-            height: 36,
-            borderRadius: 10,
-            background: `linear-gradient(135deg, ${token.colorWarningActive}, ${token.colorWarning})`,
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            boxShadow: `0 3px 10px ${token.colorWarningBorder}`,
-            flexShrink: 0,
-          }}
-        >
-          <RetweetOutlined style={{ color: "#fff", fontSize: 18 }} />
-        </div>
-        <div>
-          <Title level={5} style={{ margin: 0, color: token.colorWarningText }}>
-            {t("settings.categoryMigrate.title")}
-          </Title>
-          <Text style={{ fontSize: 12, color: token.colorWarningText }}>
-            {t("settings.categoryMigrate.subtitle")}
-          </Text>
-        </div>
-      </Flex>
-
-      <Divider style={{ margin: "14px 0", borderColor: token.colorWarningBorder }} />
-
       <Form form={form} layout="vertical">
         <Row gutter={[12, 0]} align="middle">
           <Col xs={24} sm={10}>
             <Form.Item
               name="fromCategoryId"
               label={
-                <Text style={{ fontSize: 13, color: token.colorWarningText, fontWeight: 600 }}>
+                <Text style={{ fontSize: 13, fontWeight: 600 }}>
                   {t("settings.categoryMigrate.fromLabel")}
                 </Text>
               }
@@ -163,7 +134,7 @@ export function SettingCategoryMigrate() {
             <Form.Item
               name="toCategoryId"
               label={
-                <Text style={{ fontSize: 13, color: token.colorWarningText, fontWeight: 600 }}>
+                <Text style={{ fontSize: 13, fontWeight: 600 }}>
                   {t("settings.categoryMigrate.toLabel")}
                 </Text>
               }
@@ -197,11 +168,6 @@ export function SettingCategoryMigrate() {
           >
             <Button
               type="primary"
-              style={{
-                height: 40,
-                borderRadius: 10,
-                fontWeight: 600,
-              }}
               loading={migrateMutation.isPending}
               disabled={!fromCategoryId || !toCategoryId}
             >
@@ -210,6 +176,6 @@ export function SettingCategoryMigrate() {
           </Popconfirm>
         </Flex>
       </Form>
-    </Card>
+    </SettingSection>
   );
 }

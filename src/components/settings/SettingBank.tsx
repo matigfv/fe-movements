@@ -7,18 +7,16 @@ import {
   Alert,
   Button,
   Card,
-  Col,
-  Divider,
   Flex,
   Form,
   Input,
   Popconfirm,
-  Row,
   Space,
   theme,
   Tooltip,
   Typography,
 } from "antd";
+import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useAddBank, useBanks, useDeleteBank } from "@/apis/hooks/useBank";
 import { useUserDefault, useSetUserDefault } from "@/apis/hooks/useSettings";
@@ -27,8 +25,9 @@ import { useCurrentUser } from "@/apis/hooks/useCurrentUser";
 import { getEntityLabels } from "@/utils/entityLabels";
 import { useUndoableDelete } from "@/utils/useUndoableDelete";
 import PendingDeleteIndicator from "@/components/PendingDeleteIndicator";
+import { DefaultPill, SettingSection } from "@/components/settings/SettingSection";
 
-const { Title, Text } = Typography;
+const { Text } = Typography;
 
 interface AddBankForm {
   description: string;
@@ -61,14 +60,12 @@ function BankCard({
 
   return (
     <Card
-      hoverable
-      styles={{ body: { padding: "14px 18px", cursor: "default" } }}
+      styles={{ body: { padding: "12px 16px" } }}
       style={{
         position: "relative",
-        borderRadius: 16,
-        border: `1.5px solid ${isDefault ? token.colorPrimaryBorder : token.colorBorderSecondary}`,
+        borderRadius: token.borderRadiusLG,
+        borderColor: isDefault ? token.colorPrimaryBorder : token.colorBorderSecondary,
         background: isDefault ? token.colorPrimaryBg : token.colorFillAlter,
-        transition: "all 0.25s ease",
         overflow: "hidden",
         ...(isPendingRemoval
           ? { opacity: 0.45, filter: "grayscale(70%)", pointerEvents: "none" }
@@ -76,62 +73,32 @@ function BankCard({
       }}
     >
       {isPendingRemoval && <PendingDeleteIndicator />}
-      <Flex align="center" justify="space-between">
-        <Flex align="center" gap={14}>
+      <Flex align="center" justify="space-between" gap={12}>
+        <Flex align="center" gap={12} style={{ minWidth: 0 }}>
           <div
             style={{
-              width: 44,
-              height: 44,
-              borderRadius: 13,
-              background: isDefault
-                ? `linear-gradient(135deg, ${token.colorPrimary} 0%, ${token.colorPrimaryHover} 100%)`
-                : `linear-gradient(135deg, ${token.colorFill} 0%, ${token.colorFillSecondary} 100%)`,
+              width: 40,
+              height: 40,
+              borderRadius: token.borderRadius,
+              background: token.colorFillTertiary,
+              color: token.colorTextSecondary,
+              fontSize: 18,
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
-              boxShadow: isDefault
-                ? `0 4px 14px ${token.colorPrimaryBorder}`
-                : "0 2px 6px rgba(0,0,0,0.08)",
               flexShrink: 0,
-              transition: "all 0.25s ease",
             }}
           >
-            <BankOutlined style={{ color: "#fff", fontSize: 20 }} />
+            <BankOutlined />
           </div>
-          <Flex vertical gap={3}>
-            <Flex align="center" gap={8}>
-              <Text
-                strong
-                style={{
-                  fontSize: 15,
-                  color: token.colorText,
-                  letterSpacing: "-0.2px",
-                  lineHeight: 1,
-                }}
-              >
-                {bank.description}
-              </Text>
-              {isDefault && (
-                <span
-                  style={{
-                    background: `linear-gradient(90deg, ${token.colorPrimary}, ${token.colorPrimaryHover})`,
-                    borderRadius: 20,
-                    color: "#fff",
-                    fontSize: 10,
-                    fontWeight: 700,
-                    letterSpacing: "0.5px",
-                    padding: "2px 9px",
-                    textTransform: "uppercase",
-                    lineHeight: "18px",
-                  }}
-                >
-                  ★ Default
-                </span>
-              )}
-            </Flex>
+          <Flex align="center" gap={8} wrap style={{ minWidth: 0 }}>
+            <Text strong style={{ fontSize: 15 }}>
+              {bank.description}
+            </Text>
+            {isDefault && <DefaultPill>{t("settings.bank.defaultBadge")}</DefaultPill>}
           </Flex>
         </Flex>
-        <Space size={4}>
+        <Space size={8}>
           <Tooltip
             title={
               isDefault
@@ -141,23 +108,16 @@ function BankCard({
           >
             <Button
               type="text"
+              size="large"
+              shape="circle"
               aria-label={t("settings.bank.starAriaLabel", { name: bank.description })}
-              style={{
-                borderRadius: "50%",
-                width: 34,
-                height: 34,
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                padding: 0,
-              }}
               disabled={isDefault || isSettingDefault}
               onClick={() => onSetDefault(bank.id)}
               icon={
                 isDefault ? (
-                  <StarFilled style={{ color: token.colorWarning, fontSize: 18 }} />
+                  <StarFilled style={{ color: token.colorWarning }} />
                 ) : (
-                  <StarOutlined style={{ color: token.colorTextQuaternary, fontSize: 18 }} />
+                  <StarOutlined style={{ color: token.colorTextTertiary }} />
                 )
               }
             />
@@ -181,18 +141,11 @@ function BankCard({
               <Button
                 type="text"
                 danger
+                size="large"
+                shape="circle"
                 aria-label={t("settings.bank.deleteAriaLabel", { name: bank.description })}
-                style={{
-                  borderRadius: "50%",
-                  width: 34,
-                  height: 34,
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  padding: 0,
-                }}
                 disabled={isDefault || isDeleting}
-                icon={<DeleteOutlined style={{ fontSize: 16 }} />}
+                icon={<DeleteOutlined />}
               />
             </Popconfirm>
           </Tooltip>
@@ -219,128 +172,99 @@ export function SettingBank() {
   const { data: currentUser } = useCurrentUser();
   const labels = getEntityLabels(currentUser?.userType ?? null, t);
 
+  // null = el usuario todavía no decidió: el form queda abierto solo si no hay bancos.
+  const [showForm, setShowForm] = useState<boolean | null>(null);
+  const isEmpty = !isLoading && banks.length === 0;
+  const formOpen = showForm ?? isEmpty;
+
+  const closeForm = () => {
+    form.resetFields();
+    setShowForm(false);
+  };
+
   const onFinish = (values: AddBankForm) => {
-    addBankMutation.mutate(values.description, {
-      onSuccess: () => form.resetFields(),
-    });
+    addBankMutation.mutate(values.description, { onSuccess: closeForm });
   };
 
   return (
-    <Card loading={isLoading} style={{ borderRadius: 16 }}>
-      {/* Header */}
-      <Flex align="center" gap={10} style={{ marginBottom: 4 }}>
-        <div
-          style={{
-            width: 36,
-            height: 36,
-            borderRadius: 10,
-            background: `linear-gradient(135deg, ${token.colorPrimary}, ${token.colorPrimaryHover})`,
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            boxShadow: `0 3px 10px ${token.colorPrimaryBorder}`,
-          }}
-        >
-          <BankOutlined style={{ color: "#fff", fontSize: 18 }} />
-        </div>
-        <div>
-          <Title level={5} style={{ margin: 0 }}>
-            {t("settings.bank.title")}
-          </Title>
-          <Text type="secondary" style={{ fontSize: 12 }}>
-            {labels.bancosSubtitle}
-          </Text>
-        </div>
-      </Flex>
-
-      <Divider style={{ margin: "14px 0" }} />
-
-      {!isLoading && banks.length === 0 && (
+    <SettingSection
+      loading={isLoading}
+      icon={<BankOutlined />}
+      title={t("settings.bank.title")}
+      subtitle={
+        <>
+          {labels.bancosSubtitle}
+          <br />
+          {t("settings.bank.defaultHint")}
+        </>
+      }
+      extra={
+        !formOpen && (
+          <Button icon={<PlusOutlined />} onClick={() => setShowForm(true)}>
+            {t("settings.bank.openAddButton")}
+          </Button>
+        )
+      }
+    >
+      {isEmpty && (
         <Alert
           type="warning"
           showIcon
           title={t("settings.bank.requiredNoticeTitle")}
           description={t("settings.bank.requiredNoticeDescription")}
-          style={{ borderRadius: 12, marginBottom: 16 }}
+          style={{ marginBottom: token.marginMD }}
         />
       )}
 
-      {/* Agregar banco */}
-      <Card
-        styles={{ body: { padding: "14px 16px" } }}
-        style={{
-          borderRadius: 14,
-          border: `1.5px dashed ${token.colorPrimaryBorder}`,
-          background: token.colorPrimaryBg,
-          marginBottom: 20,
-        }}
-      >
-        <Text
-          strong
+      <Flex vertical gap={10}>
+        {banks.map((bank: BankRecord) => (
+          <BankCard
+            key={bank.id}
+            bank={bank}
+            defaultBankId={defaultBank?.value}
+            onSetDefault={(id) =>
+              setDefaultMutation.mutate({ key: "DEFAULT_BANK", value: id })
+            }
+            isSettingDefault={setDefaultMutation.isPending}
+            onDelete={(id) => requestDeleteBank(id)}
+            isDeleting={deleteBankMutation.isPending}
+            isPendingRemoval={isPendingBankRemoval(bank.id)}
+            bancosQuitar={labels.bancosQuitar}
+          />
+        ))}
+      </Flex>
+
+      {formOpen && (
+        <Card
+          size="small"
           style={{
-            fontSize: 13,
-            color: token.colorText,
-            display: "block",
-            marginBottom: 10,
+            borderRadius: token.borderRadiusLG,
+            background: token.colorFillAlter,
+            marginTop: token.marginMD,
           }}
         >
-          {t("settings.bank.newBankLabel")}
-        </Text>
-        <Form form={form} layout="vertical" onFinish={onFinish}>
-          <Row gutter={[12, 0]} align="middle">
-            <Col xs={24} sm={16} md={18}>
-              <Form.Item
-                name="description"
-                style={{ margin: 0 }}
-                rules={[
-                  { required: true, message: t("settings.bank.nameRequired") },
-                ]}
-              >
-                <Input
-                  style={{ borderRadius: 10, height: 40, fontSize: 14 }}
-                  placeholder={t("settings.bank.namePlaceholder")}
-                />
-              </Form.Item>
-            </Col>
-            <Col xs={24} sm={8} md={6}>
+          <Form form={form} layout="vertical" onFinish={onFinish}>
+            <Form.Item
+              name="description"
+              label={t("settings.bank.nameLabel")}
+              rules={[{ required: true, message: t("settings.bank.nameRequired") }]}
+            >
+              <Input autoFocus placeholder={t("settings.bank.namePlaceholder")} />
+            </Form.Item>
+            <Flex justify="flex-end" gap={8}>
+              <Button onClick={closeForm}>{t("settings.bank.cancelButton")}</Button>
               <Button
                 icon={<PlusOutlined />}
                 type="primary"
-                block
                 htmlType="submit"
-                style={{ height: 40, borderRadius: 10, fontWeight: 600 }}
                 loading={addBankMutation.isPending}
               >
                 {t("settings.bank.addButton")}
               </Button>
-            </Col>
-          </Row>
-        </Form>
-      </Card>
-
-      {/* Lista de bancos */}
-      <Flex vertical gap={10}>
-        {banks.map((bank: BankRecord, index: number) => (
-          <div
-            key={bank.id}
-            className="step-enter-right"
-            style={{ animationDelay: `${Math.min(index, 7) * 55}ms` }}
-          >
-            <BankCard
-              bank={bank}
-              defaultBankId={defaultBank?.value}
-              onSetDefault={(id) =>
-                setDefaultMutation.mutate({ key: "DEFAULT_BANK", value: id })
-              }
-              isSettingDefault={setDefaultMutation.isPending}
-              onDelete={(id) => requestDeleteBank(id)}
-              isDeleting={deleteBankMutation.isPending}
-              isPendingRemoval={isPendingBankRemoval(bank.id)}
-              bancosQuitar={labels.bancosQuitar}
-            />
-          </div>
-        ))}
-      </Flex>
-    </Card>
+            </Flex>
+          </Form>
+        </Card>
+      )}
+    </SettingSection>
   );
 }

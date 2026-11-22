@@ -35,31 +35,30 @@ export default function SettingSentInvitationCard({
 
   return (
     <Card
-      hoverable
       styles={{ body: { padding: "14px 18px" } }}
       style={{
-        borderRadius: 14,
-        border: `1.5px solid ${token.colorBorderSecondary}`,
+        borderRadius: token.borderRadiusLG,
+        borderColor: token.colorBorderSecondary,
         background: token.colorBgContainer,
-        transition: "all 0.2s ease",
       }}
     >
       <Flex align="center" justify="space-between" gap={12} style={{ minWidth: 0 }}>
         <Flex align="center" gap={12} style={{ minWidth: 0, flex: 1 }}>
           <div
             style={{
-              width: 44,
-              height: 44,
-              borderRadius: 13,
+              width: 40,
+              height: 40,
+              borderRadius: token.borderRadius,
               flexShrink: 0,
-              background: `linear-gradient(135deg, ${token.colorPrimary} 0%, ${token.colorPrimaryHover} 100%)`,
+              background: token.colorFillTertiary,
+              color: token.colorTextSecondary,
+              fontSize: 18,
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
-              boxShadow: `0 4px 12px ${token.colorPrimaryBorder}`,
             }}
           >
-            <MailOutlined style={{ color: "#fff", fontSize: 20 }} />
+            <MailOutlined />
           </div>
           <Flex vertical gap={4} style={{ minWidth: 0, flex: 1 }}>
             <Text
@@ -77,12 +76,12 @@ export default function SettingSentInvitationCard({
               {getWorkspaceDisplayName(invite.workspaceName, t)}
             </Text>
             <Flex align="center" gap={6} style={{ minWidth: 0 }}>
-              <Text type="secondary" style={{ fontSize: 12, flexShrink: 0 }}>
+              <Text type="secondary" style={{ fontSize: 13, flexShrink: 0 }}>
                 {t("settings.sentInvitations.invitedUserLabel")}
               </Text>
               <Text
                 style={{
-                  fontSize: 12,
+                  fontSize: 13,
                   color: token.colorPrimary,
                   fontWeight: 600,
                   overflow: "hidden",
@@ -111,7 +110,7 @@ export default function SettingSentInvitationCard({
             danger
             icon={<DeleteOutlined />}
             loading={cancelInvitationMutation.isPending}
-            style={{ borderRadius: 20, fontWeight: 600, flexShrink: 0 }}
+            style={{ fontWeight: 600, flexShrink: 0 }}
           >
             {t("settings.sentInvitations.cancelButton")}
           </Button>

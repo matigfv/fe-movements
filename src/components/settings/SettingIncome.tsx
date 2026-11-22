@@ -2,7 +2,6 @@ import {
   Button,
   Card,
   Col,
-  Divider,
   Empty,
   Flex,
   Form,
@@ -33,8 +32,9 @@ import { useCurrency } from "@/apis/hooks/useCurrency";
 import { useBanks } from "@/apis/hooks/useBank";
 import { useCurrentUser } from "@/apis/hooks/useCurrentUser";
 import { getEntityLabels } from "@/utils/entityLabels";
+import { SettingSection } from "@/components/settings/SettingSection";
 
-const { Title, Text } = Typography;
+const { Text } = Typography;
 
 export function SettingIncome() {
   const [form] = Form.useForm<IncomeAddForm>();
@@ -88,39 +88,15 @@ export function SettingIncome() {
     createIngresoMutation.mutate({
       income: { ...values, currency: { symbol: values.currency } },
     });
-    form.resetFields();
   };
 
   return (
-    <Card loading={isLoading} style={{ borderRadius: token.borderRadiusLG }}>
-      {/* Header */}
-      <Flex align="center" gap={12} style={{ marginBottom: 4 }}>
-        <div
-          style={{
-            width: 38,
-            height: 38,
-            borderRadius: token.borderRadius,
-            background: token.colorPrimary,
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            flexShrink: 0,
-          }}
-        >
-          <DollarOutlined style={{ color: "#fff", fontSize: 18 }} />
-        </div>
-        <div>
-          <Title level={5} style={{ margin: 0 }}>
-            {t("settings.income.title")}
-          </Title>
-          <Text type="secondary" style={{ fontSize: 12 }}>
-            {labels.ingresoDescripcion}
-          </Text>
-        </div>
-      </Flex>
-
-      <Divider style={{ margin: "14px 0" }} />
-
+    <SettingSection
+      loading={isLoading}
+      icon={<DollarOutlined />}
+      title={t("settings.income.title")}
+      subtitle={labels.ingresoDescripcion}
+    >
       {/* Form card */}
       <Card
         size="small"
@@ -208,15 +184,13 @@ export function SettingIncome() {
         <Empty description={t("settings.income.emptyDescription")} />
       ) : (
         <Flex vertical gap={10}>
-          {ingresos.map((ingreso: Income, index: number) => (
+          {ingresos.map((ingreso: Income) => (
             <Card
               key={ingreso.id}
               size="small"
-              className="step-enter-right"
               style={{
                 borderRadius: token.borderRadiusLG,
                 borderColor: token.colorBorderSecondary,
-                animationDelay: `${Math.min(index, 7) * 55}ms`,
               }}
             >
               <Flex justify="space-between" align="center">
@@ -227,7 +201,7 @@ export function SettingIncome() {
                       width: 36,
                       height: 36,
                       borderRadius: token.borderRadius,
-                      background: token.colorFillSecondary,
+                      background: token.colorFillTertiary,
                       display: "flex",
                       alignItems: "center",
                       justifyContent: "center",
@@ -235,7 +209,7 @@ export function SettingIncome() {
                     }}
                   >
                     <DollarOutlined
-                      style={{ color: token.colorPrimary, fontSize: 16 }}
+                      style={{ color: token.colorTextSecondary, fontSize: 16 }}
                     />
                   </div>
                   <div>
@@ -269,6 +243,7 @@ export function SettingIncome() {
                   >
                     <Button
                       type="text"
+                      size="large"
                       icon={<ReloadOutlined />}
                       style={{ color: token.colorWarning }}
                       aria-label={t("settings.income.reloadAriaLabel", { name: ingreso.accountName })}
@@ -285,6 +260,7 @@ export function SettingIncome() {
                     <Button
                       danger
                       type="text"
+                      size="large"
                       icon={<DeleteOutlined />}
                       aria-label={t("settings.income.deleteAriaLabel", { name: ingreso.accountName })}
                     />
@@ -295,6 +271,6 @@ export function SettingIncome() {
           ))}
         </Flex>
       )}
-    </Card>
+    </SettingSection>
   );
 }

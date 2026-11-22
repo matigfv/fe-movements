@@ -1,4 +1,4 @@
-import { Avatar, Card, Divider, Empty, Flex, Tag, theme, Tooltip, Typography } from "antd";
+import { Avatar, Card, Empty, Flex, Space, Tag, theme, Tooltip, Typography } from "antd";
 import TeamOutlined from "@ant-design/icons/TeamOutlined";
 import UserOutlined from "@ant-design/icons/UserOutlined";
 import MailOutlined from "@ant-design/icons/MailOutlined";
@@ -12,13 +12,14 @@ import { useCurrentUser } from "@/apis/hooks/useCurrentUser";
 import { useUserRoles } from "@/apis/hooks/useUserRoles";
 import { RoleEnum } from "@/enums/RoleEnum";
 import { getEntityLabels } from "@/utils/entityLabels";
+import { SettingSection } from "@/components/settings/SettingSection";
 import {
   getWorkspaceDisplayName,
   getWorkspaceOwnerEmail,
   isForeignPersonalWorkspace,
 } from "@/utils/workspaceDisplay";
 
-const { Title, Text } = Typography;
+const { Text } = Typography;
 
 export function SettingCurrentWorkspace() {
   const { token } = theme.useToken();
@@ -45,66 +46,45 @@ export function SettingCurrentWorkspace() {
 
   if (!currentWorkspace) {
     return (
-      <Card loading={isLoading} style={{ borderRadius: 16 }}>
+      <Card loading={isLoading} style={{ borderRadius: token.borderRadiusLG }}>
         <Empty description={t("settings.currentWorkspace.noWorkspaceSelected")} />
       </Card>
     );
   }
 
   return (
-    <Card loading={isLoading} style={{ borderRadius: 16 }}>
-      {/* Header con nombre + botón salir */}
-      <Flex align="center" gap={10} style={{ marginBottom: 4 }}>
-        <div
-          style={{
-            width: 36,
-            height: 36,
-            borderRadius: 10,
-            background: `linear-gradient(135deg, ${token.colorPrimary}, ${token.colorPrimaryHover})`,
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            boxShadow: `0 3px 10px ${token.colorPrimaryBorder}`,
-          }}
-        >
-          <TeamOutlined style={{ color: "#fff", fontSize: 18 }} />
-        </div>
-        <div style={{ flex: 1 }}>
-          <Flex align="center" gap={8}>
-            <Title level={5} style={{ margin: 0 }}>
-              {getWorkspaceDisplayName(currentWorkspace.workspaceName, t)}
-            </Title>
-            {isForeignPersonal && ownerEmail && (
-              <Tooltip title={t("common.workspace.notYoursTooltip", { email: ownerEmail })}>
-                <Tag color="gold" style={{ marginInlineEnd: 0, fontSize: 11 }}>
-                  {t("common.workspace.notYoursTag")}
-                </Tag>
-              </Tooltip>
-            )}
-            <span
-              style={{
-                background: token.colorFillSecondary,
-                borderRadius: 12,
-                color: token.colorTextSecondary,
-                fontSize: 11,
-                fontWeight: 600,
-                padding: "2px 8px",
-              }}
-            >
-              {t("settings.currentWorkspace.memberCount", {
-                count: currentWorkspace.metadata.memberDetails.length,
-              })}
-            </span>
-          </Flex>
-          <Text type="secondary" style={{ fontSize: 12 }}>
-            {labels.workspaceGestionar}
-          </Text>
-        </div>
-        {canLeave && <ExitWorkspaceModal group={currentWorkspace} />}
-      </Flex>
-
-      <Divider style={{ margin: "14px 0" }} />
-
+    <SettingSection
+      loading={isLoading}
+      icon={<TeamOutlined />}
+      title={
+        <Space size={8} wrap>
+          {getWorkspaceDisplayName(currentWorkspace.workspaceName, t)}
+          {isForeignPersonal && ownerEmail && (
+            <Tooltip title={t("common.workspace.notYoursTooltip", { email: ownerEmail })}>
+              <Tag color="gold" style={{ marginInlineEnd: 0, fontSize: 12 }}>
+                {t("common.workspace.notYoursTag")}
+              </Tag>
+            </Tooltip>
+          )}
+          <span
+            style={{
+              background: token.colorFillSecondary,
+              borderRadius: token.borderRadiusSM,
+              color: token.colorTextSecondary,
+              fontSize: 12,
+              fontWeight: 400,
+              padding: "2px 8px",
+            }}
+          >
+            {t("settings.currentWorkspace.memberCount", {
+              count: currentWorkspace.metadata.memberDetails.length,
+            })}
+          </span>
+        </Space>
+      }
+      subtitle={labels.workspaceGestionar}
+      extra={canLeave && <ExitWorkspaceModal group={currentWorkspace} />}
+    >
       {/* Lista de miembros con botón invitar */}
       <div>
         <Flex align="center" justify="space-between" style={{ marginBottom: 12 }}>
@@ -159,6 +139,6 @@ export function SettingCurrentWorkspace() {
           </ul>
         )}
       </div>
-    </Card>
+    </SettingSection>
   );
 }
