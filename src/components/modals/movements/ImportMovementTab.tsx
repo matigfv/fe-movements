@@ -7,6 +7,7 @@ import { useTranslation } from "react-i18next";
 import type { UploadChangeParam, UploadFile } from "antd/es/upload";
 import { uploadExpenseApi } from "@/apis/movement/MovementApi";
 import type { ImportResult } from "@/models/ImportResult";
+import { HelpLink } from "@/components/help/HelpLink";
 const { Text } = Typography;
 
 // Único banco con parser en api-movements: el backend detecta solo si el PDF es el export de
@@ -105,6 +106,8 @@ const ImportMovementTab = forwardRef<unknown, ImportMovementTabProps>(
             {t("movements.import.introPrefix")} <strong>PDF</strong>.
             <br />
             {t("movements.import.supportedBanks")}
+            {" "}
+            <HelpLink topic="import" />
           </Text>
         </div>
         <Form.Item

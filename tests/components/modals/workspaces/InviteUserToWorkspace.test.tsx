@@ -107,4 +107,15 @@ describe("InviteUserToWorkspace", () => {
       });
     });
   });
+
+  it("shows a help link to the invite section that opens in a new tab", async () => {
+    render(<InviteUserToWorkspace group={group} />, { wrapper: makeWrapper(queryClient) });
+
+    await userEvent.click(screen.getByTitle("Invitar miembro al grupo"));
+
+    const link = await screen.findByRole("link", { name: /Ver ayuda sobre invitar miembros/ });
+    expect(link).toHaveAttribute("href", "/help#invitar-miembros");
+    expect(link).toHaveAttribute("target", "_blank");
+    expect(link).toHaveAttribute("rel", expect.stringContaining("noopener"));
+  });
 });

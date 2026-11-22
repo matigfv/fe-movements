@@ -16,6 +16,7 @@ import {
 import StreakBanner from "@/components/home/StreakBanner";
 import BadgesPanel from "@/components/home/BadgesPanel";
 import type { GoalRecord } from "@/models/Goal";
+import { HelpLink } from "@/components/help/HelpLink";
 import { useUndoableDelete } from "@/utils/useUndoableDelete";
 
 const { Title, Text } = Typography;
@@ -56,9 +57,12 @@ function RouteComponent() {
       <div className="fade-in-up" style={{ marginBottom: 20, animationDelay: "0ms" }}>
         <Flex justify="space-between" align={isMobile ? "flex-start" : "center"} gap={12} vertical={isMobile}>
           <div>
-            <Title level={isMobile ? 3 : 2} style={{ margin: 0 }}>
-              {t("nav.goals")}
-            </Title>
+            <Flex align="center" gap={8}>
+              <Title level={isMobile ? 3 : 2} style={{ margin: 0 }}>
+                {t("nav.goals")}
+              </Title>
+              <HelpLink topic="goals" />
+            </Flex>
             <Text type="secondary">{t("goals.pageSubtitle")}</Text>
           </div>
           <AddGoalButton />

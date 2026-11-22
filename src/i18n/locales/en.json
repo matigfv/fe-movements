@@ -1103,10 +1103,18 @@
     "tipLabel": "Tip:",
     "search": {
       "label": "Search the help",
-      "placeholder": "Search a topic, for example \"import\" or \"roles\"",
+      "placeholder": "Search a topic: import, roles…",
       "results_one": "{{count}} section found",
       "results_other": "{{count}} sections found",
-      "empty": "We found nothing for \"{{query}}\". Try another word or clear the search to see all topics."
+      "empty": "We found nothing for \"{{query}}\". Try another word or clear the search to see all topics.",
+      "suggestions": "Frequent topics:",
+      "showAll": "Show all ({{count}})",
+      "showLess": "Show less"
+    },
+    "link": {
+      "import": "See help on importing the statement (opens in another tab)",
+      "invite": "See help on inviting members (opens in another tab)",
+      "goals": "See help on savings goals (opens in another tab)"
     },
     "groups": {
       "start": "Getting started",
@@ -1137,35 +1145,35 @@
         "title": "How to invite members",
         "text1": "You can invite other people to your workspace to share expenses. You only need their email address and to decide which role they will have.",
         "list1": [
-          "Go to Settings → My Workspace",
+          "Go to [Settings → My Workspace](/settings?tab=workspace)",
           "In Members and invitations, tap the \"Invite member to the group\" button",
           "Enter the person's email address and choose their role: Collaborator or Read-only",
           "Tap \"Send invitation\"",
-          "The person sees it under Pending Invitations, inside Settings → My Workspace, and can Accept or Reject it"
-        ],
-        "tip": "Until the invitation is accepted, you can see it under Sent Invitations and cancel it."
+          "The person sees it under Pending Invitations, inside Settings → My Workspace, and can Accept or Reject it",
+          "Until they accept it, you see it under Sent Invitations and can cancel it"
+        ]
       },
       "roles": {
         "title": "Roles and permissions",
-        "text1": "Permissions come from two roles that combine: your user role (shown in Settings → Account) and your role inside each workspace.",
+        "text1": "Permissions come from two roles that combine: your user role (shown in [Settings → Account](/settings?tab=cuenta)) and your role inside each workspace.",
+        "text2": "User role:",
         "list1": [
-          "Admin: can open every screen, including the Admin panel. Can also migrate categories (Settings → My Workspace) and remove members from a workspace",
+          "Admin: can open every screen, including the Admin panel, and can migrate categories (Settings → My Workspace)",
           "Family: can open every screen except Admin and can use \"Delete all movements\" (Settings → Account)",
           "Guest: can open the same screens as Family, but doesn't see the \"Delete all movements\" option"
         ],
-        "text2": "The role inside a workspace is chosen when you invite someone:",
+        "text3": "Role inside a workspace: it is chosen when you invite someone and applies only to that workspace (the same person can be a Collaborator in one and Read-only in another).",
         "list2": [
           "Collaborator: can create and edit",
-          "Read-only: can only view. The \"Add movement\" button and the buttons to add services don't appear for them",
-          "Whoever created the workspace can also remove members from Settings → My Workspace"
+          "Read-only: can only view. The \"Add movement\" button and the buttons to add services are not shown to them"
         ],
-        "tip": "The Read-only role applies per workspace: the same person can be a Collaborator in one and Read-only in another."
+        "text4": "Who can remove members: the workspace owner or an Admin, from [Settings → My Workspace](/settings?tab=workspace)."
       },
       "movements": {
         "title": "Movements and expenses",
         "text1": "Movements are the heart of the app. Every time you spend money, you can record it to keep detailed track of your finances.",
         "list1": [
-          "Go to the \"Movements\" section from the menu",
+          "Go to [Movements](/movements) from the menu",
           "Click \"Add movement\" and fill in amount, currency, bank, type (Debit, Credit, Income or Refund), date, description and category",
           "With \"Break down purchase\" you can detail the items of a purchase",
           "Movements appear in the list sorted by date",
@@ -1179,7 +1187,7 @@
         "title": "Import your bank statement",
         "text1": "If your bank gives you the statement as a PDF, you can load all the movements at once instead of one by one. For now only Santander is accepted: the PDF of account movements or the credit card statement.",
         "list1": [
-          "Go to \"Movements\" and click \"Add movement\"",
+          "Go to [Movements](/movements) and click \"Add movement\"",
           "Choose the \"Import PDF\" tab",
           "Tap \"Select file\" and pick the PDF (one file at a time)",
           "Confirm with \"Import\"",
@@ -1191,7 +1199,7 @@
         "title": "Export movements",
         "text1": "You can download your movements as CSV or PDF to keep or share them.",
         "list1": [
-          "Go to \"Movements\"",
+          "Go to [Movements](/movements)",
           "Above the table, \"Export CSV\" downloads the CSV file",
           "For the PDF, open the small arrow next to \"Export CSV\" and choose \"Export PDF\"",
           "The columns are Date, Description, Type, Category, Bank, Currency, Amount and Installment",
@@ -1203,43 +1211,43 @@
         "title": "Services and subscriptions",
         "text1": "Services are recurring expenses that repeat every month. They can be personal (Netflix, Spotify, electricity, gas) or business-related (hosting, domain, software, coworking, insurance).",
         "list1": [
-          "Go to the \"Services\" section from the main menu",
+          "Go to the [Services](/services) section from the main menu",
           "Tap the \"Add Service\" button and fill in the description, the amount and whether it's already paid this month",
           "Each service appears as a card you can mark as paid with \"Mark as paid\"",
           "From \"More actions\" on the card you can edit or delete a service",
-          "The summary at the top shows how many services are up to date and how many are pending"
-        ],
-        "tip": "If your usage type is Entrepreneur, services are called \"Recurring Expenses\" and the button is \"Add Expense\"."
+          "The summary at the top shows how many services are up to date and how many are pending",
+          "If your usage type in [Settings → Account](/settings?tab=cuenta) is Entrepreneur, services are called \"Recurring Expenses\" and the button is \"Add Expense\""
+        ]
       },
       "income": {
         "title": "Income",
         "text1": "Income represents your salary or other recurring money inflows. It's configured once and can be set to generate automatically every month.",
         "list1": [
-          "Go to Settings → My finances to see Manage Income",
+          "Go to [Settings → My finances](/settings?tab=finanzas) to see Manage Income",
           "Add an income entry specifying bank, currency and amount",
           "With \"Enter movement manually\" you load that income as a movement without typing it again",
           "If you delete an income entry, it stops generating monthly movements"
         ],
-        "tip": "Turn on \"Automatic income\" in Settings → Preferences so your configured income entries register themselves as movements every month."
+        "tip": "Turn on \"Automatic income\" in [Settings → Preferences](/settings?tab=preferencias) so your configured income entries register themselves as movements every month."
       },
       "budgets": {
         "title": "Budgets",
         "text1": "Budgets let you set a spending limit per category and currency, and see in real time how much you've spent against that limit.",
         "list1": [
-          "Go to the \"Budgets\" section from the menu",
+          "Go to the [Budgets](/budgets) section from the menu",
           "Choose the currency you want to view or create budgets for",
           "Create a budget per category: Recurring (repeats every month), One-time (for a specific month) or Annual",
           "Each card shows the budgeted amount, the amount spent and a progress bar",
           "The bar changes color as you approach the limit: yellow from 80% and red at 100%",
-          "You can edit the amount or delete a budget at any time"
-        ],
-        "tip": "Budgets you've already used 50% or more of appear on the Dashboard, under \"Budgets on alert\"."
+          "You can edit the amount or delete a budget at any time",
+          "Budgets you've already used 50% or more of appear on the Dashboard, under \"Budgets on alert\""
+        ]
       },
       "goals": {
         "title": "Savings goals",
         "text1": "Savings goals help you put money aside for something specific, like a trip, and see how much is left.",
         "list1": [
-          "Open \"Savings goals\" from your profile menu (avatar, top right) or from the \"See goals, streak and badges\" link at the bottom of the Dashboard",
+          "Open [Savings goals](/goals) from your profile menu (avatar, top right) or from the \"See goals, streak and badges\" link at the bottom of the Dashboard",
           "Tap \"+ New goal\" and fill in name, currency, target amount and, if you want, a target date (a month)",
           "Each card shows the Target, what you've Saved and the percentage completed",
           "With \"Add contribution\" you add what you keep saving",
@@ -1272,35 +1280,34 @@
       },
       "utilities": {
         "title": "Utilities: recovery time",
-        "text1": "The recovery time calculator helps you size up a large expense: it estimates how many months of average savings it would take to recover it.",
+        "text1": "The recovery time calculator helps you size up a large expense: it estimates how many months of average savings it would take to recover it. It doesn't save anything: it just calculates based on your already recorded movements.",
         "list1": [
-          "Go to Utilities from your profile menu (avatar, top right)",
+          "Go to [Utilities](/utilities) from your profile menu (avatar, top right)",
           "Enter the expense amount and currency",
           "Optionally, choose how many months back to use to calculate your average savings (3 by default)",
           "The result shows your average monthly savings and the estimated recovery time",
           "If your average savings for that period were zero or negative, it lets you know the expense isn't recoverable at that rate"
-        ],
-        "tip": "It's a quick reference tool: it doesn't save anything, it just calculates based on your already recorded movements."
+        ]
       },
       "settings": {
         "title": "Settings",
         "text1": "From Settings you can configure everything related to your account, your workspace and your finances.",
         "list1": [
-          "Account: your details, your role, your usage type and the Danger zone",
-          "My Workspace: invitations, members and shared categories",
-          "My finances: banks, currencies and income",
-          "Preferences: automations like automatic income",
+          "[Account](/settings?tab=cuenta): your details, your role, your usage type and the Danger zone",
+          "[My Workspace](/settings?tab=workspace): invitations, members and shared categories",
+          "[My finances](/settings?tab=finanzas): banks, currencies and income",
+          "[Preferences](/settings?tab=preferencias): automations like automatic income",
           "For Entrepreneur accounts, those tabs are called My Work Space and Company Finances",
+          "In My finances you can create your own currencies in addition to the system's global ones. Currencies you create can be freely deleted; global currencies or the one set as your default currency cannot",
           "In Account → Danger zone, \"Delete all movements\" asks you to type DELETE and can't be undone: export first if you want a copy"
-        ],
-        "tip": "In My finances you can create your own currencies in addition to the system's global ones. Currencies you create can be freely deleted; global currencies or the one set as your default currency cannot."
+        ]
       },
       "admin": {
         "title": "Admin panel",
         "text1": "The admin panel is visible only to users with the Administrator role.",
         "list1": [
           "Access it from \"Admin\" in your profile menu (avatar, top right)",
-          "User Type: choose whether your use is Personal or Enterprise, which adjusts the labels and text across the whole app",
+          "User Type: choose whether your use is Personal or Enterprise (in Settings → Account it shows as User or Entrepreneur), which adjusts the labels and text across the whole app",
           "Maintenance: manually run the system's scheduled jobs (recurring income, credit installments, overdue services and budget badges)"
         ]
       }

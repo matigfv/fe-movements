@@ -129,3 +129,13 @@ describe("Goals route — gamificación", () => {
     expect(screen.getByText("Viaje a Bariloche")).toBeInTheDocument();
   });
 });
+
+describe("Goals route — ayuda contextual", () => {
+  it("enlaza a la sección de metas de la ayuda en una pestaña nueva", () => {
+    renderGoals();
+
+    const link = screen.getByRole("link", { name: /Ver ayuda sobre metas de ahorro/ });
+    expect(link).toHaveAttribute("href", "/help#metas-de-ahorro");
+    expect(link).toHaveAttribute("target", "_blank");
+  });
+});

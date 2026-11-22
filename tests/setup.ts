@@ -7,7 +7,7 @@ dayjs.locale("es");
 
 import "@testing-library/jest-dom";
 import { act } from "@testing-library/react";
-import { notification } from "antd";
+import { message, notification } from "antd";
 import { afterEach, vi } from "vitest";
 import i18n from "../src/i18n/config";
 
@@ -53,13 +53,19 @@ Object.defineProperty(window, "matchMedia", {
   }),
 });
 
-// antd's static `notification` renders in its own React root outside Testing Library's tree. Destroy
-// it and let its pending scheduler work flush while jsdom is alive; otherwise it runs after teardown
-// ("ReferenceError: window is not defined"). Only pays the cost when a notification is present.
+// antd's static `notification` and `message` render in their own React root outside Testing Library's
+// tree. Destroy them and let their pending scheduler work flush while jsdom is alive; otherwise it
+// runs after teardown ("ReferenceError: window is not defined"). Only pays the cost when one is present.
 afterEach(async () => {
-  if (typeof document === "undefined" || !document.querySelector(".ant-notification")) return;
+  if (
+    typeof document === "undefined" ||
+    !document.querySelector(".ant-notification, .ant-message")
+  ) {
+    return;
+  }
   await act(async () => {
     notification.destroy();
+    message.destroy();
     // Fake timers would hang a real timeout; destroying is all we can do in that case.
     if (!vi.isFakeTimers()) await new Promise((resolve) => setTimeout(resolve, 100));
   });

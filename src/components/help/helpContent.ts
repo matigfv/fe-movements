@@ -41,8 +41,13 @@ const GROUPS: GroupDef[] = [
     key: "start",
     sections: [
       { key: "workspace", id: "workspace", icon: "TeamOutlined", parts: ["text1", "list1", "text2", "list2", "tip"] },
-      { key: "invite", id: "invitar-miembros", icon: "UserAddOutlined", parts: ["text1", "list1", "tip"] },
-      { key: "roles", id: "roles-y-permisos", icon: "LockOutlined", parts: ["text1", "list1", "text2", "list2", "tip"] },
+      { key: "invite", id: "invitar-miembros", icon: "UserAddOutlined", parts: ["text1", "list1"] },
+      {
+        key: "roles",
+        id: "roles-y-permisos",
+        icon: "LockOutlined",
+        parts: ["text1", "text2", "list1", "text3", "list2", "text4"],
+      },
     ],
   },
   {
@@ -51,24 +56,24 @@ const GROUPS: GroupDef[] = [
       { key: "movements", id: "movimientos", icon: "DollarOutlined", parts: ["text1", "list1", "tip"] },
       { key: "import", id: "importar-extracto", icon: "UploadOutlined", parts: ["text1", "list1", "tip"] },
       { key: "export", id: "exportar-movimientos", icon: "DownloadOutlined", parts: ["text1", "list1", "tip"] },
-      { key: "services", id: "servicios", icon: "CalendarOutlined", parts: ["text1", "list1", "tip"] },
+      { key: "services", id: "servicios", icon: "CalendarOutlined", parts: ["text1", "list1"] },
       { key: "income", id: "ingresos", icon: "WalletOutlined", parts: ["text1", "list1", "tip"] },
     ],
   },
   {
     key: "planning",
     sections: [
-      { key: "budgets", id: "presupuestos", icon: "FundOutlined", parts: ["text1", "list1", "tip"] },
+      { key: "budgets", id: "presupuestos", icon: "FundOutlined", parts: ["text1", "list1"] },
       { key: "goals", id: "metas-de-ahorro", icon: "TrophyOutlined", parts: ["text1", "list1"] },
       { key: "dashboard", id: "dashboard", icon: "PieChartOutlined", parts: ["text1", "list1"] },
       { key: "insights", id: "insights-racha-proyeccion", icon: "LineChartOutlined", parts: ["text1", "list1"] },
-      { key: "utilities", id: "utilidades", icon: "CalculatorOutlined", parts: ["text1", "list1", "tip"] },
+      { key: "utilities", id: "utilidades", icon: "CalculatorOutlined", parts: ["text1", "list1"] },
     ],
   },
   {
     key: "account",
     sections: [
-      { key: "settings", id: "ajustes", icon: "SettingOutlined", parts: ["text1", "list1", "tip"] },
+      { key: "settings", id: "ajustes", icon: "SettingOutlined", parts: ["text1", "list1"] },
       { key: "admin", id: "administracion", icon: "SafetyOutlined", adminOnly: true, parts: ["text1", "list1"] },
     ],
   },
@@ -103,8 +108,36 @@ export const getHelpGroups = (t: TFunction): HelpGroup[] =>
 export const normalizeText = (value: string): string =>
   value.normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase();
 
-/** Todo el texto buscable de una sección: título y cuerpo. */
+/**
+ * Los textos de ayuda admiten links internos con la forma `[etiqueta](/ruta?tab=clave)`.
+ * Solo se enlazan pantallas a las que entra todo rol (nunca /admin); el resto queda como texto.
+ */
+export const HELP_LINK_PATTERN = /\[([^\]]+)\]\((\/[^)\s]*)\)/g;
+
+const LINKABLE_PATHS = ["/", "/movements", "/services", "/budgets", "/goals", "/utilities", "/settings"] as const;
+const SETTINGS_TABS = ["cuenta", "workspace", "finanzas", "preferencias"] as const;
+
+export type HelpLinkTarget =
+  | { to: "/settings"; search?: { tab: (typeof SETTINGS_TABS)[number] } }
+  | { to: Exclude<(typeof LINKABLE_PATHS)[number], "/settings">; search?: undefined };
+
+/** Devuelve el destino interno válido o null si la ruta no está permitida. */
+export const parseHelpLink = (target: string): HelpLinkTarget | null => {
+  const [pathname, query = ""] = target.split("?");
+  if (!(LINKABLE_PATHS as readonly string[]).includes(pathname)) return null;
+  if (pathname !== "/settings") return { to: pathname as Exclude<(typeof LINKABLE_PATHS)[number], "/settings"> };
+  const tab = new URLSearchParams(query).get("tab");
+  const valid = SETTINGS_TABS.find((t) => t === tab);
+  return valid ? { to: "/settings", search: { tab: valid } } : { to: "/settings" };
+};
+
+/** Quita el markup de links y deja solo la etiqueta visible. */
+export const stripHelpMarkup = (value: string): string => value.replace(HELP_LINK_PATTERN, "$1");
+
+/** Todo el texto buscable de una sección: título y cuerpo, tal como se ve en pantalla. */
 export const getSectionSearchText = (section: HelpSection): string =>
   normalizeText(
-    [section.title, ...section.content.flatMap((p) => (Array.isArray(p.content) ? p.content : [p.content]))].join(" "),
+    stripHelpMarkup(
+      [section.title, ...section.content.flatMap((p) => (Array.isArray(p.content) ? p.content : [p.content]))].join(" "),
+    ),
   );

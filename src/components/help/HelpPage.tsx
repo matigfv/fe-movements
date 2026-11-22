@@ -16,10 +16,11 @@ import TrophyOutlined from "@ant-design/icons/TrophyOutlined";
 import UploadOutlined from "@ant-design/icons/UploadOutlined";
 import UserAddOutlined from "@ant-design/icons/UserAddOutlined";
 import WalletOutlined from "@ant-design/icons/WalletOutlined";
-import { Col, Collapse, ConfigProvider, Empty, Flex, Grid, Input, Row, theme, Typography } from "antd";
-import React, { useEffect, useMemo, useState } from "react";
+import { Button, Col, Collapse, ConfigProvider, Empty, Flex, Grid, Input, Row, theme, Typography } from "antd";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useUserRoles } from "@/apis/hooks/useUserRoles";
+import { HelpRichText } from "@/components/help/HelpRichText";
 import {
   getHelpGroups,
   getSectionSearchText,
@@ -30,6 +31,11 @@ import {
 
 const { Title, Text, Paragraph } = Typography;
 const { useBreakpoint } = Grid;
+
+// Con búsqueda activa solo se abren las primeras coincidencias; el resto con "Mostrar todo".
+const MAX_AUTO_OPEN = 3;
+// Temas de entrada que se ofrecen cuando la búsqueda no encuentra nada.
+const FREQUENT_IDS = ["importar-extracto", "exportar-movimientos", "invitar-miembros", "roles-y-permisos"];
 
 // Mapa de iconos por key
 const ICON_MAP: Record<string, React.ReactNode> = {
@@ -78,7 +84,7 @@ function HelpParagraphRenderer({ paragraph }: { paragraph: HelpParagraph }) {
   if (paragraph.type === "text") {
     return (
       <Paragraph style={{ marginBottom: token.margin, color: token.colorText, maxWidth: "72ch" }}>
-        {paragraph.content as string}
+        <HelpRichText text={paragraph.content as string} />
       </Paragraph>
     );
   }
@@ -95,7 +101,7 @@ function HelpParagraphRenderer({ paragraph }: { paragraph: HelpParagraph }) {
       >
         {(paragraph.content as string[]).map((item, idx) => (
           <li key={idx} style={{ marginBottom: token.marginXS }}>
-            {item}
+            <HelpRichText text={item} />
           </li>
         ))}
       </ul>
@@ -125,7 +131,9 @@ function HelpParagraphRenderer({ paragraph }: { paragraph: HelpParagraph }) {
           <Text strong style={{ color: token.colorText }}>
             {t("help.tipLabel")}{" "}
           </Text>
-          <Text style={{ color: token.colorText }}>{paragraph.content as string}</Text>
+          <Text style={{ color: token.colorText }}>
+            <HelpRichText text={paragraph.content as string} />
+          </Text>
         </div>
       </Flex>
     );
@@ -171,12 +179,19 @@ export function HelpPage() {
   };
 
   const [query, setQuery] = useState("");
-  const [openIds, setOpenIds] = useState<string[]>(defaultOpen);
+  // Lo que el usuario abrió a mano se guarda aparte de lo que abre la búsqueda, para poder
+  // restaurarlo al borrarla.
+  const [manualOpen, setManualOpen] = useState<string[]>(defaultOpen);
+  const [searchOpen, setSearchOpen] = useState<string[]>([]);
+  const pendingScroll = useRef<string | null>(null);
 
   const normalizedQuery = normalizeText(query.trim());
   const matchesFor = (nq: string) =>
     allSections.filter((s) => !nq || (searchTexts.get(s.id) ?? "").includes(nq)).map((s) => s.id);
-  const matchedIds = new Set(matchesFor(normalizedQuery));
+  const matchedList = matchesFor(normalizedQuery);
+  const matchedIds = new Set(matchedList);
+  const isSearching = normalizedQuery !== "";
+  const openIds = isSearching ? searchOpen : manualOpen;
 
   // Al cargar, lleva a la sección del hash; si el hash cambia con la página abierta, también la abre.
   useEffect(() => {
@@ -185,24 +200,39 @@ export function HelpPage() {
     const onHashChange = () => {
       const id = readHash();
       if (!allSections.some((s) => s.id === id)) return;
-      setOpenIds((prev) => (prev.includes(id) ? prev : [...prev, id]));
+      setManualOpen((prev) => (prev.includes(id) ? prev : [...prev, id]));
       scrollToSection(id);
     };
     window.addEventListener("hashchange", onHashChange);
     return () => window.removeEventListener("hashchange", onHashChange);
   }, [allSections]);
 
+  // Termina de llevar a la sección elegida desde el estado vacío, cuando ya se renderizó.
+  useEffect(() => {
+    if (pendingScroll.current) {
+      scrollToSection(pendingScroll.current);
+      pendingScroll.current = null;
+    }
+  });
+
   const handleSearch = (value: string) => {
     setQuery(value);
-    const nq = normalizeText(value.trim());
-    setOpenIds(nq ? matchesFor(nq) : defaultOpen());
+    setSearchOpen(matchesFor(normalizeText(value.trim())).slice(0, MAX_AUTO_OPEN));
+  };
+
+  const handleTopic = (id: string) => {
+    setQuery("");
+    setManualOpen((prev) => (prev.includes(id) ? prev : [...prev, id]));
+    writeHash(id);
+    pendingScroll.current = id;
   };
 
   const handleGroupChange = (groupIds: string[], keys: string | string[]) => {
     const next = Array.isArray(keys) ? keys : [keys];
     const nextOpen = [...openIds.filter((id) => !groupIds.includes(id)), ...next];
     const added = next.find((id) => !openIds.includes(id));
-    setOpenIds(nextOpen);
+    if (isSearching) setSearchOpen(nextOpen);
+    else setManualOpen(nextOpen);
     if (added) writeHash(added);
     else if (!nextOpen.includes(readHash())) writeHash(null);
   };
@@ -211,6 +241,8 @@ export function HelpPage() {
     .map((group) => ({ ...group, sections: group.sections.filter((s) => matchedIds.has(s.id)) }))
     .filter((group) => group.sections.length > 0);
   const resultCount = visibleGroups.reduce((sum, g) => sum + g.sections.length, 0);
+  const allMatchesOpen = matchedList.every((id) => searchOpen.includes(id));
+  const frequentTopics = allSections.filter((s) => FREQUENT_IDS.includes(s.id));
 
   const wrapText: React.CSSProperties = { overflowWrap: "break-word", hyphens: "none", minWidth: 0 };
 
@@ -267,27 +299,46 @@ export function HelpPage() {
           />
         </ConfigProvider>
         <div role="status" aria-live="polite" style={{ marginBottom: token.margin, minHeight: token.lineHeight * token.fontSize }}>
-          {normalizedQuery && resultCount > 0 && (
+          {isSearching && resultCount > 0 && (
             <Text type="secondary">{t("help.search.results", { count: resultCount })}</Text>
+          )}
+          {isSearching && resultCount > MAX_AUTO_OPEN && (
+            <Button
+              type="link"
+              size="small"
+              onClick={() => setSearchOpen(allMatchesOpen ? matchedList.slice(0, MAX_AUTO_OPEN) : matchedList)}
+            >
+              {allMatchesOpen ? t("help.search.showLess") : t("help.search.showAll", { count: resultCount })}
+            </Button>
           )}
         </div>
 
-        {normalizedQuery && resultCount === 0 && (
-          <Empty
-            image={Empty.PRESENTED_IMAGE_SIMPLE}
-            description={t("help.search.empty", { query: query.trim() })}
-            style={{ marginBottom: token.marginXL }}
-          />
+        {isSearching && resultCount === 0 && (
+          <div style={{ marginBottom: token.marginXL }}>
+            <Empty
+              image={Empty.PRESENTED_IMAGE_SIMPLE}
+              description={t("help.search.empty", { query: query.trim() })}
+              style={{ marginBottom: token.margin }}
+            />
+            <Flex wrap gap={token.marginXS} justify="center" align="center">
+              <Text type="secondary">{t("help.search.suggestions")}</Text>
+              {frequentTopics.map((s) => (
+                <Button key={s.id} type="link" size="small" href={`#${s.id}`} onClick={(e) => { e.preventDefault(); handleTopic(s.id); }}>
+                  {s.title}
+                </Button>
+              ))}
+            </Flex>
+          </div>
         )}
 
         {/* Grupos de secciones */}
         {visibleGroups.map((group) => {
           const groupIds = group.sections.map((s) => s.id);
           return (
-            <section key={group.key} style={{ marginBottom: token.marginXL }}>
+            <section key={group.key} style={{ marginBottom: token.marginXXL }}>
               <Title
                 level={2}
-                style={{ fontSize: token.fontSizeHeading5, marginTop: 0, marginBottom: token.marginSM, ...wrapText }}
+                style={{ fontSize: token.fontSizeHeading4, fontWeight: 600, marginTop: 0, marginBottom: token.margin, ...wrapText }}
               >
                 {group.title}
               </Title>
@@ -315,7 +366,7 @@ export function HelpPage() {
                       >
                         {ICON_MAP[section.icon] ?? <QuestionCircleOutlined />}
                       </span>
-                      <Text strong style={{ fontSize: token.fontSize, ...wrapText }}>
+                      <Text style={{ fontSize: token.fontSize, fontWeight: 500, ...wrapText }}>
                         {section.title}
                       </Text>
                     </Flex>

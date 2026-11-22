@@ -11,8 +11,23 @@ vi.mock("@/apis/auth/protectedRouteGuard", () => ({
   protectedRouteGuard: () => () => undefined,
 }));
 
+// Link mínimo: expone el destino como href, sin montar un router real.
 vi.mock("@tanstack/react-router", () => ({
   createFileRoute: () => (opts: { component: ReactNode }) => opts,
+  Link: ({
+    to,
+    search,
+    children,
+    ...rest
+  }: {
+    to: string;
+    search?: { tab?: string };
+    children: ReactNode;
+  }) => (
+    <a href={`${to}${search?.tab ? `?tab=${search.tab}` : ""}`} {...rest}>
+      {children}
+    </a>
+  ),
 }));
 
 const roles = vi.hoisted(() => ({ isAdmin: false }));
@@ -249,5 +264,131 @@ describe("Help route — deep links", () => {
 
     expect(window.location.hash).toBe("#exportar-movimientos");
     expect(window.location.pathname).toBe("/help");
+  });
+});
+
+describe("Help route — roles y permisos", () => {
+  it("separa roles de usuario, roles del workspace y quién quita miembros", async () => {
+    const user = userEvent.setup();
+    renderHelp();
+
+    await user.click(screen.getByText("Roles y permisos"));
+
+    expect(screen.getByText("Rol de usuario:")).toBeInTheDocument();
+    expect(screen.getByText(/^Rol dentro de un workspace:/)).toBeInTheDocument();
+    const adminItem = screen.getByText(/^Administrador: accede a todas las pantallas/);
+    expect(adminItem).not.toHaveTextContent(/quitar miembros/);
+    expect(screen.getByText(/^Colaborador: puede crear y editar/)).toBeInTheDocument();
+    expect(screen.getByText(/^Solo lectura: solo puede ver/)).toBeInTheDocument();
+    expect(screen.getAllByText(/Quién puede quitar miembros/)).toHaveLength(1);
+    expect(screen.getByText(/Quién puede quitar miembros/)).toHaveTextContent(
+      /dueño del workspace o un Administrador/,
+    );
+  });
+});
+
+describe("Help route — nombres de tipo de usuario", () => {
+  it("Admin usa Enterprise y aclara cómo se ve en Ajustes; Ajustes usa Emprendedor", async () => {
+    roles.isAdmin = true;
+    const user = userEvent.setup();
+    renderHelp();
+
+    await user.click(screen.getByText("Panel de administración"));
+    await user.click(screen.getByText("Ajustes"));
+
+    expect(
+      screen.getByText(/Personal o Enterprise \(en Ajustes → Cuenta se muestra como Usuario o Emprendedor\)/),
+    ).toBeInTheDocument();
+    expect(screen.getByText(/En cuentas de tipo Emprendedor, esas pestañas/)).toBeInTheDocument();
+  });
+});
+
+describe("Help route — links a pantallas", () => {
+  it("los pasos enlazan a las pantallas con su ruta y pestaña", async () => {
+    const user = userEvent.setup();
+    renderHelp();
+
+    await user.click(screen.getByText("Cómo invitar miembros"));
+    await user.click(screen.getByText("Movimientos y gastos"));
+
+    expect(screen.getAllByRole("link", { name: "Ajustes → Mi Workspace" })[0]).toHaveAttribute(
+      "href",
+      "/settings?tab=workspace",
+    );
+    expect(screen.getByRole("link", { name: "Movimientos" })).toHaveAttribute("href", "/movements");
+  });
+
+  it("nunca enlaza el panel Admin, ni siquiera para un ADMIN", async () => {
+    roles.isAdmin = true;
+    const user = userEvent.setup();
+    renderHelp();
+
+    await user.click(screen.getByText("Panel de administración"));
+    await user.click(screen.getByText("Roles y permisos"));
+
+    expect(screen.getByText(/Accedé desde "Admin"/)).toBeInTheDocument();
+    screen.getAllByRole("link").forEach((a) => expect(a.getAttribute("href")).not.toMatch(/admin/));
+  });
+});
+
+describe("Help route — estado vacío", () => {
+  it("ofrece temas frecuentes; al elegir uno limpia la búsqueda y abre esa sección", async () => {
+    const user = userEvent.setup();
+    renderHelp();
+
+    await user.type(searchBox(), "zzzxxy");
+    [
+      "Importar el extracto del banco",
+      "Exportar movimientos",
+      "Cómo invitar miembros",
+      "Roles y permisos",
+    ].forEach((title) => expect(screen.getByRole("link", { name: title })).toBeInTheDocument());
+
+    await user.click(screen.getByRole("link", { name: "Exportar movimientos" }));
+
+    expect(searchBox()).toHaveValue("");
+    expect(screen.getByText(/Arriba de la tabla, "Exportar CSV"/)).toBeVisible();
+    expect(window.location.hash).toBe("#exportar-movimientos");
+  });
+});
+
+describe("Help route — estado de la búsqueda", () => {
+  it("al borrar la búsqueda restaura lo que el usuario había abierto a mano", async () => {
+    const user = userEvent.setup();
+    renderHelp();
+
+    await user.click(screen.getByText("Cómo invitar miembros"));
+    await user.type(searchBox(), "extracto");
+    expect(screen.getByText(/Por ahora solo se acepta Santander/)).toBeVisible();
+    await user.clear(searchBox());
+
+    expect(screen.getByText(/Por ahora solo se acepta Santander/).closest(".ant-collapse-item")).not.toHaveClass(
+      "ant-collapse-item-active",
+    );
+    expect(screen.getByText(/Un Workspace \(espacio de trabajo\) es el lugar/)).toBeVisible();
+    expect(screen.getByText(/Solo necesitás su correo electrónico/)).toBeVisible();
+  });
+
+  it("abre solo las primeras 3 coincidencias y 'Mostrar todo' abre el resto", async () => {
+    const user = userEvent.setup();
+    const { container } = renderHelp();
+    const opened = () => container.querySelectorAll(".ant-collapse-item-active").length;
+
+    await user.type(searchBox(), "movimientos");
+    const total = Number(/(\d+) secciones/.exec(screen.getByRole("status").textContent ?? "")?.[1]);
+    expect(total).toBeGreaterThan(3);
+    expect(opened()).toBe(3);
+
+    await user.click(screen.getByRole("button", { name: `Mostrar todo (${total})` }));
+    expect(opened()).toBe(total);
+
+    await user.click(screen.getByRole("button", { name: "Mostrar menos" }));
+    expect(opened()).toBe(3);
+  });
+
+  it("el placeholder es corto para no truncarse en mobile", () => {
+    renderHelp();
+
+    expect(searchBox()).toHaveAttribute("placeholder", "Buscá un tema: importar, roles…");
   });
 });

@@ -1,6 +1,6 @@
 import { useState } from "react";
 import ModalComponent from "@/components/modals/Modal";
-import { Button, Form, Input, Select } from "antd";
+import { Button, Flex, Form, Input, Select } from "antd";
 import PlusCircleOutlined from "@ant-design/icons/PlusCircleOutlined";
 import UserAddOutlined from "@ant-design/icons/UserAddOutlined";
 import { useMutation } from "@tanstack/react-query";
@@ -14,6 +14,7 @@ import { ColorEnum } from "@/enums/ColorEnum";
 import { WorkspaceRoleEnum } from "@/enums/WorkspaceRoleEnum";
 import { useCurrentUser } from "@/apis/hooks/useCurrentUser";
 import { getEntityLabels } from "@/utils/entityLabels";
+import { HelpLink } from "@/components/help/HelpLink";
 
 interface InviteUserToWorkspaceProps {
   group: Workspace;
@@ -77,6 +78,9 @@ export default function InviteUserToWorkspace({ group }: InviteUserToWorkspacePr
           </Button>
         }
       >
+        <Flex justify="flex-end" style={{ marginBottom: 8 }}>
+          <HelpLink topic="invite" />
+        </Flex>
         <Form
           form={form}
           layout="vertical"
