@@ -4,6 +4,7 @@ import Keycloak from "keycloak-js";
 import { ReactKeycloakProvider } from "@react-keycloak/web";
 import App from "@/App";
 import { AuthProvider } from "@/apis/auth/AuthProvider";
+import { AuthGate } from "@/apis/auth/AuthGate";
 import Forbidden from "@/components/Forbidden";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { logger } from "@/utils/logger";
@@ -34,7 +35,7 @@ export default function Root() {
       initOptions={{
         checkLoginIframe: false,
         enableLogging: false,
-        onLoad: "login-required",
+        onLoad: "check-sso",
         pkceMethod: "S256",
       }}
       LoadingComponent={
@@ -52,9 +53,11 @@ export default function Root() {
     >
       <StrictMode>
         <ErrorBoundary>
-          <AuthProvider>
-            <App />
-          </AuthProvider>
+          <AuthGate>
+            <AuthProvider>
+              <App />
+            </AuthProvider>
+          </AuthGate>
         </ErrorBoundary>
       </StrictMode>
     </ReactKeycloakProvider>

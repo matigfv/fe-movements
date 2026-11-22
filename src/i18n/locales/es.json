@@ -130,6 +130,38 @@
       "notYoursTooltip": "Este es el workspace personal de {{email}}"
     }
   },
+  "landing": {
+    "login": "Iniciar sesión",
+    "loginClosing": "Entrar a mi cuenta",
+    "title": "Tus finanzas, al día y sin esfuerzo",
+    "subtitle": "Registrá gastos, controlá servicios y presupuestos, y compartí todo con tu familia o tu negocio.",
+    "trust": "Entrás con tu cuenta. En cada grupo, los roles de administrador, familia e invitado definen qué puede hacer cada persona.",
+    "play": "Reproducir demostración",
+    "posterAlt": "Panel de Movements con el resumen del mes y presupuestos en alerta",
+    "videoLabel": "Demostración de Movements",
+    "videoCaption": "Así se ve Movements en 40 segundos.",
+    "videoError": "No pudimos cargar el video. Iniciá sesión para ver la app.",
+    "featuresLabel": "Qué podés hacer con Movements",
+    "closing": "Entrá y mirá cómo vas este mes.",
+    "features": {
+      "import": {
+        "title": "Importá el PDF de tu banco",
+        "text": "Subí el extracto de Santander España, de cuenta o de tarjeta, y te decimos qué movimientos ya estaban cargados."
+      },
+      "shared": {
+        "title": "Compartí con tu grupo",
+        "text": "Grupos con roles (administrador, familia e invitado) y cambios en tiempo real para todos, en casa o en tu negocio."
+      },
+      "insights": {
+        "title": "Entendé cómo gastás",
+        "text": "Compará con tu promedio de 6 meses, seguí tus metas de ahorro y mirá la proyección de tu balance."
+      },
+      "currency": {
+        "title": "Cada moneda, por separado",
+        "text": "Movimientos, presupuestos y servicios llevan su propia moneda, con totales por moneda."
+      }
+    }
+  },
   "nav": {
     "movements": "Movimientos",
     "budgets": "Presupuestos",

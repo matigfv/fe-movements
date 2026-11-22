@@ -130,6 +130,38 @@
       "notYoursTooltip": "This is {{email}}'s personal workspace"
     }
   },
+  "landing": {
+    "login": "Log in",
+    "loginClosing": "Go to my account",
+    "title": "Your finances, up to date and effortless",
+    "subtitle": "Log expenses, track services and budgets, and share it all with your family or your business.",
+    "trust": "You sign in with your account. In each group, the admin, family and guest roles define what each person can do.",
+    "play": "Play demo",
+    "posterAlt": "Movements dashboard with the month summary and budgets in alert",
+    "videoLabel": "Movements demo",
+    "videoCaption": "Movements in 40 seconds.",
+    "videoError": "We couldn't load the video. Log in to see the app.",
+    "featuresLabel": "What you can do with Movements",
+    "closing": "Come in and see how your month is going.",
+    "features": {
+      "import": {
+        "title": "Import your bank PDF",
+        "text": "Upload your Santander Spain statement, account or card, and see which movements were already loaded."
+      },
+      "shared": {
+        "title": "Share with your group",
+        "text": "Groups with roles (admin, family and guest) and real-time changes for everyone, at home or in your business."
+      },
+      "insights": {
+        "title": "Understand how you spend",
+        "text": "Compare against your 6-month average, follow your savings goals and see your balance projection."
+      },
+      "currency": {
+        "title": "Every currency, kept apart",
+        "text": "Movements, budgets and services carry their own currency, with totals per currency."
+      }
+    }
+  },
   "nav": {
     "movements": "Movements",
     "budgets": "Budgets",
