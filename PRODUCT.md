@@ -31,7 +31,7 @@ Used from a browser after a mandatory Keycloak login. The frontend talks to a se
 - Bank PDF import supports Santander Spain only for now.
 
 ## Brand Commitments
-The official product name is **Movements**. Current inconsistencies to align later: the HTML title and browser tab say "M1-Gastos" and the footer says "M-1". Existing assets: `public/favicon.png` (app logo, used in the navbar) and `public/robot.png`.
+The official product name is **Movements**. Current inconsistencies to align later: the HTML title and browser tab say "Movements" and the footer says "M-1". Existing assets: `public/favicon.png` (app logo, used in the navbar) and `public/robot.png`.
 
 ## Evidence on Hand
 - `docs/template.mp4` and `docs/template.gif`: a 40-second demo video of the real app, plus the README tutorial.

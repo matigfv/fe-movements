@@ -8,6 +8,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- Google Search Console (versión 2.18.3): etiqueta `google-site-verification` en `index.html` para verificar
+  la propiedad del sitio.
 - Servicios (versión 2.18.0): el formulario "Nuevo Servicio" pasa a un modal con el botón **Agregar
   servicio** (queda en línea solo en el estado vacío). Marcar como pagado avisa y permite
   **Deshacer**: el pago se envía a los 5 segundos o al salir de la pantalla.
@@ -27,6 +29,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - README reescrito: demo en GIF (se reproduce dentro de GitHub), tutorial de uso de la app y guía para correr el proyecto.
 
 ### Changed
+- Movimientos (versión 2.18.2): Banco y Tipo se muestran en una sola columna (banco arriba, tipo debajo en gris).
+- Movimientos (versión 2.18.2): encabezado y filas de la tabla alineados (misma anchura con la barra de desplazamiento), más espacio entre Banco/Tipo y Descripción.
 - Servicios (versión 2.18.0): "pendiente" va en ámbar sobre tarjetas neutras y el rojo queda solo
   para errores; los totales del banner se muestran por moneda con su código y las fechas van en
   DD/MM/YYYY.

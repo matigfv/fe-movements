@@ -79,20 +79,63 @@ function renderView(ui: ReactNode) {
 }
 
 describe.each([
-  ["desktop", MovementTableDesktop, 9],
-  ["tablet", MovementTableTablet, 8],
-] as const)("%s view", (_name, View, columns) => {
-  it("has no Grupo column or workspace text, keeps Banco, and shows the loader as a secondary line", () => {
+  ["desktop", MovementTableDesktop, 8, [1, 2, 2, 3, 7, 2, 4, 3]],
+  ["tablet", MovementTableTablet, 7, [1, 3, 2, 3, 8, 3, 4]],
+] as const)("%s view", (_name, View, columns, spans) => {
+  const spanOf = (el: Element) =>
+    Number(Array.from(el.classList).find((c) => c.startsWith("ant-col-"))?.replace("ant-col-", ""));
+  const alignOf = (el: Element) => (el as HTMLElement).style.textAlign;
+
+  it("keeps header and body aligned: same scrollbar gutter, spans, alignment and ellipsis", () => {
+    renderView(<View {...makeProps()} />);
+
+    const [header, body] = screen.getAllByRole("rowgroup");
+    expect(header.getAttribute("style")).toContain("scrollbar-gutter: stable");
+    expect(header).toHaveStyle({ overflowY: "hidden" });
+    expect(body.getAttribute("style")).toContain("scrollbar-gutter: stable");
+
+    const [headerRow, bodyRow] = screen.getAllByRole("row");
+    const headCols = within(headerRow).getAllByRole("columnheader");
+    const cells = within(bodyRow).getAllByRole("cell");
+    expect(headCols.map(spanOf)).toEqual([...spans]);
+    expect(cells.map(spanOf)).toEqual([...spans]);
+    expect(spans.reduce((a, b) => a + b, 0)).toBe(24);
+    headCols.forEach((h, i) => {
+      expect(alignOf(cells[i])).toBe(alignOf(h));
+    });
+    const textCols = [3, 4];
+    textCols.forEach((i) => {
+      expect(headCols[i]).toHaveStyle({ paddingInlineEnd: "8px" });
+      expect(cells[i]).toHaveStyle({ paddingInlineEnd: "8px" });
+    });
+    expect(within(bodyRow).getByText("Galicia")).toHaveStyle({
+      overflow: "hidden",
+      textOverflow: "ellipsis",
+      whiteSpace: "nowrap",
+    });
+    expect(within(bodyRow).getByText("Débito")).toHaveStyle({ textOverflow: "ellipsis" });
+  });
+
+  it("has no Grupo column or workspace text, keeps the Banco / Tipo column, and shows the loader as a secondary line", () => {
     renderView(<View {...makeProps()} />);
 
     expect(screen.queryByRole("columnheader", { name: "Grupo" })).not.toBeInTheDocument();
     expect(screen.queryByRole("columnheader", { name: "Cargado por" })).not.toBeInTheDocument();
     expect(screen.queryByText("Familia")).not.toBeInTheDocument();
-    expect(screen.getByRole("columnheader", { name: "Banco" })).toBeInTheDocument();
+    expect(screen.getByRole("columnheader", { name: "Banco / Tipo" })).toBeInTheDocument();
+    expect(screen.queryByRole("columnheader", { name: "Tipo" })).not.toBeInTheDocument();
     expect(screen.getAllByText("Galicia").length).toBe(2);
     const row = screen.getAllByRole("row")[1];
     expect(within(row).getByText("Matias")).toBeInTheDocument();
     expect(within(row).getByText("Cafe 1")).toBeInTheDocument();
+  });
+
+  it("shows the type label under the bank in the same cell", () => {
+    renderView(<View {...makeProps()} />);
+
+    const row = screen.getAllByRole("row")[1];
+    const cell = within(row).getByText("Galicia").closest('[role="cell"]') as HTMLElement;
+    expect(within(cell).getByText("Débito")).toBeInTheDocument();
   });
 
   it("exposes table semantics with matching header and row cell counts", () => {

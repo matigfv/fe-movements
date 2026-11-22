@@ -1,3 +1,4 @@
+import type { CSSProperties } from "react";
 import { Card, Checkbox, Col, Collapse, Empty, Flex, Row, Tag, Typography, theme } from "antd";
 import DownOutlined from "@ant-design/icons/DownOutlined";
 import { useTranslation } from "react-i18next";
@@ -13,6 +14,10 @@ import PendingDeleteIndicator from "@/components/PendingDeleteIndicator";
 const { Text } = Typography;
 
 const COL_PADDING = "8px 12px";
+
+// Gutter between text columns; header and body cells share it so text starts at the same x.
+const TEXT_CELL: CSSProperties = { paddingInlineEnd: 8 };
+const ELLIPSIS: CSSProperties = { overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" };
 
 export default function MovementTableTablet({
   movements,
@@ -34,7 +39,7 @@ export default function MovementTableTablet({
 
   return (
     <div role="table" aria-label={t("nav.movements")}>
-      <div role="rowgroup">
+      <div role="rowgroup" style={{ overflowY: "hidden", scrollbarGutter: "stable" }}>
         <Card
           style={{ marginBottom: 8, borderRadius: 6 }}
           styles={{ body: { padding: COL_PADDING } }}
@@ -50,9 +55,8 @@ export default function MovementTableTablet({
           </Col>
             <Col span={3} role="columnheader">{t("movements.columnDate")}</Col>
             <Col span={2} role="columnheader">{t("movements.columnCategory")}</Col>
-            <Col span={3} role="columnheader">{t("movements.columnBank")}</Col>
-            <Col span={3} role="columnheader">{t("movements.columnType")}</Col>
-            <Col span={5} role="columnheader">{t("movements.columnDescription")}</Col>
+            <Col span={3} role="columnheader" style={TEXT_CELL}>{t("movements.columnBankType")}</Col>
+            <Col span={8} role="columnheader" style={TEXT_CELL}>{t("movements.columnDescription")}</Col>
             <Col span={3} role="columnheader" style={{ textAlign: "right" }}>
               {t("movements.columnAmount")}
             </Col>
@@ -63,7 +67,7 @@ export default function MovementTableTablet({
         </Card>
       </div>
 
-      <div role="rowgroup" style={{ maxHeight: "75vh", overflowY: "auto" }}>
+      <div role="rowgroup" style={{ maxHeight: "75vh", overflowY: "auto", scrollbarGutter: "stable" }}>
         {movements.length === 0 ? (
           <Empty description={t("movements.noMovements")} style={{ padding: "40px 0" }}>
             {emptyAction}
@@ -98,11 +102,13 @@ export default function MovementTableTablet({
                   <Col span={2} role="cell">
                     <CategoryCircleTable categories={record.categories} />
                   </Col>
-                  <Col span={3} role="cell">{capitalizeFirst(record.bank)}</Col>
-                  <Col span={3} role="cell">
-                    {typeEnumLabel[record.type as TypeEnum] ?? record.type}
+                  <Col span={3} role="cell" style={TEXT_CELL}>
+                    <div style={ELLIPSIS}>{capitalizeFirst(record.bank)}</div>
+                    <Text type="secondary" style={{ display: "block", fontSize: 12, ...ELLIPSIS }}>
+                      {typeEnumLabel[record.type as TypeEnum] ?? record.type}
+                    </Text>
                   </Col>
-                  <Col span={5} role="cell" style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                  <Col span={8} role="cell" style={{ ...TEXT_CELL, ...ELLIPSIS }}>
                     {record.description}
                     <Text type="secondary" style={{ display: "block", fontSize: 12 }}>
                       {capitalizeFirst(record.metadata.owner.givenName ?? "")}
