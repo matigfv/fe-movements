@@ -2,6 +2,7 @@ import PlusOutlined from "@ant-design/icons/PlusOutlined";
 import DollarOutlined from "@ant-design/icons/DollarOutlined";
 import DeleteOutlined from "@ant-design/icons/DeleteOutlined";
 import {
+  AutoComplete,
   Button,
   Col,
   Empty,
@@ -18,13 +19,15 @@ import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import type { OnboardingCurrencyEntry, OnboardingForm } from "@/apis/onboarding/OnboardingApi";
 import { getEntityLabels } from "@/utils/entityLabels";
+import { CURRENCY_SUGGESTIONS } from "@/utils/onboardingSuggestions";
 
 const { Text } = Typography;
 
 interface Props {
   initialValues: Partial<OnboardingForm>;
   onNext: (values: Pick<OnboardingForm, "currenciesToAdd">) => void;
-  onPrev: () => void;
+  onPrev: (values: Pick<OnboardingForm, "currenciesToAdd">) => void;
+  onFinishNow?: (values: Pick<OnboardingForm, "currenciesToAdd">) => void;
 }
 
 interface CurrencyFormValues {
@@ -32,7 +35,7 @@ interface CurrencyFormValues {
   description: string;
 }
 
-export default function CurrencyOnboarding({ initialValues, onNext, onPrev }: Props) {
+export default function CurrencyOnboarding({ initialValues, onNext, onPrev, onFinishNow }: Props) {
   const { token } = theme.useToken();
   const { t } = useTranslation();
   const [form] = Form.useForm<CurrencyFormValues>();
@@ -41,12 +44,32 @@ export default function CurrencyOnboarding({ initialValues, onNext, onPrev }: Pr
   );
   const labels = getEntityLabels(initialValues.userType ?? null, t);
 
+  // Incluye símbolo y nombre escritos pero aún no agregados, si ambos son válidos y no duplicados
+  const collectCurrencies = () => {
+    const symbol = ((form.getFieldValue("symbol") as string | undefined) ?? "")
+      .trim()
+      .toUpperCase();
+    const description = (
+      (form.getFieldValue("description") as string | undefined) ?? ""
+    ).trim();
+    if (!symbol || !description || currencies.some((c) => c.symbol === symbol)) {
+      return currencies;
+    }
+    form.resetFields();
+    return [...currencies, { symbol, description }];
+  };
+
   const handleAdd = () => {
     form.validateFields().then(({ symbol, description }) => {
       const trimmedSymbol = symbol.trim().toUpperCase();
       const trimmedDescription = description.trim();
       if (!trimmedSymbol || !trimmedDescription) return;
-      if (currencies.some((c) => c.symbol === trimmedSymbol)) return;
+      if (currencies.some((c) => c.symbol === trimmedSymbol)) {
+        form.setFields([
+          { name: "symbol", errors: [t("onboarding.common.duplicate")] },
+        ]);
+        return;
+      }
       setCurrencies((prev) => [
         ...prev,
         { symbol: trimmedSymbol, description: trimmedDescription },
@@ -80,11 +103,25 @@ export default function CurrencyOnboarding({ initialValues, onNext, onPrev }: Pr
                 { required: true, message: t("onboarding.currency.symbolRequired") },
               ]}
             >
-              <Input
-                placeholder={t("onboarding.currency.symbolPlaceholder")}
-                style={{ borderRadius: 10, height: 40 }}
-                maxLength={10}
-              />
+              <AutoComplete
+                options={CURRENCY_SUGGESTIONS.filter(
+                  (c) => !currencies.some((x) => x.symbol === c.symbol),
+                ).map((c) => ({ value: c.symbol, label: `${c.symbol} — ${c.name}` }))}
+                filterOption={(input, option) =>
+                  (option?.label as string).toLowerCase().includes(input.toLowerCase())
+                }
+                onSelect={(symbol: string) => {
+                  if (form.getFieldValue("description")) return;
+                  const name = CURRENCY_SUGGESTIONS.find((c) => c.symbol === symbol)?.name;
+                  if (name) form.setFieldValue("description", name);
+                }}
+              >
+                <Input
+                  placeholder={t("onboarding.currency.symbolPlaceholder")}
+                  style={{ borderRadius: 10, height: 40 }}
+                  maxLength={10}
+                />
+              </AutoComplete>
             </Form.Item>
           </Col>
           <Col flex="auto">
@@ -187,21 +224,29 @@ export default function CurrencyOnboarding({ initialValues, onNext, onPrev }: Pr
 
       <Row gutter={[16, 10]}>
         <Col xs={12}>
-          <Button block type="default" onClick={onPrev}>
+          <Button block type="default" onClick={() => onPrev({ currenciesToAdd: collectCurrencies() })}>
             {t("onboarding.backButton")}
           </Button>
         </Col>
         <Col xs={12}>
           <Button
             block
-            color="geekblue"
-            variant="filled"
-            onClick={() => onNext({ currenciesToAdd: currencies })}
+            type="primary"
+            onClick={() => onNext({ currenciesToAdd: collectCurrencies() })}
           >
             {t("onboarding.nextButton")}
           </Button>
         </Col>
       </Row>
+      {onFinishNow && (
+        <Button
+          type="text"
+          block
+          onClick={() => onFinishNow({ currenciesToAdd: collectCurrencies() })}
+        >
+          {t("onboarding.finishNowButton")}
+        </Button>
+      )}
     </Space>
   );
 }

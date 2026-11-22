@@ -71,7 +71,7 @@ describe("WorkspaceOnboarding", () => {
 
       await addWorkspace(user, "Familia");
 
-      expect(screen.getByText("★ Default")).toBeInTheDocument();
+      expect(screen.getByText("Principal")).toBeInTheDocument();
     });
 
     it("permite cambiar el workspace default con la estrella", async () => {
@@ -82,12 +82,12 @@ describe("WorkspaceOnboarding", () => {
       await addWorkspace(user, "Trabajo");
 
       const [, setDefaultButton] = screen.getAllByRole("button", {
-        name: /Estrella workspace/i,
+        name: /Marcar workspace .* como principal/i,
       });
       await user.click(setDefaultButton);
 
       const trabajoRow = screen.getByText("Trabajo").closest("div")!;
-      expect(trabajoRow).toHaveTextContent("★ Default");
+      expect(trabajoRow).toHaveTextContent("Principal");
     });
 
     it("muestra el botón de eliminar por cada workspace agregado", async () => {
@@ -114,7 +114,7 @@ describe("WorkspaceOnboarding", () => {
       );
 
       const trabajoRow = screen.getByText("Trabajo").closest("div")!;
-      expect(trabajoRow).toHaveTextContent("★ Default");
+      expect(trabajoRow).toHaveTextContent("Principal");
     });
   });
 
@@ -123,11 +123,32 @@ describe("WorkspaceOnboarding", () => {
       const user = userEvent.setup();
       renderWorkspace();
 
-      await user.type(screen.getByPlaceholderText("Ej: Familia, Trabajo, Personal..."), "Grupo1!");
+      await user.type(screen.getByPlaceholderText("Ej: Familia, Trabajo, Personal..."), "Grupo@!");
       await user.click(screen.getByText("Crear workspace"));
 
       await waitFor(() =>
-        expect(screen.getByText("Solo se permiten letras y espacios")).toBeInTheDocument(),
+        expect(screen.getByText("Usá letras, números o & / . -")).toBeInTheDocument(),
+      );
+    });
+
+    it("acepta números y puntuación permitida", async () => {
+      const user = userEvent.setup();
+      renderWorkspace();
+
+      await addWorkspace(user, "Hogar 2");
+
+      await waitFor(() => expect(screen.getByText("Hogar 2")).toBeInTheDocument());
+    });
+
+    it("muestra error si el workspace ya existe", async () => {
+      const user = userEvent.setup();
+      renderWorkspace();
+
+      await addWorkspace(user, "Familia");
+      await addWorkspace(user, "familia");
+
+      await waitFor(() =>
+        expect(screen.getByText("Ya lo agregaste")).toBeInTheDocument(),
       );
     });
 
@@ -158,14 +179,42 @@ describe("WorkspaceOnboarding", () => {
   });
 
   describe("navegación", () => {
-    it("llama onPrev al hacer click en Volver", async () => {
+    it("llama onPrev con los workspaces actuales al hacer click en Volver", async () => {
       const user = userEvent.setup();
       const onPrev = vi.fn();
       renderWorkspace(vi.fn(), onPrev);
 
+      await addWorkspace(user, "Familia");
       await user.click(screen.getByText("Volver"));
 
       expect(onPrev).toHaveBeenCalledTimes(1);
+      expect(onPrev).toHaveBeenCalledWith({
+        workspacesToAdd: [{ name: "Familia", isDefault: true }],
+      });
+    });
+
+    it("agrega el texto pendiente al hacer click en Siguiente", async () => {
+      const user = userEvent.setup();
+      const onNext = vi.fn();
+      renderWorkspace(onNext);
+
+      await user.type(screen.getByPlaceholderText("Ej: Familia, Trabajo, Personal..."), "Familia");
+      await user.click(screen.getByText("Siguiente"));
+
+      expect(onNext).toHaveBeenCalledWith({
+        workspacesToAdd: [{ name: "Familia", isDefault: true }],
+      });
+    });
+
+    it("no agrega el texto pendiente inválido y no bloquea la navegación", async () => {
+      const user = userEvent.setup();
+      const onPrev = vi.fn();
+      renderWorkspace(vi.fn(), onPrev);
+
+      await user.type(screen.getByPlaceholderText("Ej: Familia, Trabajo, Personal..."), "Grupo@!");
+      await user.click(screen.getByText("Volver"));
+
+      expect(onPrev).toHaveBeenCalledWith({ workspacesToAdd: [] });
     });
   });
 
@@ -174,5 +223,28 @@ describe("WorkspaceOnboarding", () => {
       renderWorkspace();
       expect(screen.queryByText("Omitir por ahora")).not.toBeInTheDocument();
     });
+  });
+});
+
+describe("WorkspaceOnboarding finish now", () => {
+  it("no muestra el botón sin onFinishNow", () => {
+    renderWorkspace();
+    expect(screen.queryByText("Terminar ahora con esto")).not.toBeInTheDocument();
+  });
+
+  it("llama onFinishNow con la lista y el texto pendiente, sin llamar onNext", async () => {
+    const user = userEvent.setup();
+    const onNext = vi.fn();
+    const onFinishNow = vi.fn();
+    render(
+      <WorkspaceOnboarding initialValues={{}} onNext={onNext} onPrev={vi.fn()} onFinishNow={onFinishNow} />,
+      { wrapper },
+    );
+    await user.type(screen.getByPlaceholderText("Ej: Familia, Trabajo, Personal..."), "Casa");
+    await user.click(screen.getByText("Terminar ahora con esto"));
+    expect(onFinishNow).toHaveBeenCalledWith({
+      workspacesToAdd: [{ name: "Casa", isDefault: true }],
+    });
+    expect(onNext).not.toHaveBeenCalled();
   });
 });

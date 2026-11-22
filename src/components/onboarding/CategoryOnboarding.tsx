@@ -21,13 +21,16 @@ import { getEntityLabels } from "@/utils/entityLabels";
 
 const { Text } = Typography;
 
+const NAME_REGEX = /^[\p{L}\p{N}\s&/.\-+]+$/u;
+
 interface Props {
   initialValues: Partial<OnboardingForm>;
   onNext: (values: { categoriesToAdd: string[] }) => void;
-  onPrev: () => void;
+  onPrev: (values: { categoriesToAdd: string[] }) => void;
+  onFinishNow?: (values: { categoriesToAdd: string[] }) => void;
 }
 
-export default function CategoryOnboarding({ initialValues, onNext, onPrev }: Props) {
+export default function CategoryOnboarding({ initialValues, onNext, onPrev, onFinishNow }: Props) {
   const { token } = theme.useToken();
   const [form] = Form.useForm<{ description: string }>();
   const [categories, setCategories] = useState<string[]>(
@@ -36,10 +39,30 @@ export default function CategoryOnboarding({ initialValues, onNext, onPrev }: Pr
   const { t } = useTranslation();
   const labels = getEntityLabels(initialValues.userType ?? null, t);
 
+  // Incluye el texto escrito pero aún no agregado, si es válido y no duplicado
+  const collectCategories = () => {
+    const pending = (
+      (form.getFieldValue("description") as string | undefined) ?? ""
+    )
+      .trim()
+      .toUpperCase();
+    if (!pending || !NAME_REGEX.test(pending) || categories.includes(pending)) {
+      return categories;
+    }
+    form.resetFields();
+    return [...categories, pending];
+  };
+
   const handleAdd = () => {
     form.validateFields().then(({ description }) => {
       const trimmed = description.trim();
-      if (!trimmed || categories.includes(trimmed.toUpperCase())) return;
+      if (!trimmed) return;
+      if (categories.includes(trimmed.toUpperCase())) {
+        form.setFields([
+          { name: "description", errors: [t("onboarding.common.duplicate")] },
+        ]);
+        return;
+      }
       setCategories((prev) => [...prev, trimmed.toUpperCase()]);
       form.resetFields();
     }).catch(() => {});
@@ -74,9 +97,9 @@ export default function CategoryOnboarding({ initialValues, onNext, onPrev }: Pr
                 {
                   validator: (_, value) => {
                     if (!value || !value.trim()) return Promise.resolve();
-                    if (!/^[A-Za-zÁÉÍÓÚáéíóúÑñ\s]+$/.test(value)) {
+                    if (!NAME_REGEX.test(value)) {
                       return Promise.reject(
-                        new Error(t("onboarding.category.onlyLettersError")),
+                        new Error(t("onboarding.common.nameFormat")),
                       );
                     }
                     return Promise.resolve();
@@ -156,21 +179,29 @@ export default function CategoryOnboarding({ initialValues, onNext, onPrev }: Pr
 
       <Row gutter={[16, 10]}>
         <Col xs={12}>
-          <Button block type="default" onClick={onPrev}>
+          <Button block type="default" onClick={() => onPrev({ categoriesToAdd: collectCategories() })}>
             {t("onboarding.backButton")}
           </Button>
         </Col>
         <Col xs={12}>
           <Button
             block
-            color="geekblue"
-            variant="filled"
-            onClick={() => onNext({ categoriesToAdd: categories })}
+            type="primary"
+            onClick={() => onNext({ categoriesToAdd: collectCategories() })}
           >
             {t("onboarding.nextButton")}
           </Button>
         </Col>
       </Row>
+      {onFinishNow && (
+        <Button
+          type="text"
+          block
+          onClick={() => onFinishNow({ categoriesToAdd: collectCategories() })}
+        >
+          {t("onboarding.finishNowButton")}
+        </Button>
+      )}
     </Space>
   );
 }

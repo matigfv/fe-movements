@@ -1,9 +1,8 @@
 import BellOutlined from "@ant-design/icons/BellOutlined";
-import AimOutlined from "@ant-design/icons/AimOutlined";
 import LineChartOutlined from "@ant-design/icons/LineChartOutlined";
 import TeamOutlined from "@ant-design/icons/TeamOutlined";
 import BankOutlined from "@ant-design/icons/BankOutlined";
-import { Button, Col, Row, Space, Typography, theme } from "antd";
+import { Button, Space, Typography, theme } from "antd";
 import type { ReactNode } from "react";
 import { useTranslation } from "react-i18next";
 import type { OnboardingForm } from "@/apis/onboarding/OnboardingApi";
@@ -31,11 +30,6 @@ export default function IntroOnboarding({ onNext }: Props) {
       description: t("onboarding.intro.value1Description"),
     },
     {
-      icon: <AimOutlined />,
-      title: t("onboarding.intro.value2Title"),
-      description: t("onboarding.intro.value2Description"),
-    },
-    {
       icon: <LineChartOutlined />,
       title: t("onboarding.intro.value3Title"),
       description: t("onboarding.intro.value3Description"),
@@ -61,15 +55,22 @@ export default function IntroOnboarding({ onNext }: Props) {
         <Text type="secondary">{t("onboarding.intro.subheadline")}</Text>
       </div>
 
-      <Row gutter={[12, 12]}>
+      <div
+        style={{
+          display: "grid",
+          gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))",
+          gap: 12,
+        }}
+      >
         {values.map((value) => (
-          <Col xs={24} sm={12} key={value.title}>
+          <div key={value.title}>
             <div
               style={{
                 display: "flex",
                 gap: 12,
                 alignItems: "flex-start",
                 height: "100%",
+                boxSizing: "border-box",
                 padding: "12px 14px",
                 borderRadius: 10,
                 border: `1px solid ${token.colorBorderSecondary}`,
@@ -101,16 +102,15 @@ export default function IntroOnboarding({ onNext }: Props) {
                 </Text>
               </div>
             </div>
-          </Col>
+          </div>
         ))}
-      </Row>
+      </div>
 
       <Space orientation="vertical" style={{ width: "100%" }} size={8}>
         <Button
           block
           size="large"
-          color="geekblue"
-          variant="filled"
+          type="primary"
           onClick={() => onNext({})}
         >
           {t("onboarding.intro.ctaButton")}

@@ -187,12 +187,29 @@
   "onboarding": {
     "backButton": "Back",
     "nextButton": "Next",
+    "finishNowButton": "Finish now with this",
+    "finishSuccess": "All set! Your account is configured.",
+    "common": {
+      "duplicate": "You already added it",
+      "nameFormat": "Use letters, numbers or & / . -",
+      "defaultBadge": "Main"
+    },
+    "ready": {
+      "title": "All set to start",
+      "intro": "This is enough to get going. Adjust it now if you want; otherwise change it later from Settings.",
+      "workspaceLine": "We'll create your main {{workspace}}.",
+      "defaultsLine": "Default categories are included. You can add banks and currencies when you log your movements.",
+      "principalHelp": "The main item is the one used by default when you log a movement.",
+      "continueButton": "Continue with this",
+      "customizeButton": "Customize",
+      "customizeHelp": "Customizing lets you choose workspaces, categories, banks and currencies now."
+    },
     "workspace": {
       "nameLettersOnly": "Only letters and spaces are allowed",
       "emptyDescription": "You haven't added any {{workspace}} yet. You can continue without adding one — a default one will be created.",
       "starTooltipDefault": "Already your default {{workspace}}",
-      "starTooltipSetDefault": "Set as default",
-      "starAriaLabel": "Star {{workspace}} {{name}}",
+      "starTooltipSetDefault": "Mark as main",
+      "starAriaLabel": "Mark {{workspace}} {{name}} as main",
       "deleteTooltip": "Delete {{workspace}}",
       "deleteAriaLabel": "Delete {{workspace}} {{name}}"
     },
@@ -204,8 +221,8 @@
       "addButton": "Add",
       "emptyDescription": "You haven't added any banks yet. You can continue without adding any.",
       "starTooltipDefault": "Already the default bank",
-      "starTooltipSetDefault": "Set as default",
-      "starAriaLabel": "Star bank {{name}}",
+      "starTooltipSetDefault": "Mark as main",
+      "starAriaLabel": "Mark bank {{name}} as main",
       "deleteTooltip": "Delete bank",
       "deleteAriaLabel": "Delete bank {{name}}",
       "footerNote": "You can add more banks from Settings at any time."
@@ -239,7 +256,20 @@
       "workspacePlaceholder": "Select a workspace",
       "workspaceDefaultOption": "Your default {{workspace}}",
       "footerNote": "You can complete this later from Settings.",
-      "finishButton": "Finish"
+      "finishButton": "Finish",
+      "recapPrefix": "To be created:",
+      "recapWorkspaces_one": "{{count}} workspace",
+      "recapWorkspaces_other": "{{count}} workspaces",
+      "recapCategories_one": "{{count}} category",
+      "recapCategories_other": "{{count}} categories",
+      "recapBanks_one": "{{count}} bank",
+      "recapBanks_other": "{{count}} banks",
+      "recapCurrencies_one": "{{count}} currency",
+      "recapCurrencies_other": "{{count}} currencies",
+      "currencyRequired": "Choose the income currency",
+      "submitError": "We couldn't create your account. Check your connection and try again: what you entered is still here.",
+      "submitErrorServer": "We couldn't create your account: the server didn't accept the data. Review what you entered and try again.",
+      "retryButton": "Retry"
     },
     "userType": {
       "question": "What will the account be used for?",
@@ -255,6 +285,8 @@
       "categoriesDescription": "Classify your expenses",
       "banksTitle": "Banks",
       "banksDescription": "Your banking entities",
+      "readyTitle": "All set",
+      "stepCounter": "Step {{current}} of {{total}}",
       "profileTitle": "Profile",
       "profileDescription": "Type of use",
       "currencyTitle": "Currencies",

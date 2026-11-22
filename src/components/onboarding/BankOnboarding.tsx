@@ -4,6 +4,7 @@ import DeleteOutlined from "@ant-design/icons/DeleteOutlined";
 import StarFilled from "@ant-design/icons/StarFilled";
 import StarOutlined from "@ant-design/icons/StarOutlined";
 import {
+  AutoComplete,
   Button,
   Col,
   Empty,
@@ -19,16 +20,18 @@ import {
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import type { OnboardingBankEntry } from "@/apis/onboarding/OnboardingApi";
+import { BANK_SUGGESTIONS } from "@/utils/onboardingSuggestions";
 
 const { Text } = Typography;
 
 interface Props {
   initialValues: { banksToAdd?: OnboardingBankEntry[] };
   onNext: (values: { banksToAdd: OnboardingBankEntry[] }) => void;
-  onPrev: () => void;
+  onPrev: (values: { banksToAdd: OnboardingBankEntry[] }) => void;
+  onFinishNow?: (values: { banksToAdd: OnboardingBankEntry[] }) => void;
 }
 
-export default function BankOnboarding({ initialValues, onNext, onPrev }: Props) {
+export default function BankOnboarding({ initialValues, onNext, onPrev, onFinishNow }: Props) {
   const { token } = theme.useToken();
   const { t } = useTranslation();
   const [form] = Form.useForm<{ description: string }>();
@@ -36,10 +39,28 @@ export default function BankOnboarding({ initialValues, onNext, onPrev }: Props)
     initialValues.banksToAdd ?? [],
   );
 
+  // Incluye el texto escrito pero aún no agregado, si no es vacío ni duplicado
+  const collectBanks = () => {
+    const pending = (
+      (form.getFieldValue("description") as string | undefined) ?? ""
+    )
+      .trim()
+      .toUpperCase();
+    if (!pending || banks.some((b) => b.description === pending)) return banks;
+    form.resetFields();
+    return [...banks, { description: pending, isDefault: banks.length === 0 }];
+  };
+
   const handleAdd = () => {
     form.validateFields().then(({ description }) => {
       const trimmed = description.trim().toUpperCase();
-      if (!trimmed || banks.some((b) => b.description === trimmed)) return;
+      if (!trimmed) return;
+      if (banks.some((b) => b.description === trimmed)) {
+        form.setFields([
+          { name: "description", errors: [t("onboarding.common.duplicate")] },
+        ]);
+        return;
+      }
       // El primero que se agrega es default automáticamente
       setBanks((prev) => [
         ...prev,
@@ -88,10 +109,19 @@ export default function BankOnboarding({ initialValues, onNext, onPrev }: Props)
                 { required: true, message: t("onboarding.bank.nameRequired") },
               ]}
             >
-              <Input
-                placeholder={t("onboarding.bank.namePlaceholder")}
-                style={{ borderRadius: 10, height: 40 }}
-              />
+              <AutoComplete
+                options={BANK_SUGGESTIONS.filter(
+                  (b) => !banks.some((x) => x.description === b.toUpperCase()),
+                ).map((b) => ({ value: b }))}
+                filterOption={(input, option) =>
+                  (option?.value as string).toLowerCase().includes(input.toLowerCase())
+                }
+              >
+                <Input
+                  placeholder={t("onboarding.bank.namePlaceholder")}
+                  style={{ borderRadius: 10, height: 40 }}
+                />
+              </AutoComplete>
             </Form.Item>
           </Col>
           <Col>
@@ -156,10 +186,10 @@ export default function BankOnboarding({ initialValues, onNext, onPrev }: Props)
                   {bank.isDefault && (
                     <span
                       style={{
-                        background: `linear-gradient(90deg, ${token.colorPrimary}, ${token.colorPrimaryHover})`,
+                        background: token.colorPrimaryBg,
                         borderRadius: 20,
-                        color: "#fff",
-                        fontSize: 10,
+                        color: token.colorText,
+                        fontSize: 12,
                         fontWeight: 700,
                         letterSpacing: "0.5px",
                         padding: "2px 9px",
@@ -167,7 +197,7 @@ export default function BankOnboarding({ initialValues, onNext, onPrev }: Props)
                         lineHeight: "18px",
                       }}
                     >
-                      ★ Default
+                      {t("onboarding.common.defaultBadge")}
                     </span>
                   )}
                 </Flex>
@@ -222,21 +252,29 @@ export default function BankOnboarding({ initialValues, onNext, onPrev }: Props)
 
       <Row gutter={[16, 10]}>
         <Col xs={12}>
-          <Button block type="default" onClick={onPrev}>
+          <Button block type="default" onClick={() => onPrev({ banksToAdd: collectBanks() })}>
             {t("onboarding.backButton")}
           </Button>
         </Col>
         <Col xs={12}>
           <Button
             block
-            color="geekblue"
-            variant="filled"
-            onClick={() => onNext({ banksToAdd: banks })}
+            type="primary"
+            onClick={() => onNext({ banksToAdd: collectBanks() })}
           >
             {t("onboarding.nextButton")}
           </Button>
         </Col>
       </Row>
+      {onFinishNow && (
+        <Button
+          type="text"
+          block
+          onClick={() => onFinishNow({ banksToAdd: collectBanks() })}
+        >
+          {t("onboarding.finishNowButton")}
+        </Button>
+      )}
     </Space>
   );
 }

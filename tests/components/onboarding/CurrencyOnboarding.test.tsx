@@ -98,9 +98,10 @@ describe("CurrencyOnboarding", () => {
       );
       await user.click(screen.getByRole("button", { name: /agregar/i }));
 
-      await waitFor(() => {
-        expect(screen.getAllByText("USD")).toHaveLength(1);
-      });
+      await waitFor(() =>
+        expect(screen.getByText("Ya lo agregaste")).toBeInTheDocument(),
+      );
+      expect(screen.getAllByText("USD")).toHaveLength(1);
     });
   });
 
@@ -159,14 +160,47 @@ describe("CurrencyOnboarding", () => {
   });
 
   describe("navegación", () => {
-    it("llama onPrev al hacer click en Volver", async () => {
+    it("llama onPrev con las monedas actuales al hacer click en Volver", async () => {
       const user = userEvent.setup();
       const onPrev = vi.fn();
-      renderMoneda(vi.fn(), onPrev);
+      renderMoneda(vi.fn(), onPrev, {
+        currenciesToAdd: [{ symbol: "USD", description: "Dólar" }],
+      });
 
       await user.click(screen.getByText("Volver"));
 
       expect(onPrev).toHaveBeenCalledTimes(1);
+      expect(onPrev).toHaveBeenCalledWith({
+        currenciesToAdd: [{ symbol: "USD", description: "Dólar" }],
+      });
+    });
+
+    it("agrega la moneda pendiente al hacer click en Siguiente si símbolo y nombre están completos", async () => {
+      const user = userEvent.setup();
+      const onNext = vi.fn();
+      renderMoneda(onNext);
+
+      await user.type(screen.getByPlaceholderText("Ej: USD, ARS..."), "usd");
+      await user.type(
+        screen.getByPlaceholderText("Ej: Dólar, Peso argentino..."),
+        "Dólar",
+      );
+      await user.click(screen.getByText("Siguiente"));
+
+      expect(onNext).toHaveBeenCalledWith({
+        currenciesToAdd: [{ symbol: "USD", description: "Dólar" }],
+      });
+    });
+
+    it("no agrega la moneda pendiente si falta el nombre", async () => {
+      const user = userEvent.setup();
+      const onPrev = vi.fn();
+      renderMoneda(vi.fn(), onPrev);
+
+      await user.type(screen.getByPlaceholderText("Ej: USD, ARS..."), "usd");
+      await user.click(screen.getByText("Volver"));
+
+      expect(onPrev).toHaveBeenCalledWith({ currenciesToAdd: [] });
     });
 
     it("llama onNext con las monedas actuales al hacer click en Siguiente", async () => {
@@ -192,5 +226,69 @@ describe("CurrencyOnboarding", () => {
 
       expect(onNext).toHaveBeenCalledWith({ currenciesToAdd: [] });
     });
+  });
+});
+
+describe("CurrencyOnboarding finish now", () => {
+  it("no muestra el botón sin onFinishNow", () => {
+    renderMoneda();
+    expect(screen.queryByText("Terminar ahora con esto")).not.toBeInTheDocument();
+  });
+
+  it("llama onFinishNow con la lista y el par pendiente, sin llamar onNext", async () => {
+    const user = userEvent.setup();
+    const onNext = vi.fn();
+    const onFinishNow = vi.fn();
+    render(
+      <CurrencyOnboarding
+        initialValues={{ currenciesToAdd: [{ symbol: "ARS", description: "Peso" }] }}
+        onNext={onNext}
+        onPrev={vi.fn()}
+        onFinishNow={onFinishNow}
+      />,
+      { wrapper },
+    );
+    await user.type(screen.getByPlaceholderText("Ej: USD, ARS..."), "xyz");
+    await user.type(screen.getByPlaceholderText("Ej: Dólar, Peso argentino..."), "Cripto");
+    await user.click(screen.getByText("Terminar ahora con esto"));
+    expect(onFinishNow).toHaveBeenCalledWith({
+      currenciesToAdd: [
+        { symbol: "ARS", description: "Peso" },
+        { symbol: "XYZ", description: "Cripto" },
+      ],
+    });
+    expect(onNext).not.toHaveBeenCalled();
+  });
+});
+
+describe("CurrencyOnboarding suggestions", () => {
+  it("muestra sugerencia y al elegirla completa el nombre vacío", async () => {
+    const user = userEvent.setup();
+    renderMoneda();
+    await user.type(screen.getByPlaceholderText("Ej: USD, ARS..."), "usd");
+    await user.click(await screen.findByText("USD — Dólar estadounidense"));
+    expect(screen.getByPlaceholderText("Ej: USD, ARS...")).toHaveValue("USD");
+    expect(screen.getByPlaceholderText("Ej: Dólar, Peso argentino...")).toHaveValue(
+      "Dólar estadounidense",
+    );
+  });
+
+  it("no pisa un nombre ya escrito", async () => {
+    const user = userEvent.setup();
+    renderMoneda();
+    await user.type(screen.getByPlaceholderText("Ej: Dólar, Peso argentino..."), "Mío");
+    await user.type(screen.getByPlaceholderText("Ej: USD, ARS..."), "eur");
+    await user.click(await screen.findByText("EUR — Euro"));
+    expect(screen.getByPlaceholderText("Ej: Dólar, Peso argentino...")).toHaveValue("Mío");
+  });
+
+  it("permite símbolo libre", async () => {
+    const user = userEvent.setup();
+    const onNext = vi.fn();
+    renderMoneda(onNext);
+    await user.type(screen.getByPlaceholderText("Ej: USD, ARS..."), "btc");
+    await user.type(screen.getByPlaceholderText("Ej: Dólar, Peso argentino..."), "Bitcoin");
+    await user.click(screen.getByText("Siguiente"));
+    expect(onNext).toHaveBeenCalledWith({ currenciesToAdd: [{ symbol: "BTC", description: "Bitcoin" }] });
   });
 });

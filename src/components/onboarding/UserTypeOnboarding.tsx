@@ -1,6 +1,7 @@
 import ShopOutlined from "@ant-design/icons/ShopOutlined";
 import UserOutlined from "@ant-design/icons/UserOutlined";
 import { Button, Card, Col, Form, Row, Space, Typography, theme } from "antd";
+import type { KeyboardEvent } from "react";
 import { useTranslation } from "react-i18next";
 import type { OnboardingForm } from "@/apis/onboarding/OnboardingApi";
 import { UserTypeEnum } from "@/enums/UserTypeEnum";
@@ -10,11 +11,13 @@ const { Text } = Typography;
 interface Props {
   initialValues: Partial<OnboardingForm>;
   onNext: (values: Pick<OnboardingForm, "userType">) => void;
+  onPrev?: () => void;
 }
 
 export default function UserTypeOnboarding({
   initialValues,
   onNext,
+  onPrev,
 }: Props) {
   const { token } = theme.useToken();
   const { t } = useTranslation();
@@ -27,6 +30,13 @@ export default function UserTypeOnboarding({
 
   const handleSelect = (value: UserTypeEnum) => {
     form.setFieldValue("userType", value);
+  };
+
+  const onSelectKey = (e: KeyboardEvent<HTMLElement>, value: UserTypeEnum) => {
+    if (e.key === "Enter" || e.key === " ") {
+      e.preventDefault();
+      handleSelect(value);
+    }
   };
 
   const handleSubmit = () => {
@@ -53,10 +63,14 @@ export default function UserTypeOnboarding({
           label={<Text strong>{t("onboarding.userType.label")}</Text>}
           rules={[{ required: true, message: t("onboarding.userType.selectRequired") }]}
         >
-          <Row gutter={[16, 16]}>
+          <Row gutter={[16, 16]} role="radiogroup" aria-label={t("onboarding.userType.label")}>
             <Col xs={24} md={12}>
               <Card
+                role="radio"
+                aria-checked={isPersonal}
+                tabIndex={0}
                 onClick={() => handleSelect(UserTypeEnum.PERSONAL)}
+                onKeyDown={(e) => onSelectKey(e, UserTypeEnum.PERSONAL)}
                 hoverable
                 style={{
                   border: `2px ${isPersonal ? "solid" : "dashed"} ${isPersonal ? token.colorPrimary : token.colorBorderSecondary}`,
@@ -75,7 +89,11 @@ export default function UserTypeOnboarding({
             </Col>
             <Col xs={24} md={12}>
               <Card
+                role="radio"
+                aria-checked={!isPersonal}
+                tabIndex={0}
                 onClick={() => handleSelect(UserTypeEnum.ENTERPRISE)}
+                onKeyDown={(e) => onSelectKey(e, UserTypeEnum.ENTERPRISE)}
                 hoverable
                 style={{
                   border: `2px ${!isPersonal ? "solid" : "dashed"} ${!isPersonal ? token.colorPrimary : token.colorBorderSecondary}`,
@@ -95,9 +113,16 @@ export default function UserTypeOnboarding({
           </Row>
         </Form.Item>
 
-        <Row gutter={16}>
-          <Col xs={24}>
-            <Button block color="geekblue" variant="filled" onClick={handleSubmit}>
+        <Row gutter={[16, 10]}>
+          {onPrev && (
+            <Col xs={12}>
+              <Button block onClick={onPrev}>
+                {t("onboarding.backButton")}
+              </Button>
+            </Col>
+          )}
+          <Col xs={onPrev ? 12 : 24}>
+            <Button block type="primary" onClick={handleSubmit}>
               {t("onboarding.nextButton")}
             </Button>
           </Col>

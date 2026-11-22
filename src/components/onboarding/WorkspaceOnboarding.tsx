@@ -23,13 +23,16 @@ import { getEntityLabels } from "@/utils/entityLabels";
 
 const { Text } = Typography;
 
+const NAME_REGEX = /^[\p{L}\p{N}\s&/.\-+]+$/u;
+
 interface Props {
   initialValues: Partial<OnboardingForm>;
   onNext: (values: Pick<OnboardingForm, "workspacesToAdd">) => void;
-  onPrev: () => void;
+  onPrev: (values: Pick<OnboardingForm, "workspacesToAdd">) => void;
+  onFinishNow?: (values: Pick<OnboardingForm, "workspacesToAdd">) => void;
 }
 
-export default function WorkspaceOnboarding({ initialValues, onNext, onPrev }: Props) {
+export default function WorkspaceOnboarding({ initialValues, onNext, onPrev, onFinishNow }: Props) {
   const { token } = theme.useToken();
   const { t } = useTranslation();
   const [form] = Form.useForm<{ name: string }>();
@@ -38,10 +41,29 @@ export default function WorkspaceOnboarding({ initialValues, onNext, onPrev }: P
     initialValues.workspacesToAdd ?? [],
   );
 
+  const isDuplicate = (name: string) =>
+    workspaces.some((w) => w.name.toLowerCase() === name.toLowerCase());
+
+  // Incluye el texto escrito pero aún no agregado, si es válido y no duplicado
+  const collectWorkspaces = () => {
+    const pending = ((form.getFieldValue("name") as string | undefined) ?? "").trim();
+    if (!pending || !NAME_REGEX.test(pending) || isDuplicate(pending)) {
+      return workspaces;
+    }
+    form.resetFields();
+    return [...workspaces, { name: pending, isDefault: workspaces.length === 0 }];
+  };
+
   const handleAdd = () => {
     form.validateFields().then(({ name }) => {
       const trimmed = name.trim();
-      if (!trimmed || workspaces.some((w) => w.name === trimmed)) return;
+      if (!trimmed) return;
+      if (isDuplicate(trimmed)) {
+        form.setFields([
+          { name: "name", errors: [t("onboarding.common.duplicate")] },
+        ]);
+        return;
+      }
       // El primero que se agrega es default automáticamente
       setWorkspaces((prev) => [
         ...prev,
@@ -70,7 +92,11 @@ export default function WorkspaceOnboarding({ initialValues, onNext, onPrev }: P
   };
 
   const handleSubmit = () => {
-    onNext({ workspacesToAdd: workspaces });
+    onNext({ workspacesToAdd: collectWorkspaces() });
+  };
+
+  const handlePrev = () => {
+    onPrev({ workspacesToAdd: collectWorkspaces() });
   };
 
   return (
@@ -98,9 +124,9 @@ export default function WorkspaceOnboarding({ initialValues, onNext, onPrev }: P
                 {
                   validator: (_, value) => {
                     if (!value || !value.trim()) return Promise.resolve();
-                    if (!/^[A-Za-zÁÉÍÓÚáéíóúÑñ\s]+$/.test(value)) {
+                    if (!NAME_REGEX.test(value)) {
                       return Promise.reject(
-                        new Error(t("onboarding.workspace.nameLettersOnly")),
+                        new Error(t("onboarding.common.nameFormat")),
                       );
                     }
                     return Promise.resolve();
@@ -178,10 +204,10 @@ export default function WorkspaceOnboarding({ initialValues, onNext, onPrev }: P
                   {workspace.isDefault && (
                     <span
                       style={{
-                        background: `linear-gradient(90deg, ${token.colorPrimary}, ${token.colorPrimaryHover})`,
+                        background: token.colorPrimaryBg,
                         borderRadius: 20,
-                        color: "#fff",
-                        fontSize: 10,
+                        color: token.colorText,
+                        fontSize: 12,
                         fontWeight: 700,
                         letterSpacing: "0.5px",
                         padding: "2px 9px",
@@ -189,7 +215,7 @@ export default function WorkspaceOnboarding({ initialValues, onNext, onPrev }: P
                         lineHeight: "18px",
                       }}
                     >
-                      ★ Default
+                      {t("onboarding.common.defaultBadge")}
                     </span>
                   )}
                 </Flex>
@@ -249,16 +275,25 @@ export default function WorkspaceOnboarding({ initialValues, onNext, onPrev }: P
 
       <Row gutter={[16, 10]}>
         <Col xs={12}>
-          <Button block type="default" onClick={onPrev}>
+          <Button block type="default" onClick={handlePrev}>
             {t("onboarding.backButton")}
           </Button>
         </Col>
         <Col xs={12}>
-          <Button color="geekblue" block onClick={handleSubmit} variant="filled">
+          <Button type="primary" block onClick={handleSubmit}>
             {t("onboarding.nextButton")}
           </Button>
         </Col>
       </Row>
+      {onFinishNow && (
+        <Button
+          type="text"
+          block
+          onClick={() => onFinishNow({ workspacesToAdd: collectWorkspaces() })}
+        >
+          {t("onboarding.finishNowButton")}
+        </Button>
+      )}
     </Space>
   );
 }

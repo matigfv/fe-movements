@@ -1,4 +1,5 @@
 import {
+  Alert,
   Button,
   Col,
   Form,
@@ -18,16 +19,23 @@ const { Text } = Typography;
 
 interface Props {
   initialValues: Partial<OnboardingForm>;
+  /** Values typed in this step before going back, restored when the user returns. */
+  draft?: Partial<OnboardingIngresoForm>;
   onFinish: (values: OnboardingIngresoForm) => void;
-  onPrev: () => void;
+  onPrev: (values: Partial<OnboardingIngresoForm>) => void;
   isLoading?: boolean;
+  hasError?: boolean;
+  errorMessage?: string;
 }
 
 export default function IncomeOnboarding({
   initialValues,
+  draft,
   onFinish,
   onPrev,
   isLoading,
+  hasError,
+  errorMessage,
 }: Props) {
   const [form] = Form.useForm<OnboardingIngresoForm>();
   const { t } = useTranslation();
@@ -45,10 +53,25 @@ export default function IncomeOnboarding({
   const defaultWorkspaceName =
     workspacesToAddOptions.find((w) => w.isDefault)?.name ?? workspacesToAddOptions[0]?.name;
 
-  // Finalizar: envía los valores actuales sin requerir ningún campo
+  // Finalizar: los campos son opcionales, pero un monto necesita su moneda (ver regla de `currency`)
   const handleSubmit = () => {
-    onFinish(form.getFieldsValue());
+    form
+      .validateFields()
+      .then(() => onFinish(form.getFieldsValue()))
+      .catch(() => {});
   };
+
+  const recapParts = [
+    t("onboarding.income.recapWorkspaces", { count: Math.max(workspacesToAddOptions.length, 1) }),
+    ...[
+      ["recapCategories", (initialValues.categoriesToAdd ?? []).length],
+      ["recapBanks", banksToAdd.length],
+      ["recapCurrencies", currenciesToAdd.length],
+    ]
+      .filter(([, count]) => (count as number) > 0)
+      .map(([key, count]) => t(`onboarding.income.${key}`, { count: count as number })),
+  ];
+  const recap = `${t("onboarding.income.recapPrefix")} ${recapParts.join(" · ")}`;
 
   return (
     <Space orientation="vertical" style={{ width: "100%" }}>
@@ -61,7 +84,7 @@ export default function IncomeOnboarding({
       <Form
         form={form}
         layout="vertical"
-        initialValues={{ ...initialValues, bank: defaultBank }}
+        initialValues={{ ...initialValues, bank: defaultBank, ...draft }}
       >
         <Row gutter={[0, 0]}>
           <Col xs={24}>
@@ -85,6 +108,15 @@ export default function IncomeOnboarding({
             <Form.Item
               name="currency"
               label={<Text strong>{t("onboarding.income.currencyLabel")}</Text>}
+              dependencies={["amount"]}
+              rules={[
+                ({ getFieldValue }) => ({
+                  validator: (_, value) =>
+                    getFieldValue("amount") != null && !value
+                      ? Promise.reject(new Error(t("onboarding.income.currencyRequired")))
+                      : Promise.resolve(),
+                }),
+              ]}
             >
               <Select placeholder={t("onboarding.income.currencyPlaceholder")}>
                 {currenciesToAdd.map((currency) => (
@@ -139,25 +171,38 @@ export default function IncomeOnboarding({
           </Col>
         </Row>
 
-        <Text type="secondary" style={{ fontSize: 12, display: "block", marginBottom: 12, textAlign: "center" }}>
+        <Text type="secondary" style={{ fontSize: 12, display: "block", marginBottom: 4, textAlign: "center" }}>
           {t("onboarding.income.footerNote")}
         </Text>
+        <Text style={{ fontSize: 13, display: "block", marginBottom: 12, textAlign: "center" }}>
+          {recap}
+        </Text>
+
+        {hasError && (
+          <Alert
+            type="error"
+            showIcon
+            title={errorMessage ?? t("onboarding.income.submitError")}
+            style={{ marginBottom: 12 }}
+          />
+        )}
 
         <Row gutter={[16, 10]}>
           <Col xs={12}>
-            <Button block type="default" onClick={onPrev}>
+            <Button
+              block
+              type="default"
+              onClick={() => onPrev(form.getFieldsValue())}
+              disabled={isLoading}
+            >
               {t("onboarding.backButton")}
             </Button>
           </Col>
           <Col xs={12}>
-            <Button
-              block
-              color="geekblue"
-              variant="filled"
-              onClick={handleSubmit}
-              loading={isLoading}
-            >
-              {t("onboarding.income.finishButton")}
+            <Button block type="primary" onClick={handleSubmit} loading={isLoading}>
+              {hasError
+                ? t("onboarding.income.retryButton")
+                : t("onboarding.income.finishButton")}
             </Button>
           </Col>
         </Row>

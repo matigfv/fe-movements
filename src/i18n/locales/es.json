@@ -187,12 +187,29 @@
   "onboarding": {
     "backButton": "Volver",
     "nextButton": "Siguiente",
+    "finishNowButton": "Terminar ahora con esto",
+    "finishSuccess": "¡Listo! Tu cuenta está configurada.",
+    "common": {
+      "duplicate": "Ya lo agregaste",
+      "nameFormat": "Usá letras, números o & / . -",
+      "defaultBadge": "Principal"
+    },
+    "ready": {
+      "title": "Todo listo para empezar",
+      "intro": "Con esto alcanza para arrancar. Si querés, lo ajustás ahora; si no, lo cambiás después desde Configuración.",
+      "workspaceLine": "Vamos a crear tu {{workspace}} principal.",
+      "defaultsLine": "Ya vienen categorías por defecto. Los bancos y las monedas los sumás cuando cargues tus movimientos.",
+      "principalHelp": "El elemento principal es el que se usa por defecto al cargar un movimiento.",
+      "continueButton": "Continuar con esto",
+      "customizeButton": "Personalizar",
+      "customizeHelp": "Personalizar te deja elegir workspaces, categorías, bancos y monedas ahora."
+    },
     "workspace": {
       "nameLettersOnly": "Solo se permiten letras y espacios",
       "emptyDescription": "Todavía no agregaste ningún {{workspace}}. Podés continuar sin agregar — se creará uno por defecto.",
       "starTooltipDefault": "Ya es tu {{workspace}} por defecto",
-      "starTooltipSetDefault": "Establecer como default",
-      "starAriaLabel": "Estrella {{workspace}} {{name}}",
+      "starTooltipSetDefault": "Marcar como principal",
+      "starAriaLabel": "Marcar {{workspace}} {{name}} como principal",
       "deleteTooltip": "Eliminar {{workspace}}",
       "deleteAriaLabel": "Eliminar {{workspace}} {{name}}"
     },
@@ -205,7 +222,7 @@
       "emptyDescription": "No agregaste bancos aún. Podés continuar sin agregar.",
       "starTooltipDefault": "Ya es el banco por defecto",
       "starTooltipSetDefault": "Establecer como default",
-      "starAriaLabel": "Estrella banco {{name}}",
+      "starAriaLabel": "Marcar banco {{name}} como principal",
       "deleteTooltip": "Eliminar banco",
       "deleteAriaLabel": "Eliminar banco {{name}}",
       "footerNote": "Podés agregar más bancos desde Configuración en cualquier momento."
@@ -239,7 +256,20 @@
       "workspacePlaceholder": "Seleccioná un workspace",
       "workspaceDefaultOption": "Tu {{workspace}} por defecto",
       "footerNote": "Podés completar esto más tarde desde Configuración.",
-      "finishButton": "Finalizar"
+      "finishButton": "Finalizar",
+      "recapPrefix": "Se va a crear:",
+      "recapWorkspaces_one": "{{count}} workspace",
+      "recapWorkspaces_other": "{{count}} workspaces",
+      "recapCategories_one": "{{count}} categoría",
+      "recapCategories_other": "{{count}} categorías",
+      "recapBanks_one": "{{count}} banco",
+      "recapBanks_other": "{{count}} bancos",
+      "recapCurrencies_one": "{{count}} moneda",
+      "recapCurrencies_other": "{{count}} monedas",
+      "currencyRequired": "Elegí la moneda del ingreso",
+      "submitError": "No pudimos crear tu cuenta. Revisá tu conexión y probá de nuevo: lo que cargaste sigue acá.",
+      "submitErrorServer": "No pudimos crear tu cuenta: el servidor no aceptó los datos. Revisá lo que cargaste y probá de nuevo.",
+      "retryButton": "Reintentar"
     },
     "userType": {
       "question": "¿Cuál será el uso de la cuenta?",
@@ -255,6 +285,8 @@
       "categoriesDescription": "Clasificá tus gastos",
       "banksTitle": "Bancos",
       "banksDescription": "Tus entidades bancarias",
+      "readyTitle": "Todo listo",
+      "stepCounter": "Paso {{current}} de {{total}}",
       "profileTitle": "Perfil",
       "profileDescription": "Tipo de uso",
       "currencyTitle": "Monedas",

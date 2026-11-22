@@ -105,10 +105,25 @@ describe("CategoryOnboarding", () => {
       await user.type(screen.getByPlaceholderText("Ej: Hogar, Transporte, Entretenimiento..."), "comida");
       await user.click(screen.getByRole("button", { name: /agregar/i }));
 
-      await waitFor(() => {
-        const tags = screen.getAllByText("Comida");
-        expect(tags).toHaveLength(1);
-      });
+      await waitFor(() =>
+        expect(screen.getByText("Ya lo agregaste")).toBeInTheDocument(),
+      );
+      expect(screen.getAllByText("Comida")).toHaveLength(1);
+    });
+
+    it.each(["Hogar 2", "Salud/Farmacia"])("acepta %s", async (name) => {
+      const user = userEvent.setup();
+      const onNext = vi.fn();
+      renderCategoria(onNext);
+
+      await user.type(screen.getByPlaceholderText("Ej: Hogar, Transporte, Entretenimiento..."), name);
+      await user.click(screen.getByRole("button", { name: /agregar/i }));
+
+      await waitFor(() =>
+        expect(screen.getByPlaceholderText("Ej: Hogar, Transporte, Entretenimiento...")).toHaveValue(""),
+      );
+      await user.click(screen.getByText("Siguiente"));
+      expect(onNext).toHaveBeenCalledWith({ categoriesToAdd: [name.toUpperCase()] });
     });
   });
 
@@ -130,11 +145,11 @@ describe("CategoryOnboarding", () => {
       const user = userEvent.setup();
       renderCategoria();
 
-      await user.type(screen.getByPlaceholderText("Ej: Hogar, Transporte, Entretenimiento..."), "Cat123!");
+      await user.type(screen.getByPlaceholderText("Ej: Hogar, Transporte, Entretenimiento..."), "Cat@!");
       await user.click(screen.getByRole("button", { name: /agregar/i }));
 
       await waitFor(() =>
-        expect(screen.getByText("Solo letras y espacios")).toBeInTheDocument(),
+        expect(screen.getByText("Usá letras, números o & / . -")).toBeInTheDocument(),
       );
     });
   });
@@ -158,14 +173,37 @@ describe("CategoryOnboarding", () => {
   });
 
   describe("navegación", () => {
-    it("llama onPrev al hacer click en Volver", async () => {
+    it("llama onPrev con las categorías actuales al hacer click en Volver", async () => {
       const user = userEvent.setup();
       const onPrev = vi.fn();
-      renderCategoria(vi.fn(), onPrev);
+      renderCategoria(vi.fn(), onPrev, { categoriesToAdd: ["COMIDA"] });
 
       await user.click(screen.getByText("Volver"));
 
       expect(onPrev).toHaveBeenCalledTimes(1);
+      expect(onPrev).toHaveBeenCalledWith({ categoriesToAdd: ["COMIDA"] });
+    });
+
+    it("agrega el texto pendiente al hacer click en Siguiente", async () => {
+      const user = userEvent.setup();
+      const onNext = vi.fn();
+      renderCategoria(onNext, vi.fn(), { categoriesToAdd: ["COMIDA"] });
+
+      await user.type(screen.getByPlaceholderText("Ej: Hogar, Transporte, Entretenimiento..."), "viajes");
+      await user.click(screen.getByText("Siguiente"));
+
+      expect(onNext).toHaveBeenCalledWith({ categoriesToAdd: ["COMIDA", "VIAJES"] });
+    });
+
+    it("agrega el texto pendiente al hacer click en Volver", async () => {
+      const user = userEvent.setup();
+      const onPrev = vi.fn();
+      renderCategoria(vi.fn(), onPrev);
+
+      await user.type(screen.getByPlaceholderText("Ej: Hogar, Transporte, Entretenimiento..."), "viajes");
+      await user.click(screen.getByText("Volver"));
+
+      expect(onPrev).toHaveBeenCalledWith({ categoriesToAdd: ["VIAJES"] });
     });
 
     it("llama onNext con las categorías actuales al hacer click en Siguiente", async () => {
@@ -187,5 +225,31 @@ describe("CategoryOnboarding", () => {
 
       expect(onNext).toHaveBeenCalledWith({ categoriesToAdd: [] });
     });
+  });
+});
+
+describe("CategoryOnboarding finish now", () => {
+  it("no muestra el botón sin onFinishNow", () => {
+    renderCategoria();
+    expect(screen.queryByText("Terminar ahora con esto")).not.toBeInTheDocument();
+  });
+
+  it("llama onFinishNow con la lista y el texto pendiente, sin llamar onNext", async () => {
+    const user = userEvent.setup();
+    const onNext = vi.fn();
+    const onFinishNow = vi.fn();
+    render(
+      <CategoryOnboarding
+        initialValues={{ categoriesToAdd: ["HOGAR"] }}
+        onNext={onNext}
+        onPrev={vi.fn()}
+        onFinishNow={onFinishNow}
+      />,
+      { wrapper },
+    );
+    await user.type(screen.getByPlaceholderText("Ej: Hogar, Transporte, Entretenimiento..."), "Viajes");
+    await user.click(screen.getByText("Terminar ahora con esto"));
+    expect(onFinishNow).toHaveBeenCalledWith({ categoriesToAdd: ["HOGAR", "VIAJES"] });
+    expect(onNext).not.toHaveBeenCalled();
   });
 });

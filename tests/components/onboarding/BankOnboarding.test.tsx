@@ -87,7 +87,7 @@ describe("BankOnboarding", () => {
       await user.click(screen.getByRole("button", { name: /agregar/i }));
 
       await waitFor(() =>
-        expect(screen.getByText(/★ default/i)).toBeInTheDocument(),
+        expect(screen.getByText("Principal")).toBeInTheDocument(),
       );
     });
 
@@ -104,7 +104,7 @@ describe("BankOnboarding", () => {
       await waitFor(() => expect(screen.getByText("Santander")).toBeInTheDocument());
 
       // Solo debe haber un badge "Default"
-      expect(screen.getAllByText(/★ default/i)).toHaveLength(1);
+      expect(screen.getAllByText("Principal")).toHaveLength(1);
     });
 
     it("limpia el input después de agregar", async () => {
@@ -129,10 +129,10 @@ describe("BankOnboarding", () => {
       await user.type(screen.getByPlaceholderText("Nombre del banco..."), "galicia");
       await user.click(screen.getByRole("button", { name: /agregar/i }));
 
-      await waitFor(() => {
-        const tags = screen.getAllByText("Galicia");
-        expect(tags).toHaveLength(1);
-      });
+      await waitFor(() =>
+        expect(screen.getByText("Ya lo agregaste")).toBeInTheDocument(),
+      );
+      expect(screen.getAllByText("Galicia")).toHaveLength(1);
     });
   });
 
@@ -162,14 +162,14 @@ describe("BankOnboarding", () => {
       });
 
       const starBtn = screen.getByRole("button", {
-        name: /estrella banco SANTANDER/i,
+        name: /marcar banco SANTANDER como principal/i,
       });
       await user.click(starBtn);
 
       await waitFor(() => {
         // El botón de estrella de SANTANDER ahora debe estar deshabilitado (ya es default)
         expect(
-          screen.getByRole("button", { name: /estrella banco SANTANDER/i }),
+          screen.getByRole("button", { name: /marcar banco SANTANDER como principal/i }),
         ).toBeDisabled();
       });
     });
@@ -180,7 +180,7 @@ describe("BankOnboarding", () => {
       });
 
       expect(
-        screen.getByRole("button", { name: /estrella banco GALICIA/i }),
+        screen.getByRole("button", { name: /marcar banco GALICIA como principal/i }),
       ).toBeDisabled();
     });
   });
@@ -221,7 +221,7 @@ describe("BankOnboarding", () => {
         expect(screen.queryByText("Galicia")).not.toBeInTheDocument();
         // SANTANDER ahora debe ser default
         expect(
-          screen.getByRole("button", { name: /estrella banco SANTANDER/i }),
+          screen.getByRole("button", { name: /marcar banco SANTANDER como principal/i }),
         ).toBeDisabled();
       });
     });
@@ -243,14 +243,50 @@ describe("BankOnboarding", () => {
   });
 
   describe("navegación", () => {
-    it("llama onPrev al hacer click en Volver", async () => {
+    it("llama onPrev con los bancos actuales al hacer click en Volver", async () => {
       const user = userEvent.setup();
       const onPrev = vi.fn();
-      renderBanco(vi.fn(), onPrev);
+      renderBanco(vi.fn(), onPrev, {
+        banksToAdd: [{ description: "GALICIA", isDefault: true }],
+      });
 
       await user.click(screen.getByText("Volver"));
 
       expect(onPrev).toHaveBeenCalledTimes(1);
+      expect(onPrev).toHaveBeenCalledWith({
+        banksToAdd: [{ description: "GALICIA", isDefault: true }],
+      });
+    });
+
+    it("agrega el texto pendiente al hacer click en Siguiente", async () => {
+      const user = userEvent.setup();
+      const onNext = vi.fn();
+      renderBanco(onNext);
+
+      await user.type(screen.getByPlaceholderText("Nombre del banco..."), "Galicia");
+      await user.click(screen.getByText("Siguiente"));
+
+      expect(onNext).toHaveBeenCalledWith({
+        banksToAdd: [{ description: "GALICIA", isDefault: true }],
+      });
+    });
+
+    it("agrega el texto pendiente al hacer click en Volver", async () => {
+      const user = userEvent.setup();
+      const onPrev = vi.fn();
+      renderBanco(vi.fn(), onPrev, {
+        banksToAdd: [{ description: "GALICIA", isDefault: true }],
+      });
+
+      await user.type(screen.getByPlaceholderText("Nombre del banco..."), "Santander");
+      await user.click(screen.getByText("Volver"));
+
+      expect(onPrev).toHaveBeenCalledWith({
+        banksToAdd: [
+          { description: "GALICIA", isDefault: true },
+          { description: "SANTANDER", isDefault: false },
+        ],
+      });
     });
 
     it("llama onNext con los bancos actuales al hacer click en Siguiente", async () => {
@@ -276,5 +312,63 @@ describe("BankOnboarding", () => {
 
       expect(onNext).toHaveBeenCalledWith({ banksToAdd: [] });
     });
+  });
+});
+
+describe("BankOnboarding finish now", () => {
+  it("no muestra el botón sin onFinishNow", () => {
+    renderBanco();
+    expect(screen.queryByText("Terminar ahora con esto")).not.toBeInTheDocument();
+  });
+
+  it("llama onFinishNow con la lista y el texto pendiente, sin llamar onNext", async () => {
+    const user = userEvent.setup();
+    const onNext = vi.fn();
+    const onFinishNow = vi.fn();
+    render(
+      <BankOnboarding
+        initialValues={{ banksToAdd: [{ description: "GALICIA", isDefault: true }] }}
+        onNext={onNext}
+        onPrev={vi.fn()}
+        onFinishNow={onFinishNow}
+      />,
+      { wrapper },
+    );
+    await user.type(screen.getByPlaceholderText("Nombre del banco..."), "Mi banco");
+    await user.click(screen.getByText("Terminar ahora con esto"));
+    expect(onFinishNow).toHaveBeenCalledWith({
+      banksToAdd: [
+        { description: "GALICIA", isDefault: true },
+        { description: "MI BANCO", isDefault: false },
+      ],
+    });
+    expect(onNext).not.toHaveBeenCalled();
+  });
+});
+
+describe("BankOnboarding suggestions", () => {
+  it("muestra sugerencias al escribir", async () => {
+    const user = userEvent.setup();
+    renderBanco();
+    await user.type(screen.getByPlaceholderText("Nombre del banco..."), "sant");
+    expect((await screen.findAllByText("Santander")).length).toBeGreaterThan(0);
+  });
+
+  it("excluye bancos ya agregados", async () => {
+    const user = userEvent.setup();
+    renderBanco(vi.fn(), vi.fn(), { banksToAdd: [{ description: "SANTANDER", isDefault: true }] });
+    await user.type(screen.getByPlaceholderText("Nombre del banco..."), "an");
+    expect((await screen.findAllByText("Bankinter")).length).toBeGreaterThan(0);
+    const options = [...document.querySelectorAll(".ant-select-item-option")].map((e) => e.textContent);
+    expect(options).not.toContain("Santander");
+  });
+
+  it("permite texto libre", async () => {
+    const user = userEvent.setup();
+    const onNext = vi.fn();
+    renderBanco(onNext);
+    await user.type(screen.getByPlaceholderText("Nombre del banco..."), "Banco Raro");
+    await user.click(screen.getByText("Siguiente"));
+    expect(onNext).toHaveBeenCalledWith({ banksToAdd: [{ description: "BANCO RARO", isDefault: true }] });
   });
 });
